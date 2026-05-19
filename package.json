@@ -1,0 +1,131 @@
+{
+  "name": "@pressmaximum/dashboard-kit",
+  "version": "0.0.0",
+  "description": "Reusable WordPress admin dashboard SPA infrastructure: hash router, tab strip, settings form, welcome onboarding, list views, fullscreen editor handoff. Distilled from Blocksify Free.",
+  "license": "GPL-2.0-or-later",
+  "author": "PressMaximum",
+  "homepage": "https://github.com/pressmaximum/dashboard-kit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pressmaximum/dashboard-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pressmaximum/dashboard-kit/issues"
+  },
+  "keywords": [
+    "wordpress",
+    "wp-admin",
+    "dashboard",
+    "gutenberg",
+    "pressmaximum",
+    "blocksify",
+    "customify"
+  ],
+  "type": "module",
+  "main": "./build/index.mjs",
+  "module": "./build/index.mjs",
+  "types": "./build/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./build/index.mjs",
+      "types": "./build/index.d.mts"
+    },
+    "./datasets": {
+      "import": "./build/datasets/index.mjs",
+      "types": "./build/datasets/index.d.mts"
+    },
+    "./style.css": "./build/style.css",
+    "./styles/tokens.css": "./build/styles/tokens.css",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "**/*.css",
+    "**/style.css"
+  ],
+  "files": [
+    "build/",
+    "src/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "webpack --mode=production && tsc",
+    "build:js": "webpack --mode=production",
+    "build:types": "tsc",
+    "dev": "webpack --mode=development --watch",
+    "lint": "eslint \"src/**/*.{js,mjs,jsx}\" \"packages/**/*.{js,mjs,jsx}\" --max-warnings=0",
+    "format": "prettier --write \"src/**/*.{js,mjs,jsx,css,json}\" \"packages/**/*.{js,mjs,jsx,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,mjs,jsx,css,json}\"",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "size": "size-limit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@wordpress/components": ">=29.0.0",
+    "@wordpress/data": ">=10.0.0",
+    "@wordpress/dataviews": ">=14.0.0",
+    "@wordpress/element": ">=6.0.0",
+    "@wordpress/hooks": ">=4.0.0",
+    "@wordpress/html-entities": ">=4.0.0",
+    "@wordpress/icons": ">=10.0.0",
+    "@wordpress/url": ">=4.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@wordpress/dataviews": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-react": "^7.24.0",
+    "@size-limit/preset-small-lib": "^11.1.0",
+    "@storybook/react-vite": "^8.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "@wordpress/eslint-plugin": "^21.0.0",
+    "@wordpress/prettier-config": "^4.0.0",
+    "babel-loader": "^9.1.0",
+    "css-loader": "^7.1.0",
+    "eslint": "^8.57.0",
+    "jsdom": "^25.0.0",
+    "mini-css-extract-plugin": "^2.9.0",
+    "prettier": "^3.3.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "size-limit": "^11.1.0",
+    "storybook": "^8.3.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "size-limit": [
+    {
+      "name": "Core entry (gzip)",
+      "path": "build/index.mjs",
+      "limit": "25 KB",
+      "gzip": true
+    },
+    {
+      "name": "Datasets entry (gzip)",
+      "path": "build/datasets/index.mjs",
+      "limit": "60 KB",
+      "gzip": true
+    }
+  ]
+}

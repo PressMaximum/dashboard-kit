@@ -1,0 +1,44 @@
+/*
+ * CSS custom properties for @pressmaximum/dashboard-kit.
+ *
+ * Authoritative source: docs/SPEC.md §16.1. Override at any scope; the
+ * defaults below match the WordPress admin look so a freshly-mounted
+ * dashboard inherits the user's current WP admin color scheme without
+ * the consumer doing anything.
+ */
+
+:root {
+	/* Accent / brand */
+	--pmdk-color-accent: var( --wp-admin-theme-color, #3858e9 );
+	--pmdk-color-accent-rgb: 56, 88, 233;
+
+	/* Text */
+	--pmdk-color-text: #1e1e1e;
+	--pmdk-color-text-muted: #50575e;
+
+	/* Surfaces */
+	--pmdk-color-bg: #ffffff;
+	--pmdk-color-bg-subtle: #f6f7f7;
+
+	/* Borders */
+	--pmdk-color-border: #e0e0e0;
+	--pmdk-color-border-subtle: #f0f0f1;
+
+	/* State */
+	--pmdk-color-success: #00a32a;
+	--pmdk-color-error: #b91c1c;
+
+	/* Shape */
+	--pmdk-radius-small: 4px;
+	--pmdk-radius-pill: 9999px;
+
+	/* Type */
+	--pmdk-font-size-base: 14px;
+	--pmdk-line-height-base: 1.5;
+
+	/* Spacing */
+	--pmdk-spacing-unit: 8px;
+	--pmdk-header-gutter: 24px;
+	--pmdk-tab-padding-y: 16px;
+	--pmdk-tab-padding-x: 18px;
+}

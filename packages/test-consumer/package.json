@@ -1,0 +1,23 @@
+{
+  "name": "pmdk-test-consumer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal WordPress plugin scaffold for end-to-end testing @pressmaximum/dashboard-kit in a real WP admin. Symlinks the kit's source via npm link.",
+  "license": "GPL-2.0-or-later",
+  "type": "module",
+  "scripts": {
+    "link-kit": "npm link ../.."
+  },
+  "devDependencies": {
+    "@pressmaximum/dashboard-kit": "file:../..",
+    "@wordpress/components": "^29.0.0",
+    "@wordpress/data": "^10.0.0",
+    "@wordpress/element": "^6.0.0",
+    "@wordpress/hooks": "^4.0.0",
+    "@wordpress/html-entities": "^4.0.0",
+    "@wordpress/i18n": "^5.0.0",
+    "@wordpress/icons": "^10.0.0",
+    "@wordpress/scripts": "^30.0.0",
+    "@wordpress/url": "^4.0.0"
+  }
+}

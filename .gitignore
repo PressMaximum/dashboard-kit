@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+build/
+dist/
+storybook-static/
+
+# Test output
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Local symlinks (P1 prep — see docs/SPEC.md handoff notes)
+_ref/
+
+# Caches
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.vitest-cache/
