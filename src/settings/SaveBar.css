@@ -1,0 +1,44 @@
+/*
+ * SaveBar — sticky-bottom save/reset cluster.
+ *
+ * Locked class per SPEC §16.2:
+ *   .pmdk-save-bar
+ *
+ * Layout: full-width row inside whatever container the consumer provides
+ * (typical: a Card's CardFooter). Status pill on the left mirrors the
+ * store lifecycle; right cluster holds Reset (tertiary destructive) +
+ * Save (primary, dirty-gated).
+ */
+
+.pmdk-save-bar {
+	width: 100%;
+	padding: 12px 0;
+	min-height: 48px;
+	box-sizing: border-box;
+}
+
+.pmdk-save-bar__status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-save-bar__status.is-dirty {
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+.pmdk-save-bar__status.is-saved {
+	color: var( --pmdk-color-success, #00a32a );
+}
+
+.pmdk-save-bar__status.is-saved svg {
+	fill: currentColor;
+}
+
+.pmdk-save-bar__status.is-saving {
+	color: var( --pmdk-color-text-muted, #50575e );
+}

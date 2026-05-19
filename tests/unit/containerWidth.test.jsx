@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { act } from 'react-dom/test-utils';
+import { act } from 'react';
 
 // Tells React 18 we're in a test harness so `act()` actually batches +
 // flushes updates instead of warning that the env "is not configured".

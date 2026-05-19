@@ -615,9 +615,19 @@ Not a kit component — too consumer-specific in shape. Documented here as a **r
 
 ```jsx
 <SchemaForm
-  panels={SchemaPanel[]}
-  values={Record<string, unknown>}
+  panel={SchemaPanel}                       // single active panel; consumer
+                                            //  resolves "active" via routing
+  values={Record<string, unknown>}          // store.getSettings() — merged
   onFieldChange={(panelId, fieldId, value) => void}
+  fieldTypes={Record<string, ComponentType>} // BASE_FIELD_TYPES + consumer's
+                                            //  applyFilters extensions
+/>
+
+<SchemaField
+  field={SchemaField}
+  value={unknown}
+  onChange={(next: unknown) => void}
+  fieldTypes={Record<string, ComponentType>}
 />
 
 <SaveBar
@@ -625,21 +635,72 @@ Not a kit component — too consumer-specific in shape. Documented here as a **r
   isSaving={boolean}
   onSave={() => Promise<void>}
   onReset={() => Promise<void>}
-  saveLabel={string}        // already translated
-  resetLabel={string}
-  discardLabel={string}     // confirm message
+  labels={{                                 // SPEC §5.10b — English fallbacks
+    regionLabel?: string,                   //  shipped, consumer overrides
+    saveLabel?: string,
+    savingLabel?: string,
+    resetLabel?: string,
+    statusSaved?: string,
+    statusDirty?: string,
+    statusSaving?: string,
+  }}
 />
 
 createSettingsStore({
-  storeName: string,           // e.g. 'customify/settings'
-  endpoint: string,            // REST path, e.g. '/customify/v1/settings'
-  __: (text) => string,        // for error messages
-}): wpDataStoreDescriptor
+  storeName: string,                        // e.g. 'customify/settings'
+  endpoint: string,                         // REST path, e.g. '/customify/v1/settings'
+  fetch: ({ path, method?, data? }) => Promise<unknown>,
+                                            //  consumer-owned REST client
+                                            //  (SPEC §3.3 forbids kit from
+                                            //  importing @wordpress/api-fetch)
+  seedSaved?: Record<string, unknown>,      // optional initial 'saved' value
+                                            //  so first-mount renders synchronous
+                                            //  when boot.settings is populated
+}): { STORE_NAME: string, store: wpDataStoreDescriptor }
 
 useDirtyState(key: string, options?: {
-  onDiscard?: () => void,
-  beforeunloadMessage?: string,  // already translated; English fallback
+  onDiscard?: () => void,                   // typically wired to store.clearDirty
+  discardMessage?: string,                  // consumer-translated; English fallback
 }): { isDirty, setDirty, confirmDiscard }
+
+// Module-level helpers for the cross-tab navigation guard.
+// `mountDashboard` wires `confirmDiscardAny` as the default
+// NavigationGuard so tab-strip clicks honor unsaved edits without
+// consumer wiring.
+function isAnyDirty(): boolean;
+function confirmDiscardAny(): boolean;
+
+// Kit's built-in field-type registry. Consumer applies their own
+// {ns}.dashboard.settings.field-types filter on top before passing to
+// <SchemaForm fieldTypes={...}> — keeps the kit unaware of any
+// specific filter namespace.
+export const BASE_FIELD_TYPES: Record<'boolean'|'select'|'radio'|'text'|'number', ComponentType>;
+```
+
+Schema-panel shape:
+
+```ts
+type SchemaPanel = {
+  id: string;
+  label: string;                 // already translated
+  description?: string;          // already translated
+  fields?: SchemaField[];        // mutually exclusive with `component`
+  component?: ComponentType<{    // Pro full-panel takeover
+    panel: SchemaPanel;
+    values: Record<string, unknown>;
+    onFieldChange: (panelId: string, fieldId: string, value: unknown) => void;
+  }>;
+};
+
+type SchemaField = {
+  id: string;
+  label: string;                 // already translated
+  description?: string;          // already translated
+  type: 'boolean' | 'select' | 'radio' | 'text' | 'number' | string;
+  options?: { value: string; label: string }[];
+  min?: number; max?: number; step?: number;
+  pattern?: string; maxLength?: number;
+};
 ```
 
 ### 5.5 Welcome building blocks
@@ -1598,7 +1659,7 @@ Each phase below includes implementation + tests + review buffer. Estimates are 
 | **P1 — Core extract** | `mountDashboard`, `DashboardShell`, `TabStrip`, `HashRouter` (+ `NavigationGuardProvider` + `useFocusOnRouteChange`), `BootDataLoader`, `SnackbarSlot`, `HelpPanel`, `createFilterNamespace`, `createI18nBag`. **Absorbed from P2:** all Tier-1 layout primitives (`PageWrapper`, `ListPageHeader`, `EditorPageHeader`, `EditorViewLayout`, `SubNav`) since their CSS surface ships in the same locked §16.2 class table. Storybook stories for each shipped component. Unit tests for the pure-function surface (`matchRoute`, `activeTabId`, `createFilterNamespace`, `createI18nBag`, `readBoot`). Blocksify Free migration deferred to P8 (single cutover after Settings + Welcome + Datasets land) | 5 | 2 | 7 d |
 | **P1.5 — SPEC reconcile** | Amend §5.1, §5.2, §5.10b, §5.13, §9.1 against P1 implementation reality. Fix broken `./styles/tokens.css` export. Tighten `size-limit` to SPEC §17.10 budgets. Wire test consumer to `mountDashboard`. Seed CHANGELOG `[Unreleased]` | 0.5 | 0.5 | 1 d |
 | **P2 — PageWrapper containerWidth fix** | Harden `PageWrapper` flex chain to give DataViews's `useResizeObserver` a stable `containerWidth` (spike hack #3). Implement `mountDashboard.containerWidth` config (`'narrow' \| 'wide'`). Validate by mounting a DataViews-using test fixture | 1 | 1 | 2 d |
-| **P3 — Settings** | `SchemaForm`, `SchemaField`, `SaveBar`, `createSettingsStore`, `useDirtyState`. Tests for store action sequence (load → edit → save → reset → discard). Migrate Blocksify Free Settings tab | 3 | 2 | 5 d |
+| **P3 — Settings** | `SchemaForm` (single-panel), `SchemaField` (consumer-injected `fieldTypes` map), `SaveBar` (Tier-2 `labels` prop), `createSettingsStore({ storeName, endpoint, fetch, seedSaved? })`, `useDirtyState` (+ module-level `isAnyDirty` / `confirmDiscardAny`). `mountDashboard` wires `confirmDiscardAny` as the default `NavigationGuardProvider` guard. Tests cover the full store action sequence (load → edit → save → reset → clearDirty + error paths). Blocksify Free Settings tab migration deferred to P8 with the other consumer cutovers | 3 | 2 | 5 d |
 | **P4 — Welcome + Compare + Changelog** | `Hero`, `Checklist`, `ChecklistItem`, `createOnboardingStore`, `CompareTable`, `ReleaseBlock`. Migrate Blocksify Free Welcome / Free-vs-Pro / Changelog tabs | 3 | 1.5 | 4.5 d |
 | **P5 — Editor helpers** | `forceFullscreenMode`, `rewireBackButton`, `registerSubmenuActive` + PHP equivalents in composer package. Test on actual post.php edit flow | 2 | 1 | 3 d |
 | **P6 — Datasets** | `EntityListPage`, `EntityPreviewFrame`, `ViewPersistence`, `filterTrashByDefault`. Verify spike hacks #3, #4, #5 disappear with PageWrapper from P2. Verify DataViews CSS sideEffects override works (spike hack #2) | 4 | 2 | 6 d |

@@ -22,6 +22,8 @@ import { applyFilters } from '@wordpress/hooks';
 import DashboardShell from './DashboardShell';
 import { BootProvider, readBoot } from './BootDataLoader';
 import { createFilterNamespace } from './createFilterNamespace';
+import { NavigationGuardProvider } from './HashRouter';
+import { confirmDiscardAny } from '../settings/useDirtyState.js';
 
 /**
  * Normalize a tab entry to the shape `TabStrip` expects. Accepts a
@@ -112,23 +114,25 @@ export function mountDashboard( config ) {
 	const root = createRoot( node );
 	root.render(
 		<BootProvider boot={ boot }>
-			<DashboardShell
-				brand={ brand }
-				tabs={ tabs }
-				tabsAriaLabel={ tabsAriaLabel }
-				routes={ routes }
-				initialRoute={ initialRoute }
-				containerWidth={ containerWidth }
-				versionLabel={ filteredVersionLabel }
-				versionHref={ versionHref }
-				versionAriaLabel={ versionAriaLabel }
-				helpItems={ helpItems }
-				helpLabels={ helpLabels }
-				helpIcon={ helpIcon }
-				helpItemIcon={ helpItemIcon }
-				notFoundComponent={ notFoundComponent }
-				fallback={ fallback }
-			/>
+			<NavigationGuardProvider guard={ confirmDiscardAny }>
+				<DashboardShell
+					brand={ brand }
+					tabs={ tabs }
+					tabsAriaLabel={ tabsAriaLabel }
+					routes={ routes }
+					initialRoute={ initialRoute }
+					containerWidth={ containerWidth }
+					versionLabel={ filteredVersionLabel }
+					versionHref={ versionHref }
+					versionAriaLabel={ versionAriaLabel }
+					helpItems={ helpItems }
+					helpLabels={ helpLabels }
+					helpIcon={ helpIcon }
+					helpItemIcon={ helpItemIcon }
+					notFoundComponent={ notFoundComponent }
+					fallback={ fallback }
+				/>
+			</NavigationGuardProvider>
 		</BootProvider>,
 	);
 

@@ -40,6 +40,48 @@ public API per the deprecation cycle in §12.2.
   - `@wordpress/dataviews` added as devDependency for the validation story.
   - Tests: 4 new containerWidth tests (defaults to narrow, sets wide, sanitizes unknown values, resolves rootEl via selector string).
   - Rename batch (P2-driven follow-up to P1.5's HashRouter/BootDataLoader rename): every remaining JSX-containing module in `src/core/` + `src/layouts/*` moves from `.js` to `.jsx` so vitest can parse them without per-file loader hints. Webpack's `resolve.extensions` already includes `.jsx`; internal imports are extension-less; `src/index.mjs` switches to extension-less re-exports. No public API surface change.
+- **P3 — Settings** ported + i18n-cleaned from Blocksify Free:
+  - `createSettingsStore({ storeName, endpoint, fetch, seedSaved? })` —
+    `@wordpress/data` store factory with the locked action sequence
+    `load → edit → save → reset → clearDirty`. Consumer injects the
+    REST `fetch` callable (SPEC §3.3 forbids the kit from importing
+    `@wordpress/api-fetch`); `seedSaved` lets the first mount render
+    synchronously when boot data carries the settings.
+  - `useDirtyState(key, options?)` — registry-backed hook with
+    `beforeunload` listener, `confirmDiscard()` for intra-tab checks,
+    module-level `isAnyDirty()` + `confirmDiscardAny()` for cross-tab
+    nav guard.
+  - `mountDashboard` now wires `confirmDiscardAny` as the default
+    `NavigationGuardProvider` guard. Consumers using `useDirtyState`
+    get tab-strip + version-anchor unsaved-edit prompts for free; no
+    explicit guard wiring required.
+  - `<SchemaForm>` — single-panel Tier-1 renderer (consumer resolves
+    "active panel" externally via SubNav + routing). Pro full-takeover
+    via `panel.component` is supported.
+  - `<SchemaField>` — dispatches on `field.type` against a
+    consumer-supplied `fieldTypes` map. Kit exports `BASE_FIELD_TYPES`
+    (boolean / select / radio / text / number); consumer extends with
+    their `{ns}.dashboard.settings.field-types` filter and passes the
+    resolved map down — keeps the kit unaware of any specific filter
+    namespace.
+  - `<SaveBar>` — Tier-2 page component with the locked CSS class
+    `.pmdk-save-bar`. Status pill mirrors the store lifecycle
+    (saving / dirty / saved); right cluster is dirty-gated Save + Reset.
+    Every visible string ships via the `labels` prop with English
+    fallbacks per SPEC §5.10b.
+  - SPEC §5.4 amended against implementation reality: documents
+    single-panel `<SchemaForm>`, `labels` object pattern for
+    `<SaveBar>`, `fetch` callable instead of `__` for
+    `createSettingsStore`, `discardMessage` instead of
+    `beforeunloadMessage` for `useDirtyState`. SchemaPanel +
+    SchemaField type aliases added.
+  - 22 new tests: full store action sequence (load/edit/save/reset/
+    clearDirty + error paths), useDirtyState registry semantics +
+    cross-tab guard behavior. Total: 47 / 47 passing.
+  - Storybook: 4 SaveBar stories (Clean / Dirty / Saving / Custom
+    labels) + 2 SchemaForm stories (SchemaDriven covers every
+    built-in field type, ProTakeover demonstrates the `component`
+    branch).
 
 ### Fixed
 

@@ -57,6 +57,22 @@ export { default as EditorViewLayout } from './layouts/EditorViewLayout';
 export { default as SubNav } from './layouts/SubNav';
 
 /* ------------------------------------------------------------------------
+ * Settings — schema-driven form + REST-backed @wordpress/data store
+ * (SPEC §5.4). All Tier-1 / Tier-2 components accept text via props +
+ * labels; no kit-side translatable strings.
+ * ------------------------------------------------------------------------ */
+export { createSettingsStore } from './settings/createSettingsStore.js';
+export {
+	useDirtyState,
+	isAnyDirty,
+	confirmDiscardAny,
+} from './settings/useDirtyState.js';
+export { default as SchemaForm, panelHeadingId } from './settings/SchemaForm.jsx';
+export { default as SchemaField } from './settings/SchemaField.jsx';
+export { default as SaveBar } from './settings/SaveBar.jsx';
+export { BASE_FIELD_TYPES } from './settings/fieldTypes.jsx';
+
+/* ------------------------------------------------------------------------
  * Version stamp — flipped via release tooling once 0.1.0 ships.
  * ------------------------------------------------------------------------ */
 export const __KIT_VERSION__ = '0.0.0';
