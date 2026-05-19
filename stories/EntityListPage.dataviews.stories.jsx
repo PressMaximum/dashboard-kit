@@ -26,6 +26,13 @@ import { EntityListPage } from '../src/datasets/index.mjs';
 
 import '../src/core/DashboardShell.css';
 
+// See note in `PageWrapper.dataviews.stories.jsx`: DataViews owns its
+// own grid stylesheet and the validation fixture must import it
+// explicitly. Without this line the grid template falls back to
+// `none`, every card stacks one-per-row, and the story falsely
+// reproduces the spike's `containerWidth: 0` failure mode.
+import '@wordpress/dataviews/build-style/style.css';
+
 const ITEMS = Array.from( { length: 24 }, ( _, i ) => ( {
 	id: i + 1,
 	title: `Template ${ i + 1 }`,

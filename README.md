@@ -2,7 +2,7 @@
 
 > Reusable WordPress admin dashboard SPA infrastructure — hash router, tab strip, settings form, welcome onboarding, list views, fullscreen-editor handoff. Distilled from the Blocksify Free dashboard.
 
-**Status**: 0.0.0 — P0–P4 landed (core + layouts + settings + welcome + compare + changelog). P5 (editor helpers), P6 (datasets), P7 (PHP composer), P8 (consumer migration), P9 (release) still to go. See [docs/SPEC.md](docs/SPEC.md) §13 for the full phase plan, [CHANGELOG.md](CHANGELOG.md) for what's shipped.
+**Status**: 0.0.0 — P0–P6 landed (core + layouts + settings + welcome + compare + changelog + editor helpers + datasets). P7 (PHP composer package), P8 (Blocksify Free Surfaces migration), P9 (documentation + 0.1.0 release) still to go. See [docs/SPEC.md](docs/SPEC.md) §13 for the full phase plan, [CHANGELOG.md](CHANGELOG.md) for what's shipped.
 
 ---
 

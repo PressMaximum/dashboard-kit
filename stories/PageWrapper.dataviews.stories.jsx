@@ -33,6 +33,18 @@ import { PageWrapper, ListPageHeader } from '../src/index.mjs';
 // flex chain a real mount would apply.
 import '../src/core/DashboardShell.css';
 
+// `@wordpress/dataviews` ships its own stylesheet — it owns the
+// `.dataviews-view-grid { display: grid; grid-template-columns: repeat(
+// auto-fill, minmax(var(--dataviews-grid-min-card-width), 1fr) ) }` rule
+// that turns the rendered grid into a multi-column layout. In a real WP
+// admin this CSS auto-enqueues via wp-scripts; in Storybook (and in
+// consumer builds that don't run wp-scripts) you have to import it
+// explicitly. Without it the grid template falls back to `none` and
+// every record stacks one card per row — looks exactly like the spike's
+// failed `containerWidth: 0` symptom and would falsely fail this
+// validation fixture.
+import '@wordpress/dataviews/build-style/style.css';
+
 const ITEMS = Array.from( { length: 18 }, ( _, i ) => ( {
 	id: i + 1,
 	title: `Surface ${ i + 1 }`,
