@@ -46,8 +46,16 @@ export default {
 	 * some stories) still write JSX in `.js` — wp-scripts / Blocksify
 	 * convention. Vite's esbuild pre-bundler defaults to plain-JS for
 	 * `.js`, so tell it to use the JSX loader for any `.js` / `.jsx`
-	 * file under `src/**` (and overshoot the loader map so dep-bundling
-	 * doesn't choke either). Harmless on real `.jsx` files.
+	 * file under `src/**` OR `stories/**` (and overshoot the loader map
+	 * so dep-bundling doesn't choke either).
+	 *
+	 * The `include` regex MUST cover `stories/**` — Vite's default esbuild
+	 * plugin handles `.jsx` files by extension out of the box, but setting
+	 * a top-level `esbuild` config REPLACES the default, so files outside
+	 * the regex stop being JSX-transformed entirely. Without `stories/`
+	 * in the include, `storybook:inject-export-order-plugin` (a `post`-
+	 * enforce plugin that calls `es-module-lexer.parse` on the file)
+	 * receives raw JSX and crashes with "Parse error @:N:M".
 	 */
 	async viteFinal( config ) {
 		return {
@@ -65,7 +73,12 @@ export default {
 			esbuild: {
 				...( config.esbuild || {} ),
 				loader: 'jsx',
-				include: /\/src\/.*\.(?:js|jsx)$/,
+				// `automatic` runtime so stories + src don't need a
+				// stray `import React from 'react'` line at the top.
+				// Mirrors `vitest.config.js` (and the wp-scripts default).
+				jsx: 'automatic',
+				jsxImportSource: 'react',
+				include: /\/(?:src|stories)\/.*\.(?:js|jsx)$/,
 			},
 		};
 	},
