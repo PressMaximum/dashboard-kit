@@ -263,6 +263,103 @@ public API per the deprecation cycle in §12.2.
     `@wordpress/components` externalize to `wp.dataviews` /
     `wp.components` globals — the kit ships only its own wrapper +
     component CSS).
+- **P7 — PHP composer package**. PHP half of the kit, distributed via
+  Packagist under `pressmaximum/dashboard-kit`. PSR-4 namespace
+  `PressMaximum\DashboardKit\`. PHP 7.4+ minimum.
+  - `Bootstrap` — version-marker class (`Bootstrap::VERSION`),
+    composer autoload anchor; registers nothing on its own.
+  - `Boot::register([...])` — one-call chassis wiring. Hooks
+    `admin_menu` (calls `add_menu_page` with caller's slug + title +
+    icon + capability + position), `admin_enqueue_scripts` (delegates
+    to `AssetEnqueue::enqueueOn` scoped to the resulting page hook),
+    and `admin_body_class` (adds a `{slug}-dashboard-page` class on
+    the dashboard screen). Consumers wanting fine-grained control
+    skip `Boot` and call the helpers directly per SPEC §8.1.
+  - `Admin\AssetEnqueue::enqueueOn($hook, $config)` — wraps
+    `wp_enqueue_script` + `wp_set_script_translations` +
+    `wp_localize_script` + `wp_enqueue_style`. Reads the `*.asset.php`
+    manifest when present for `dependencies` + `version` (the file
+    `@wordpress/scripts` emits); falls back to caller-supplied
+    `deps` / `version`. Short-circuits when `page_hook` is set and the
+    current admin hook doesn't match.
+  - `Admin\MenuHelpers` — three statics:
+    - `addHashSubmenu([...])` registers a hash-routed submenu entry
+      via `add_submenu_page` with the menu URL ending in `#hash`. `#`
+      prefix is automatically added if the caller omits it.
+    - `relabelParentMirror([...])` rewrites the auto-mirrored parent
+      submenu entry's label (typical use: rename "Plugin Name" to
+      "Welcome" since the dashboard's first tab is hash-routed).
+    - `printSubmenuActiveSync([...])` emits an inline `<script>` that
+      keeps `.current` synced with the SPA hash route on the WP admin
+      submenu DOM. PHP equivalent of P5's `registerSubmenuActive` JS
+      helper — pick one path or the other per consumer.
+  - `Admin\EditorIntegration` — PHP wrappers around P5's
+    `forceFullscreenMode` + `rewireBackButton` JS helpers. Both
+    register an `enqueue_block_editor_assets` action that emits an
+    inline IIFE on the configured post type's editor screen. Use
+    these when the consumer doesn't have a separate editor JS bundle;
+    consumers with one should import from
+    `@pressmaximum/dashboard-kit/editor-helpers` directly instead.
+  - `REST\PreviewEndpointRegistrar::register([...])` — factory for the
+    `?{query_var}={id}` preview-iframe pattern. Registers
+    `query_vars` filter + `template_redirect` action that intercepts
+    matching requests, sets up a singular `WP_Query`, suppresses
+    admin chrome, and emits a minimal HTML document where every
+    plugin's `wp_head()` enqueue chain fires naturally (so theme +
+    plugin CSS arrives without spike-side vendor curation). Ported
+    from the Surfaces spike with the spike-specific bits parameterised
+    (post type, query var, capability, viewport width, body class,
+    shell CSS).
+  - `REST\SettingsControllerBase` — abstract `WP_REST_Controller`
+    subclass with the locked GET/POST flow:
+    - `register_routes()` registers both routes under
+      `{namespace}/{rest_base}` with the controller's
+      `permission_check` (delegating to `current_user_can`).
+    - `get_item()` returns the option deep-merged over defaults +
+      re-sanitised on read (legacy invalid values never reach the
+      client).
+    - `update_item()` reads JSON / form body, sanitises, persists,
+      and returns the saved shape. Empty body resets to defaults.
+    Subclasses provide `getNamespace`, `getRestBase`, `getCapability`,
+    `getOptionName`, `getDefaults`, and optionally override
+    `sanitizeIncoming` (typically delegating to
+    `SchemaBuilder::sanitize`).
+  - `Schema\SchemaBuilder::create()` — fluent declarator. Single
+    declaration produces three artifacts via `buildDefaults()`,
+    `buildSchema()`, `sanitize($body)`. Field-type registry (`boolean`,
+    `select`, `radio`, `number`, `text`) mirrors the spike's
+    coerce-on-read semantics — booleans cast, enums whitelisted,
+    numbers clamped to `min/max`, invalid values fall back to the
+    field default. Re-opening a panel by the same id appends fields
+    (Pro plugins extending Free).
+  - PHPUnit scaffold (`phpunit.xml.dist` + `tests/php/bootstrap.php`).
+    Bootstrap defines minimal WP function + class stubs
+    (`add_action`, `add_filter`, `add_menu_page`,
+    `add_submenu_page`, `wp_enqueue_*`, `wp_add_inline_script`,
+    `wp_json_encode`, `get_option`, `update_option`,
+    `register_rest_route`, `WP_REST_Server`, `WP_REST_Controller`,
+    `WP_REST_Request`, `current_user_can`, `sanitize_text_field`)
+    that record calls into `$GLOBALS['pmdk_test_state']` arrays. Each
+    test resets via `pmdk_test_reset()` in `setUp`. End-to-end
+    `wp_die` + full `WP_Query` lifecycle tests are deferred to a
+    post-1.0 `wp-env` integration scaffold.
+  - 6 test files: SchemaBuilder (11 cases covering pure logic of
+    buildDefaults / buildSchema / sanitize / argument validation),
+    MenuHelpers (7 covering submenu page args, hash-prefix
+    normalisation, parent-mirror rewrite, inline-script content
+    + a11y fallback), EditorIntegration (7 covering hook
+    registration + closure behaviour with stubbed
+    `get_current_screen` + screen mismatch silence), AssetEnqueue
+    (9 covering happy path, page-hook short-circuit, lazy boot-data
+    callable, style-deps override, etc.), SettingsControllerBase (5
+    covering route registration + GET merge + POST sanitize + empty
+    body + capability gate, using a tiny `FixtureSettingsController`
+    subclass), PreviewEndpointRegistrar (4 covering register-wires-
+    filter-and-action smoke + query_vars-filter-tolerates-non-array).
+  - `composer.json` adds `scripts.test` for `phpunit` shortcut.
+  - CI: `.github/workflows/ci.yml` `php` job gains a final
+    `composer test` step (was: lint + install only).
+  - SPEC §13 P7 row expanded with the helper-level scope reality.
 
 ### Fixed
 

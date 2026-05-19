@@ -70,3 +70,6 @@ jobs:
 
       - name: Install composer deps
         run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Run PHPUnit
+        run: composer test

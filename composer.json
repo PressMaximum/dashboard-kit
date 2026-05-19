@@ -36,6 +36,10 @@
       "PressMaximum\\DashboardKit\\Tests\\": "tests/php/"
     }
   },
+  "scripts": {
+    "test": "phpunit",
+    "test:coverage": "phpunit --coverage-text"
+  },
   "config": {
     "optimize-autoloader": true,
     "sort-packages": true
