@@ -69,10 +69,18 @@ function ChangelogPage( { params } ) {
 	);
 }
 
+// Flip this to `'wide'` to exercise the P2 DataViews-friendly chain in
+// a real WP admin (full viewport, 24px vertical padding). Default is
+// `'narrow'` (1100px reading column) so the smoke run also covers the
+// path that Welcome / Settings / Changelog tabs use in production.
+// Real DataViews validation lands with P6 EntityListPage.
+const CONTAINER_WIDTH = 'narrow';
+
 mountDashboard( {
 	rootEl: '#pmdk-test-dashboard',
 	bootGlobal: 'pmdkTestDashboard',
 	filterNamespace: 'pmdk-test',
+	containerWidth: CONTAINER_WIDTH,
 	// SPEC §5.1: `__` is recommended; becomes required at P3 when Tier-2
 	// default labels consume it. P1 ignores it, so the test-consumer
 	// omits the wrapper for now.

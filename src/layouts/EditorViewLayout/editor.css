@@ -1,6 +1,13 @@
 /*
  * Locked class per SPEC §16.2:
  *   .pmdk-editor-view-layout
+ *
+ * Intent: form-style editors (CPT meta forms with a left rail of panel
+ * groups + a right rail of save/help). NOT a DataViews container —
+ * `__main` is a CSS Grid track, not a flex column, so the PageWrapper
+ * `flex-grow:1 / min-height:0` chain stops here. DataViews-using lists
+ * should be rendered directly under `<PageWrapper>`, not inside
+ * `<EditorViewLayout main={...}>`. See SPEC §11 hack #3.
  */
 
 .pmdk-editor-view-layout {
