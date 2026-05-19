@@ -4,6 +4,21 @@
 
 **Status**: 0.0.0 — P0–P6 landed (core + layouts + settings + welcome + compare + changelog + editor helpers + datasets). P7 (PHP composer package), P8 (Blocksify Free Surfaces migration), P9 (documentation + 0.1.0 release) still to go. See [docs/SPEC.md](docs/SPEC.md) §13 for the full phase plan, [CHANGELOG.md](CHANGELOG.md) for what's shipped.
 
+## Reading map for new consumers
+
+The kit's full SPEC is long (2000+ lines) — most consumers only need three or four sections. Pick the row that matches your shape and read in this order:
+
+| Your consumer | Read first | Then |
+|---|---|---|
+| **Lightweight theme** (Welcome + Settings only, no DataViews) | [§10.1 Customify Theme recipe](docs/SPEC.md#101-customify-theme-lightweight-no-dataviews) — ~30 lines of the consumer JS + ~30 of PHP | [§8 Bootstrap pattern](docs/SPEC.md#8-bootstrap-pattern), [§5.1 `mountDashboard` config](docs/SPEC.md#51-mountdashboardconfig) |
+| **Full plugin** (Welcome + Settings + Changelog + DataViews lists) | [§10.2 Blocksify Free recipe](docs/SPEC.md#102-blocksify-free-full-plugin-dashboard) | [§8 Bootstrap pattern](docs/SPEC.md#8-bootstrap-pattern), [§5 full API](docs/SPEC.md#5-public-api) |
+| **Pro plugin extending a Free consumer** | [§10.3 Blocksify Pro extends Blocksify Free](docs/SPEC.md#103-blocksify-pro-extends-blocksify-free) | [§9 Filter hook contracts](docs/SPEC.md#9-filter-hook-contracts), [§5.2 `createFilterNamespace`](docs/SPEC.md#52-createfilternamespaceprefix) |
+| **Standalone dashboard** (own admin page, no host consumer) | [§10.4 Future plugin recipe](docs/SPEC.md#104-future-plugin-standalone-dashboard-full-features) | Same as the matching shape above (lightweight or full) |
+
+Before you integrate: skim [KIT_ISSUES.md](KIT_ISSUES.md). It tracks known bugs in the kit's public surface plus the workarounds existing consumers ship. The list is short, but catching a current bug there saves debugging time.
+
+After integration: [§16 Theming guide](docs/SPEC.md#16-theming-guide-consumer-reference) for the CSS-token + locked-class surface you can target.
+
 ---
 
 ## What this is
