@@ -12,34 +12,40 @@
  * so the kit doesn't constrain dimensions — only its container.
  */
 
+/* Visual distilled from WP's `about.php` hero pattern (light-gray card,
+   generous padding, large title). KIT_ISSUES K-003 — the earlier
+   white-with-border treatment lost the about.php-like feel the kit
+   was originally designed for. */
 .pmdk-hero {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	gap: 32px;
-	padding: 32px;
+	padding: 48px;
 	margin: 0 0 24px;
-	background: var( --pmdk-color-bg, #fff );
-	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
-	border-radius: var( --pmdk-radius-small, 4px );
+	background: #ececec;
+	border: 0;
+	border-radius: 8px;
 }
 
 .pmdk-hero__content {
 	flex: 1 1 auto;
 	min-width: 0;
+	max-width: 560px;
 }
 
 .pmdk-hero__title {
-	margin: 0 0 8px;
-	font-size: 24px;
+	margin: 0;
+	font-size: 28px;
 	font-weight: 600;
-	line-height: 1.25;
+	line-height: 1.3;
 	color: var( --pmdk-color-text, #1e1e1e );
 }
 
 .pmdk-hero__tagline {
-	margin: 0 0 16px;
-	font-size: 14px;
+	margin: 8px 0 24px;
+	max-width: 56ch;
+	font-size: 15px;
 	line-height: 1.5;
 	color: var( --pmdk-color-text-muted, #50575e );
 }

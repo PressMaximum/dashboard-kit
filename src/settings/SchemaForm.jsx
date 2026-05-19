@@ -26,6 +26,8 @@
 
 import SchemaField from './SchemaField.jsx';
 
+import './SchemaForm.css';
+
 function getAtPath( target, group, key ) {
 	if ( ! target || typeof target !== 'object' ) {
 		return undefined;

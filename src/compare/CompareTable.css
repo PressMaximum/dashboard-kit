@@ -19,25 +19,31 @@
 	overflow: hidden;
 }
 
+/* Head row + each body row share the grid + per-row padding so feature
+   labels + check cells sit on the same gutter. KIT_ISSUES K-004 — the
+   earlier "padding on cells, not on rows" pattern dropped consistent
+   inset and made section-title rows read as bare text instead of a
+   tinted band. */
 .pmdk-compare__head,
 .pmdk-compare__row {
 	display: grid;
 	grid-template-columns: 2fr 1fr 1fr;
 	align-items: center;
+	gap: 16px;
+	padding: 14px 24px;
 }
 
 .pmdk-compare__head {
-	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	background: #fafafa;
 	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
 }
 
 .pmdk-compare__head-cell {
-	padding: 12px 24px;
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 600;
 	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: var( --pmdk-color-text-muted, #50575e );
+	letter-spacing: 0.08em;
+	color: var( --pmdk-color-text-muted, #757575 );
 }
 
 .pmdk-compare__head-cell--center {
@@ -49,32 +55,44 @@
 }
 
 .pmdk-compare__section {
-	border-bottom: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
+	margin: 0;
 }
 
-.pmdk-compare__section:last-child {
-	border-bottom: 0;
-}
-
+/* Tinted section-title row — full-width band flush with the card's left
+   + right edges. Padding matches the row inset above so the section
+   label aligns with the feature labels in the rows below. */
 .pmdk-compare__section-title {
 	margin: 0;
-	padding: 16px 24px 8px;
-	font-size: 13px;
-	font-weight: 600;
+	padding: 12px 24px;
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	border-top: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 	color: var( --pmdk-color-text, #1e1e1e );
 }
 
+.pmdk-compare__section:first-of-type .pmdk-compare__section-title {
+	border-top: 0;
+}
+
+.pmdk-compare__rows {
+	display: flex;
+	flex-direction: column;
+}
+
 .pmdk-compare__row {
-	padding: 8px 0;
 	border-top: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
 }
 
-.pmdk-compare__row:first-of-type {
+/* First row of each section sits flush below the tinted title — no top
+   hairline (the title's bottom edge already separates them). */
+.pmdk-compare__section .pmdk-compare__row:first-child {
 	border-top: 0;
 }
 
 .pmdk-compare__feature {
-	padding: 0 24px;
 	font-size: 14px;
 	color: var( --pmdk-color-text, #1e1e1e );
 }
@@ -120,13 +138,17 @@
 	color: var( --pmdk-color-text-muted, #50575e );
 }
 
+/* Internal CTA banner — lives at the bottom of the compare card so the
+   upgrade trigger stays attached to the matrix it summarizes. Cream bg
+   + yellow hairline matches WP's standard about.php highlight band. */
 .pmdk-compare__cta {
 	display: flex;
 	align-items: center;
 	gap: 24px;
-	padding: 20px 24px;
-	background: #fdf8ee;
-	border-top: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	padding: 24px;
+	background: #fffbf0;
+	border-top: 1px solid #f0d57c;
+	flex-wrap: wrap;
 }
 
 .pmdk-compare__cta-text {

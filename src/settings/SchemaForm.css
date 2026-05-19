@@ -1,0 +1,17 @@
+/*
+ * SchemaForm — vertical field stack.
+ *
+ * Tier-1 layout primitive (SPEC §5.13). Provides the per-field spacing
+ * `@wordpress/components` Toggle/Select/Range fields don't ship on their
+ * own. Without this rule consumers re-add their own
+ * `.consumer-settings__fields { gap: ... }` wrapper. KIT_ISSUES K-005.
+ *
+ * Locked class per SPEC §16.2: `.pmdk-schema-form` is part of the
+ * public CSS surface from 1.0 onward.
+ */
+
+.pmdk-schema-form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}

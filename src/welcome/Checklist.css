@@ -13,10 +13,14 @@
  * to the green check.
  */
 
+/* No chrome on the kit container — the `<Checklist>` component owns the
+   semantic `<section>` + a11y label, but the visible card chrome
+   (border, background, radius, heading) is composed by the consumer
+   around it. Avoids double-card visuals when consumers wrap kit's
+   `<Checklist>` in `<Card><CardHeader/><CardBody>` so the "Get set up"
+   heading + the list read as a single panel. KIT_ISSUES K-002. */
 .pmdk-checklist {
-	background: var( --pmdk-color-bg, #fff );
-	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
-	border-radius: var( --pmdk-radius-small, 4px );
+	/* layout-only — no border / background / radius. */
 }
 
 .pmdk-checklist__list {

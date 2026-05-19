@@ -8,8 +8,11 @@
  */
 
 :root {
-	/* Accent / brand */
-	--pmdk-color-accent: var( --wp-admin-theme-color, #3858e9 );
+	/* Accent RGB triplet — used by color-mix fallbacks that don't depend
+	   on the cascade level the WP scheme is written at. The accent token
+	   itself (`--pmdk-color-accent`) is declared at `body.wp-admin` +
+	   `.pmdk-dashboard` scopes below so it sees the body-level
+	   `--wp-admin-theme-color`. See KIT_ISSUES K-001 for history. */
 	--pmdk-color-accent-rgb: 56, 88, 233;
 
 	/* Text */
@@ -41,4 +44,26 @@
 	--pmdk-header-gutter: 24px;
 	--pmdk-tab-padding-y: 16px;
 	--pmdk-tab-padding-x: 18px;
+}
+
+/*
+ * `--pmdk-color-accent` MUST be declared at a cascade level that sees the
+ * body-level `--wp-admin-theme-color` (WordPress 5.7+ writes the
+ * authoritative scheme accent on `body.wp-admin`). Declaring at `:root`
+ * would resolve `--wp-admin-theme-color` once at the root cascade level
+ * and freeze the value — defeats the entire reason for the indirection.
+ *
+ * Two scopes cover the deployment matrix:
+ *   - `body.wp-admin` — production WordPress admin pages.
+ *   - `.pmdk-dashboard` — Storybook + standalone test pages without
+ *     `body.wp-admin`; the chassis class is always present when the
+ *     kit's `<DashboardShell>` mounts.
+ *
+ * Theming consumers that override `--pmdk-color-accent` at `:root`,
+ * `body.wp-admin`, or `.pmdk-dashboard` keep working — their override
+ * wins on standard cascade specificity + source-order rules.
+ */
+body.wp-admin,
+.pmdk-dashboard {
+	--pmdk-color-accent: var( --wp-admin-theme-color, #3858e9 );
 }
