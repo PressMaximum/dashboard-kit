@@ -1,0 +1,146 @@
+/*
+ * CompareTable — Free vs Pro matrix.
+ *
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-compare
+ *   .pmdk-compare__row
+ *   .pmdk-compare__check-yes
+ *   .pmdk-compare__check-no
+ *
+ * Grid template: 2fr / 1fr / 1fr — feature label gets the largest
+ * track so long copy doesn't truncate; the two check columns are
+ * symmetric. Header sticks at the top of the card.
+ */
+
+.pmdk-compare {
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var( --pmdk-radius-small, 4px );
+	overflow: hidden;
+}
+
+.pmdk-compare__head,
+.pmdk-compare__row {
+	display: grid;
+	grid-template-columns: 2fr 1fr 1fr;
+	align-items: center;
+}
+
+.pmdk-compare__head {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+.pmdk-compare__head-cell {
+	padding: 12px 24px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-compare__head-cell--center {
+	text-align: center;
+}
+
+.pmdk-compare__head-cell--pro {
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+.pmdk-compare__section {
+	border-bottom: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
+}
+
+.pmdk-compare__section:last-child {
+	border-bottom: 0;
+}
+
+.pmdk-compare__section-title {
+	margin: 0;
+	padding: 16px 24px 8px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-compare__row {
+	padding: 8px 0;
+	border-top: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
+}
+
+.pmdk-compare__row:first-of-type {
+	border-top: 0;
+}
+
+.pmdk-compare__feature {
+	padding: 0 24px;
+	font-size: 14px;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-compare__cell-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.pmdk-compare__check-yes,
+.pmdk-compare__check-no {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 9999px;
+	font-size: 14px;
+	line-height: 1;
+}
+
+.pmdk-compare__check-yes {
+	background: var( --pmdk-color-success, #00a32a );
+	color: #fff;
+}
+
+.pmdk-compare__check-yes svg {
+	fill: currentColor;
+}
+
+.pmdk-compare__check-no {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-compare__text {
+	font-size: 14px;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-compare__text.is-muted {
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-compare__cta {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	padding: 20px 24px;
+	background: #fdf8ee;
+	border-top: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+.pmdk-compare__cta-text {
+	flex: 1 1 auto;
+}
+
+.pmdk-compare__cta-title {
+	margin: 0 0 4px;
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.pmdk-compare__cta-description {
+	margin: 0;
+	font-size: 13px;
+	color: var( --pmdk-color-text-muted, #50575e );
+}

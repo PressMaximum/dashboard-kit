@@ -82,6 +82,60 @@ public API per the deprecation cycle in §12.2.
     labels) + 2 SchemaForm stories (SchemaDriven covers every
     built-in field type, ProTakeover demonstrates the `component`
     branch).
+- **P4 — Welcome + Compare + Changelog** ported + i18n-cleaned from
+  Blocksify Free:
+  - `<Hero>` — Tier-2 Welcome intro card. `greeting`, optional
+    `tagline`, optional `primaryCta`, optional `illustration` slot. 2-col
+    flex collapsing to single column under 800px. Locked CSS class
+    `.pmdk-hero`.
+  - `<Checklist>` + `<ChecklistItem>` — Tier-2 onboarding tasks list.
+    Each row runs `item.check()` async with a session-scoped cache so
+    repeat visits to Welcome render flash-free. The kit DOES NOT read
+    the consumer's onboarding store directly — consumer threads
+    `item.manualCompleted` into the item shape, keeping the kit
+    unaware of which store name was registered. Internal `#hash`
+    CTAs SPA-navigate via the router; external URLs are plain
+    anchors. Locked CSS classes per SPEC §16.2.
+  - `createOnboardingStore({ storeName, endpoint, fetch })` — full
+    action surface (`load`, `complete`, `uncomplete`, `dismiss`).
+    Mutators are optimistic with rollback on PATCH failure. GET
+    returns `{ completed, dismissed }`; PATCH accepts partials of the
+    same shape. Same `fetch`-injected REST pattern as
+    `createSettingsStore` (SPEC §3.3 forbids `@wordpress/api-fetch`
+    import).
+  - `<CompareTable>` — Tier-2 Free vs Pro matrix. CSS-grid (not
+    `<table>`) so wp-admin table styles don't fight the layout. Cell
+    dispatch on shape: `true` → green check badge; `false`/`null`/
+    `undefined` → gray em-dash badge; `string` → literal; `{ value,
+    muted }` → muted-variant text. Optional `footer` renders an
+    in-card CTA banner. Locked CSS classes per SPEC §16.2.
+  - `<ReleaseBlock>` — Tier-2 release card with version header
+    (+ optional `Current` pill), date, and items list. Each item
+    pairs a `<CategoryBadge>` with text.
+  - `<CategoryBadge>` — small uppercase pill, color via CSS modifier
+    classes per tone (`pmdk-category-badge--new`, `--fixed`,
+    `--security`, etc.). Ships 13 default category → label mappings +
+    a category → tone map; consumer extends via `labels` /
+    `toneOverrides` props. Unknown categories render with the
+    uppercased raw category text and the `neutral` tone — drift-
+    tolerant display.
+  - SPEC §5.3b amended: CompareTable label keys reconciled with the
+    implementation (`headFeature` / `headFree` / `headPro` / `cellYes` /
+    `cellNo` instead of the original `headColumn*` / `*Label` shape).
+    ReleaseBlock gains `categoryToneOverrides` prop. Cell-dispatch
+    behavior documented.
+  - SPEC §5.5 amended: ChecklistItem type alias added; `createOnboardingStore`
+    documented with the `fetch` callable + full action surface;
+    `manualCompleted` integration pattern documented as the consumer's
+    bridge to their own onboarding store.
+  - 14 new tests: 9 onboarding store action sequence (load,
+    complete/uncomplete with rollback, dismiss with rollback) +
+    5 CategoryBadge label/tone resolution. Total: 61 / 61 passing.
+  - Storybook: 3 Hero stories (WithEverything / GreetingOnly /
+    WithoutIllustration) + 3 Checklist stories (Default / AllCompleted /
+    Empty) + 3 CompareTable stories (Default / WithFooterCta /
+    LocalizedLabels) + 3 ReleaseBlock stories (Current / Prior /
+    LocalizedCategoryLabels).
 
 ### Fixed
 

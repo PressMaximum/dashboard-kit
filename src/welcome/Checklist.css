@@ -1,0 +1,96 @@
+/*
+ * Checklist — Welcome onboarding tasks list.
+ *
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-checklist
+ *   .pmdk-checklist__item
+ *   .pmdk-checklist__status
+ *   .pmdk-checklist__cta
+ *
+ * Each row is a flex layout: status indicator (left, 32px reserved),
+ * body (label + description, flex 1), CTA button (right, auto).
+ * Completed rows get the `.is-complete` modifier; the indicator swaps
+ * to the green check.
+ */
+
+.pmdk-checklist {
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var( --pmdk-radius-small, 4px );
+}
+
+.pmdk-checklist__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.pmdk-checklist__item {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 24px;
+	border-bottom: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
+}
+
+.pmdk-checklist__item:last-child {
+	border-bottom: 0;
+}
+
+.pmdk-checklist__status {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 28px;
+	border-radius: 9999px;
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-checklist__item.is-complete .pmdk-checklist__status {
+	background: var( --pmdk-color-success, #00a32a );
+	color: #fff;
+}
+
+.pmdk-checklist__status svg {
+	fill: currentColor;
+}
+
+.pmdk-checklist__bullet {
+	display: block;
+	width: 8px;
+	height: 8px;
+	border-radius: 9999px;
+	background: currentColor;
+	opacity: 0.5;
+}
+
+.pmdk-checklist__body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.pmdk-checklist__label {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-checklist__item.is-complete .pmdk-checklist__label {
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-checklist__description {
+	margin: 4px 0 0;
+	font-size: 13px;
+	line-height: 1.45;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-checklist__cta {
+	flex: 0 0 auto;
+}

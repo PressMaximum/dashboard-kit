@@ -73,6 +73,27 @@ export { default as SaveBar } from './settings/SaveBar.jsx';
 export { BASE_FIELD_TYPES } from './settings/fieldTypes.jsx';
 
 /* ------------------------------------------------------------------------
+ * Welcome — hero card, onboarding checklist, user-meta-backed store.
+ * SPEC §5.5. Tier-2 page components: every string ships via props /
+ * labels with English fallbacks.
+ * ------------------------------------------------------------------------ */
+export { default as Hero } from './welcome/Hero.jsx';
+export { default as Checklist } from './welcome/Checklist.jsx';
+export { default as ChecklistItem } from './welcome/ChecklistItem.jsx';
+export { createOnboardingStore } from './welcome/createOnboardingStore.js';
+
+/* ------------------------------------------------------------------------
+ * Compare — Free vs Pro matrix display. SPEC §5.3b.
+ * ------------------------------------------------------------------------ */
+export { default as CompareTable } from './compare/CompareTable.jsx';
+
+/* ------------------------------------------------------------------------
+ * Changelog — per-release card + category badge. SPEC §5.3b.
+ * ------------------------------------------------------------------------ */
+export { default as ReleaseBlock } from './changelog/ReleaseBlock.jsx';
+export { default as CategoryBadge } from './changelog/CategoryBadge.jsx';
+
+/* ------------------------------------------------------------------------
  * Version stamp — flipped via release tooling once 0.1.0 ships.
  * ------------------------------------------------------------------------ */
 export const __KIT_VERSION__ = '0.0.0';

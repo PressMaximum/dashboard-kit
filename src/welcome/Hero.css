@@ -1,0 +1,68 @@
+/*
+ * Hero — Welcome page intro card.
+ *
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-hero
+ *   .pmdk-hero__title
+ *   .pmdk-hero__tagline
+ *   .pmdk-hero__cta
+ *
+ * Layout: 2-column flex when illustration is present; collapses to a
+ * single column under 800px. The illustration slot is consumer-supplied
+ * so the kit doesn't constrain dimensions — only its container.
+ */
+
+.pmdk-hero {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 32px;
+	padding: 32px;
+	margin: 0 0 24px;
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var( --pmdk-radius-small, 4px );
+}
+
+.pmdk-hero__content {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.pmdk-hero__title {
+	margin: 0 0 8px;
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-hero__tagline {
+	margin: 0 0 16px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-hero__cta {
+	display: inline-flex;
+}
+
+.pmdk-hero__illustration {
+	flex: 0 0 auto;
+	max-width: 240px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+@media ( max-width: 800px ) {
+	.pmdk-hero {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.pmdk-hero__illustration {
+		max-width: 100%;
+	}
+}

@@ -558,23 +558,39 @@ Small Tier-2 components consumers compose into custom tab pages. Extracted from 
 <CompareTable
   sections={Array<CompareSection>}
   footer={{ title, description, ctaLabel, ctaHref }?}
-  labels={{ headColumnFree, headColumnPro, cellYesLabel, cellNoLabel }}
+  labels={{
+    headFeature?: string,   // English fallback 'Feature'
+    headFree?: string,      // English fallback 'Free'
+    headPro?: string,       // English fallback 'Pro'
+    cellYes?: string,       // aria-label, English fallback 'Included'
+    cellNo?: string,        // aria-label, English fallback 'Not included'
+  }}
 />
 
 <ReleaseBlock
-  release={{ version, date, current?, items: [{ category?, text }] }}
-  labels={{ currentBadge }}
-  categoryLabels={Record<string, string>}   // e.g., { added: 'New', fixed: 'Fixed', security: 'Security' }
+  release={{ version, date?, current?, items: [{ category?, text }] }}
+  labels={{ currentBadge?: string }}            // English fallback 'Current'
+  categoryLabels={Record<string, string>?}      // category → label (overrides
+                                                //  kit's English fallback table)
+  categoryToneOverrides={Record<string,         // category → tone modifier
+    'new' | 'improved' | 'fixed' | 'updated'
+    | 'removed' | 'security' | 'deprecated'
+    | 'neutral'>?}
 />
 
 <CategoryBadge
   category={string}
-  labels={Record<string, string>}            // category → display label map
-  toneOverrides?={Record<string, 'new' | 'improved' | 'fixed' | 'updated' | 'removed' | 'security' | 'deprecated' | 'neutral'>}
+  labels={Record<string, string>?}              // category → label override
+  toneOverrides={Record<string,
+    'new' | 'improved' | 'fixed' | 'updated'
+    | 'removed' | 'security' | 'deprecated'
+    | 'neutral'>?}
 />
 ```
 
-`<CategoryBadge>` ships a default category → tone mapping (`added/new → 'new'`, `fixed/fix → 'fixed'`, `security → 'security'`, `removed → 'removed'`, etc.). CSS owns the palette via the tone modifier classes (`pmdk-category-badge.tone-new`, `tone-fixed`, etc.). Consumer overrides individual mappings via `toneOverrides` for custom categories.
+`<CategoryBadge>` ships a default category → tone mapping (`added/new → 'new'`, `fixed/fix → 'fixed'`, `security → 'security'`, `removed → 'removed'`, etc.). CSS owns the palette via the tone modifier classes (`pmdk-category-badge--new`, `--fixed`, etc. — note the BEM modifier syntax, not chained `.tone-*` classes). Consumer overrides individual mappings via `toneOverrides` for custom categories.
+
+`<CompareTable>` cell dispatch on `row.free` / `row.pro` shape: `true` → green check badge; `false` / `null` / `undefined` → gray em-dash badge; `string` → literal text; `{ value, muted? }` → muted-variant text. Mixed-content rows (e.g. `free: true` + `pro: 'Up to 50/site'`) work without consumer cell rendering.
 
 ### 5.3c Composition pattern — multi-source / multi-panel dispatch
 
@@ -708,21 +724,69 @@ type SchemaField = {
 ```jsx
 <Hero
   greeting={string}              // already-translated, e.g. 'Welcome, Jack'
-  tagline={string}
-  primaryCta={{ label, href }}
+  tagline={string?}
+  primaryCta={{ label: string, href: string }?}
   illustration={ReactNode?}      // brand SVG / image
 />
 
 <Checklist
   items={ChecklistItem[]}
-  ariaLabel={string}
+  ariaLabel={string?}                          // already-translated
+  itemLabels={{                                // forwarded to each ChecklistItem
+    checking?: string,                         // English fallback 'Checking…'
+    completed?: string,                        // English fallback 'Completed' (sr-only)
+    pending?: string,                          // English fallback 'Pending'   (sr-only)
+  }?}
 />
 
+<ChecklistItem item={ChecklistItem} labels={...same as Checklist.itemLabels} />
+
 createOnboardingStore({
-  storeName: string,
-  endpoint: string,              // REST path returning { completed: string[], dismissed: bool }
-}): wpDataStoreDescriptor
+  storeName: string,                           // wp.data store key
+  endpoint: string,                            // REST path. GET returns
+                                               //  { completed: string[], dismissed: bool };
+                                               //  PATCH accepts a partial body of the same shape.
+  fetch: ({ path, method?, data? }) => Promise<unknown>,
+                                               //  consumer-owned REST client
+                                               //  (SPEC §3.3 forbids kit from
+                                               //  importing @wordpress/api-fetch)
+}): { STORE_NAME: string, store: wpDataStoreDescriptor }
 ```
+
+ChecklistItem shape:
+
+```ts
+type ChecklistItem = {
+  id: string;
+  label: string;                                // already-translated
+  description?: string;                         // already-translated
+  check?: () => boolean | Promise<boolean>;     // auto-detect (e.g. has-pages)
+  manualCompleted?: boolean;                    // from consumer's onboarding store
+  ctaLabel?: string;                            // already-translated
+  ctaHref?: string;                             // '#tab' (SPA-navigates) or
+                                                //  external URL (plain anchor)
+  icon?: ComponentType;
+};
+```
+
+The `manualCompleted` prop is the kit's hook into the consumer's
+onboarding store — keeps the kit unaware of which store name the
+consumer registered. Typical wiring:
+
+```js
+const completedIds = useSelect((s) => s(ONBOARDING_STORE).getCompleted());
+const items = baseItems.map((i) => ({
+    ...i,
+    manualCompleted: completedIds.includes(i.id),
+}));
+<Checklist items={items} ariaLabel={...} />
+```
+
+`createOnboardingStore` action surface: `load()`, `complete(taskId)`,
+`uncomplete(taskId)`, `dismiss(flag)`. Selectors: `isCompleted(id)`,
+`isDismissed()`, `getCompleted()`, `isLoading()`, `isLoaded()`,
+`getError()`. All mutators are optimistic — UI updates before the PATCH
+resolves; failures roll back to the prior value.
 
 ### 5.6 Datasets (`@pressmaximum/dashboard-kit/datasets`)
 
@@ -1660,7 +1724,7 @@ Each phase below includes implementation + tests + review buffer. Estimates are 
 | **P1.5 — SPEC reconcile** | Amend §5.1, §5.2, §5.10b, §5.13, §9.1 against P1 implementation reality. Fix broken `./styles/tokens.css` export. Tighten `size-limit` to SPEC §17.10 budgets. Wire test consumer to `mountDashboard`. Seed CHANGELOG `[Unreleased]` | 0.5 | 0.5 | 1 d |
 | **P2 — PageWrapper containerWidth fix** | Harden `PageWrapper` flex chain to give DataViews's `useResizeObserver` a stable `containerWidth` (spike hack #3). Implement `mountDashboard.containerWidth` config (`'narrow' \| 'wide'`). Validate by mounting a DataViews-using test fixture | 1 | 1 | 2 d |
 | **P3 — Settings** | `SchemaForm` (single-panel), `SchemaField` (consumer-injected `fieldTypes` map), `SaveBar` (Tier-2 `labels` prop), `createSettingsStore({ storeName, endpoint, fetch, seedSaved? })`, `useDirtyState` (+ module-level `isAnyDirty` / `confirmDiscardAny`). `mountDashboard` wires `confirmDiscardAny` as the default `NavigationGuardProvider` guard. Tests cover the full store action sequence (load → edit → save → reset → clearDirty + error paths). Blocksify Free Settings tab migration deferred to P8 with the other consumer cutovers | 3 | 2 | 5 d |
-| **P4 — Welcome + Compare + Changelog** | `Hero`, `Checklist`, `ChecklistItem`, `createOnboardingStore`, `CompareTable`, `ReleaseBlock`. Migrate Blocksify Free Welcome / Free-vs-Pro / Changelog tabs | 3 | 1.5 | 4.5 d |
+| **P4 — Welcome + Compare + Changelog** | `Hero`, `Checklist`, `ChecklistItem`, `createOnboardingStore` (full action surface with optimistic updates + rollback), `CompareTable` (mixed-content cell dispatch), `ReleaseBlock` + `CategoryBadge` (with `toneOverrides`). Tests cover the onboarding store action sequence + CategoryBadge label / tone resolution. Blocksify Free Welcome / Free-vs-Pro / Changelog migration deferred to P8 with the other consumer cutovers | 3 | 1.5 | 4.5 d |
 | **P5 — Editor helpers** | `forceFullscreenMode`, `rewireBackButton`, `registerSubmenuActive` + PHP equivalents in composer package. Test on actual post.php edit flow | 2 | 1 | 3 d |
 | **P6 — Datasets** | `EntityListPage`, `EntityPreviewFrame`, `ViewPersistence`, `filterTrashByDefault`. Verify spike hacks #3, #4, #5 disappear with PageWrapper from P2. Verify DataViews CSS sideEffects override works (spike hack #2) | 4 | 2 | 6 d |
 | **P7 — PHP composer package** | `Boot`, `REST\PreviewEndpointRegistrar`, `REST\SettingsControllerBase`, `Admin\MenuHelpers`, `Admin\AssetEnqueue`, `Admin\EditorIntegration`, `Schema\SchemaBuilder`. PHPUnit tests. **Parallelisable with P3-P6** | 3 | 2 | 5 d |
