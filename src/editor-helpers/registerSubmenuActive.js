@@ -57,6 +57,14 @@ export function registerSubmenuActive( { menuId, hash } = {} ) {
 		return null;
 	}
 
+	// Snapshot the submenu DOM at registration time. WP admin builds the
+	// submenu inside the `admin_menu` action and never mutates it
+	// afterwards — items added by plugins on later hooks would be
+	// invisible to this helper. Spike has the same assumption; the kit
+	// preserves it. A MutationObserver would address late-injected
+	// items but the realistic edge case (third-party plugins injecting
+	// into another plugin's submenu post-`admin_menu`) doesn't justify
+	// the complexity.
 	const items = Array.from( submenu.querySelectorAll( 'li' ) );
 	const target = items.find( ( li ) => {
 		const a = li.querySelector( 'a' );
@@ -76,6 +84,14 @@ export function registerSubmenuActive( { menuId, hash } = {} ) {
 		if ( onMatch ) {
 			target.classList.add( 'current' );
 		} else {
+			// `a.wp-first-item` is the WP admin convention for the
+			// parent mirror entry (the auto-created submenu row
+			// labelled after the parent menu). It's been stable for
+			// many years and is what WP's own active-state CSS targets.
+			// Hardcoded by the spike + kit; if WP ever drops the class
+			// the fallback silently stops painting on non-matching
+			// routes (visible UX gap but no crash). Tracked under
+			// SPEC §11 hack #5.
 			const first = items.find( ( li ) =>
 				li.querySelector( 'a.wp-first-item' ),
 			);

@@ -1335,25 +1335,31 @@ Result: one consumer = one `.pot` = one text domain. WordPress.org theme review 
 
 ## 7. Tree-shake boundaries
 
-### 7.1 Two import surfaces
+### 7.1 Three import surfaces
 
-**Root entry** (`@pressmaximum/dashboard-kit`) — small, always bundled:
+**Root entry** (`@pressmaximum/dashboard-kit`) — the dashboard SPA surface, always bundled by the consumer's dashboard script:
 
 ```js
 import {
-  mountDashboard, DashboardShell, TabStrip, HashRouter, BootDataLoader,
-  HelpPanel, SnackbarSlot, createFilterNamespace,
-  ListPageHeader, EditorPageHeader, EditorViewLayout, PageWrapper,
-  SchemaForm, SchemaField, SaveBar, createSettingsStore, useDirtyState,
+  mountDashboard, DashboardShell, TabStrip, HelpPanel, SnackbarSlot,
+  createFilterNamespace, createI18nBag,
+  // HashRouter flat exports: readHash, navigate, useHash, useRoute,
+  //   matchRoute, activeTabId, useNavigate,
+  //   NavigationGuardProvider, NavigationGuardContext,
+  //   useFocusOnRouteChange,
+  // BootDataLoader flat exports: readBoot, BootProvider, useBoot, BootContext.
+  ListPageHeader, EditorPageHeader, EditorViewLayout, PageWrapper, SubNav,
+  SchemaForm, SchemaField, SaveBar, BASE_FIELD_TYPES, panelHeadingId,
+  createSettingsStore, useDirtyState, isAnyDirty, confirmDiscardAny,
   Hero, Checklist, ChecklistItem, createOnboardingStore,
-  CompareTable, ReleaseBlock,
-  forceFullscreenMode, rewireBackButton, registerSubmenuActive,
+  CompareTable,
+  ReleaseBlock, CategoryBadge,
 } from '@pressmaximum/dashboard-kit';
 ```
 
 Total bundle delta for the lightest consumer (uses only `mountDashboard` + `Hero` + `SchemaForm`): **~10-15KB gzip** (after webpack drops the unused tree-shakeable parts within the root entry).
 
-**Datasets sub-entry** (`@pressmaximum/dashboard-kit/datasets`) — heavy, opt-in:
+**Datasets sub-entry** (`@pressmaximum/dashboard-kit/datasets`) — heavy, opt-in. Lands in P6:
 
 ```js
 import {
@@ -1362,6 +1368,16 @@ import {
 ```
 
 Importing anything from `datasets/` brings in `@wordpress/dataviews` (~50KB gzip) + its `date-fns` sub-dependency (~10KB gzip).
+
+**Editor-helpers sub-entry** (`@pressmaximum/dashboard-kit/editor-helpers`) — tiny, opt-in. Bundled by the consumer's *editor* script (the one enqueued via `enqueue_block_editor_assets`), NOT the dashboard script:
+
+```js
+import {
+  forceFullscreenMode, rewireBackButton, registerSubmenuActive,
+} from '@pressmaximum/dashboard-kit/editor-helpers';
+```
+
+The split is deliberate: most consumers (Customify Theme, plain plugin dashboards) load the dashboard script on their admin page and never touch the block editor. Splitting keeps the dashboard bundle clean of editor-only DOM glue. Consumers with a Pattern-A CPT editor flow load both scripts on their respective screens.
 
 ### 7.2 `sideEffects` declaration
 
@@ -2002,6 +2018,7 @@ Out of scope for 0.1.0. WP admin doesn't have native dark mode yet (Gutenberg di
 10. **Bundle size budget** — `size-limit` thresholds (enforced in CI):
    - Root entry: ≤15KB gzip
    - `/datasets` entry: ≤80KB gzip
+   - `/editor-helpers` entry: ≤2KB gzip
    - PR fails if exceeds; bumps require justification + sign-off.
 
 ---

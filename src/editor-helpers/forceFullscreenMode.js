@@ -56,6 +56,15 @@ export function forceFullscreenMode() {
 	// Editor boot resolves the preferences store asynchronously; subscribe
 	// until both halves arrive, then unsubscribe so we don't run on every
 	// future store mutation.
+	//
+	// Note on bounded-by-mutation retries: if `core/preferences` never
+	// registers (broken WP install, hostile plugin conflict), the
+	// subscriber keeps re-invoking `tryEnable()` on every store
+	// mutation. CPU cost per invocation is two selector reads, so the
+	// loop is bounded by store-mutation frequency — but still unbounded
+	// in wall-clock time. Matches the spike's inline IIFE faithfully.
+	// Consumers wanting a hard stop can capture the returned unsubscribe
+	// and invoke it after a timeout.
 	const wpData = window.wp && window.wp.data;
 	if ( ! wpData || typeof wpData.subscribe !== 'function' ) {
 		return () => undefined;

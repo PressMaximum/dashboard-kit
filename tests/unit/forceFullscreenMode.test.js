@@ -80,6 +80,24 @@ describe( 'forceFullscreenMode', () => {
 		expect( set ).not.toHaveBeenCalled();
 	} );
 
+	it( 'returns a noop teardown when wp.data exists but subscribe is not a function', () => {
+		// Edge case: wp.data is partially mocked (older WP, hostile
+		// plugin replacing parts of the global). `subscribe` is
+		// missing or not callable. The helper's defensive guard at
+		// forceFullscreenMode.js: `typeof wpData.subscribe !== 'function'`
+		// returns the noop unsub instead of crashing.
+		window.wp = {
+			data: {
+				select: vi.fn().mockReturnValue( null ),
+				dispatch: vi.fn().mockReturnValue( null ),
+				// no `subscribe` property at all
+			},
+		};
+		const cleanup = forceFullscreenMode();
+		expect( typeof cleanup ).toBe( 'function' );
+		expect( cleanup() ).toBeUndefined();
+	} );
+
 	it( 'subscribes until the store resolves when selectors are not ready', () => {
 		const setSpy = vi.fn();
 		const getSpy = vi.fn().mockReturnValue( false );
