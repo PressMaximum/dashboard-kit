@@ -302,56 +302,65 @@ Identical pattern for `Welcome onboarding completion`, `Reset to defaults`, and 
 
 ### 4.1 JS (npm)
 
+> File-extension convention: JSX-containing modules ship as `.jsx`;
+> pure-JS utilities (stores, hooks without JSX, pure functions) ship as
+> `.js`. wp-scripts / Blocksify also allow JSX inside `.js`, but Vite
+> (Storybook + Vitest) needs an explicit hint when both extensions are
+> in play — the convention keeps the kit's tooling matrix unambiguous.
+> Internal imports between kit modules omit the extension; webpack's
+> `resolve.extensions` (and the consumer's wp-scripts equivalent)
+> resolve them.
+
 ```
 src/
 ├── index.mjs                          // public exports (everything except datasets)
 ├── core/
-│   ├── mountDashboard.js              // entry: renders SPA into a node
-│   ├── DashboardShell.js              // top-level layout (header + tabs + main + snackbar)
-│   ├── TabStrip.js
-│   ├── HashRouter.js                  // useRoute, useNavigate, navigate(hash)
-│   ├── BootDataLoader.js              // window.{name}Dashboard reader
-│   ├── HelpPanel.js                   // header help-dropdown component
-│   ├── SnackbarSlot.js                // notices slot bound to @wordpress/notices
+│   ├── mountDashboard.jsx             // entry: renders SPA into a node
+│   ├── DashboardShell.jsx             // top-level layout (header + tabs + main + snackbar)
+│   ├── TabStrip.jsx
+│   ├── HashRouter.jsx                 // readHash / navigate / useRoute / useNavigate /
+│   │                                  //   matchRoute / activeTabId + NavigationGuardProvider
+│   ├── BootDataLoader.jsx             // window.{name}Dashboard reader + BootProvider / useBoot
+│   ├── HelpPanel.jsx                  // header help-dropdown component
+│   ├── SnackbarSlot.jsx               // notices slot bound to core/notices store
 │   ├── createFilterNamespace.js       // returns { tabs, routes, settingsPanels, ... } strings
 │   ├── createI18nBag.js               // merge English defaults with consumer overrides
 │   └── useFocusOnRouteChange.js       // SPA focus management on route change
-├── layouts/
+├── layouts/                           // all five Tier-1 layout primitives (P1)
 │   ├── ListPageHeader/
-│   │   ├── index.js
+│   │   ├── index.jsx
 │   │   └── editor.css
 │   ├── EditorPageHeader/
 │   ├── EditorViewLayout/              // 3-col SubNav + Main + Rail
-│   └── PageWrapper/                   // flex-grow:1 container that gives DataViews proper width
-├── settings/
-│   ├── SchemaForm.js                  // walks JSON schema, renders fields
-│   ├── SchemaField.js                 // single field renderer; pluggable type registry
-│   ├── SaveBar.js                     // sticky-bottom Save + Reset
-│   ├── createSettingsStore.js         // @wordpress/data store factory: dirty buffer + save/reset actions
-│   └── useDirtyState.js               // hook for beforeunload + tab-change warn
-├── welcome/
-│   ├── Hero.js                        // greeting + tagline + primary CTA
-│   ├── Checklist.js
-│   ├── ChecklistItem.js               // auto-detect via check function
-│   └── createOnboardingStore.js       // user-meta sync
-├── compare/
-│   └── CompareTable.js                // Free vs Pro matrix renderer
-├── changelog/
-│   └── ReleaseBlock.js
-├── editor-helpers/                    // helpers that ride on top of post.php block editor
-│   ├── forceFullscreenMode.js         // inline script generator (PHP returns the script tag string)
+│   ├── PageWrapper/                   // flex chain that gives DataViews proper containerWidth
+│   └── SubNav/                        // vertical nav rail (Settings panels, Changelog sources)
+├── settings/                          // P3
+│   ├── SchemaForm.jsx                 // single-panel renderer (consumer resolves active panel)
+│   ├── SchemaField.jsx                // dispatches field.type → registry component
+│   ├── SaveBar.jsx                    // sticky-bottom Save + Reset
+│   ├── fieldTypes.jsx                 // BASE_FIELD_TYPES (boolean / select / radio / text / number)
+│   ├── createSettingsStore.js         // @wordpress/data store factory: dirty buffer + save/reset
+│   └── useDirtyState.js               // hook + module-level registry + confirmDiscardAny
+├── welcome/                           // P4
+│   ├── Hero.jsx                       // greeting + tagline + primary CTA + illustration slot
+│   ├── Checklist.jsx
+│   ├── ChecklistItem.jsx              // auto-detect via item.check() + manualCompleted contract
+│   └── createOnboardingStore.js       // @wordpress/data store: completed[] + dismissed
+├── compare/                           // P4
+│   └── CompareTable.jsx               // Free vs Pro matrix (CSS grid, cell-shape dispatch)
+├── changelog/                         // P4
+│   ├── ReleaseBlock.jsx
+│   └── CategoryBadge.jsx              // tone-coded pill, exportable standalone
+├── editor-helpers/                    // (P5) helpers riding on top of post.php block editor
+│   ├── forceFullscreenMode.js         // inline-script generator
 │   ├── rewireBackButton.js
 │   └── registerSubmenuActive.js
-├── datasets/                          // TREE-SHAKEABLE — heavy DataViews deps
+├── datasets/                          // (P6) TREE-SHAKEABLE — heavy DataViews deps
 │   ├── index.mjs                      // re-exports for the `./datasets` sub-entry
-│   ├── EntityListPage.js
-│   ├── EntityPreviewFrame.js
-│   ├── ViewPersistence.js             // localStorage / core/preferences adapter
-│   └── filterTrashByDefault.js        // visibleItems pre-filter (hide trash unless requested)
-├── utils/
-│   ├── classNames.js
-│   ├── debounce.js
-│   └── escapeAttribute.js
+│   ├── EntityListPage.jsx             // (planned) full list view: header + DataViews + actions
+│   ├── EntityPreviewFrame.jsx         // (planned) per-card iframe preview
+│   ├── ViewPersistence.js             // (planned) localStorage / core/preferences adapter
+│   └── filterTrashByDefault.js        // (planned) visibleItems pre-filter
 └── styles/
     └── tokens.css                     // CSS custom properties shared across components
 
@@ -361,16 +370,18 @@ build/                                  // generated, npm-published
 ├── datasets/
 │   ├── index.mjs
 │   └── index.d.mts
-├── core/                              // internal types — `.d.ts` because
-│   └── *.d.ts                         //  sources are .jsx, not in package.json exports
-├── …                                  // (settings/, welcome/, etc. mirror the src tree)
-└── style.css                          // concatenated component CSS, optional global stylesheet
+├── core/                              // internal types — `.d.ts` because the
+│   └── *.d.ts                         //   sources are .jsx, not in package.json exports
+├── …                                  // (settings/, welcome/, etc. mirror src/)
+└── style.css                          // concatenated component CSS
 
 package.json
 README.md
 LICENSE
-.eslintrc.js                            // no-restricted-imports: [@wordpress/i18n, @wordpress/core-data, @wordpress/api-fetch]
+.eslintrc.cjs                           // no-restricted-imports: [@wordpress/i18n, @wordpress/core-data, @wordpress/api-fetch]
 ```
+
+`utils/` is NOT shipped — pre-P0 planning sketched a `classNames / debounce / escapeAttribute` directory, but the kit ended up either using inline expressions or pulling utilities from `@wordpress/*` packages directly. The directory will be added back if a third kit module needs the same helper.
 
 ### 4.2 PHP (composer)
 
