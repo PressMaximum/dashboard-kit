@@ -21,6 +21,7 @@
 .pmdk-category-badge {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	flex: 0 0 auto;
 	min-width: 72px;
 	padding: 2px 8px;
