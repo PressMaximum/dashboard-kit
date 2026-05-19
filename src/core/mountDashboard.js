@@ -52,9 +52,9 @@ export function mountDashboard( config ) {
 		rootEl,
 		bootGlobal,
 		filterNamespace,
-		// Reserved for future Tier-2 default translations; unused in P1.
-		// eslint-disable-next-line no-unused-vars
-		__: translator,
+		// `__` is recommended (SPEC §5.1) and will become required at P3
+		// when Tier-2 default translations consume it. P1 reads it off
+		// `config` only to forward to future flows — no destructure needed.
 		brand,
 		baseTabs,
 		baseRoutes,

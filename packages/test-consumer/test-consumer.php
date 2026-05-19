@@ -19,10 +19,6 @@ const PMDK_TEST_CONSUMER_VERSION = '0.0.0';
 
 /**
  * Register the toplevel admin page that hosts the test dashboard.
- *
- * P0 scaffold: registers the menu + renders the SPA mount node. Boot data
- * + asset enqueue land alongside the P1 core extraction, once the kit
- * actually exposes mountDashboard().
  */
 add_action(
 	'admin_menu',
@@ -40,14 +36,69 @@ add_action(
 );
 
 /**
- * Render the placeholder mount node.
- *
- * The kit will mount a React SPA into the div below once
- * packages/test-consumer/src/dashboard/index.js calls mountDashboard().
+ * Render the SPA mount node. `src/dashboard/index.js` calls
+ * `mountDashboard({ rootEl: '#pmdk-test-dashboard', ... })` against this.
  */
 function pmdk_test_consumer_render_page(): void {
 	echo '<div class="wrap"><h1>PMDK Test Consumer</h1>';
-	echo '<p>P0 scaffold — the kit will mount a dashboard into the div below once P1 lands.</p>';
 	echo '<div id="pmdk-test-dashboard" class="pmdk-test-dashboard-root"></div>';
 	echo '</div>';
 }
+
+/**
+ * Enqueue the bundled dashboard JS + CSS and localize the boot payload.
+ *
+ * The build output (built by the consumer's own wp-scripts) is expected at
+ * `build/dashboard.{js,asset.php,css}`. The dev loop ships the kit source
+ * via `npm link`; consumer rebuilds its own bundle.
+ */
+add_action(
+	'admin_enqueue_scripts',
+	static function ( $hook ): void {
+		if ( 'toplevel_page_pmdk-test' !== $hook ) {
+			return;
+		}
+
+		$asset_path = __DIR__ . '/build/dashboard.asset.php';
+		$asset      = file_exists( $asset_path )
+			? require $asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => PMDK_TEST_CONSUMER_VERSION,
+			);
+
+		wp_enqueue_script(
+			'pmdk-test-dashboard',
+			plugins_url( 'build/dashboard.js', __FILE__ ),
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
+
+		if ( file_exists( __DIR__ . '/build/dashboard.css' ) ) {
+			wp_enqueue_style(
+				'pmdk-test-dashboard',
+				plugins_url( 'build/dashboard.css', __FILE__ ),
+				array(),
+				$asset['version']
+			);
+		}
+
+		$user = wp_get_current_user();
+		wp_add_inline_script(
+			'pmdk-test-dashboard',
+			'window.pmdkTestDashboard = ' . wp_json_encode(
+				array(
+					'name'       => 'PMDK Test',
+					'wpVersion'  => get_bloginfo( 'version' ),
+					'phpVersion' => PHP_VERSION,
+					'user'       => array(
+						'id'          => (int) $user->ID,
+						'displayName' => (string) $user->display_name,
+					),
+				)
+			) . ';',
+			'before'
+		);
+	}
+);

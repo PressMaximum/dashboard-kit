@@ -111,14 +111,17 @@ Kit declares `@wordpress/*` packages it imports as `peerDependencies` in `packag
   "peerDependencies": {
     "@wordpress/components": ">=29.0.0",
     "@wordpress/data": ">=10.0.0",
+    "@wordpress/dataviews": ">=14.0.0",
     "@wordpress/element": ">=6.0.0",
     "@wordpress/hooks": ">=4.0.0",
     "@wordpress/html-entities": ">=4.0.0",
     "@wordpress/icons": ">=10.0.0",
-    "@wordpress/url": ">=4.0.0"
+    "@wordpress/url": ">=4.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "peerDependenciesMeta": {
-    "@wordpress/components": { "optional": false }
+    "@wordpress/dataviews": { "optional": true }
   }
 }
 ```
@@ -130,10 +133,13 @@ Kit declares `@wordpress/*` packages it imports as `peerDependencies` in `packag
 ```bash
 npm install @pressmaximum/dashboard-kit \
   @wordpress/components @wordpress/data @wordpress/element \
-  @wordpress/hooks @wordpress/url @wordpress/html-entities @wordpress/icons
+  @wordpress/hooks @wordpress/url @wordpress/html-entities @wordpress/icons \
+  react react-dom
 ```
 
-**Caveat**: most WP plugins/themes use `@wordpress/scripts` as build tool, which already includes all `@wordpress/*` packages as transitive devDependencies. In that case `npm install @pressmaximum/dashboard-kit` alone is sufficient — peers resolve via `wp-scripts`'s tree. The explicit install above is only needed if consumer build pipeline lacks `wp-scripts`.
+`react` + `react-dom` are listed as peers because the kit's webpack build externalizes them as ESM modules (consumer-side bundling resolves them to whatever React WP ships on `window.wp.element` — currently React 18). They're listed explicitly so npm warns when a consumer's install tree has none at all.
+
+**Caveat**: most WP plugins/themes use `@wordpress/scripts` as build tool, which already includes all `@wordpress/*` packages + react + react-dom as transitive devDependencies. In that case `npm install @pressmaximum/dashboard-kit` alone is sufficient — peers resolve via `wp-scripts`'s tree. The explicit install above is only needed if consumer build pipeline lacks `wp-scripts`.
 
 **Kit repo's `packages/test-consumer/`** (test scaffold per §13.2) ships these as devDependencies so IDE typecheck + ESLint behave correctly during kit development.
 
@@ -400,7 +406,6 @@ type MountConfig = {
   rootEl: string | HTMLElement;        // selector or node
   bootGlobal: string;                  // window key, e.g. 'customifyDashboard'
   filterNamespace: string;             // e.g. 'customify' → emits 'customify.dashboard.*'
-  __: (text: string) => string;        // consumer's text-domain-bound translator
   brand: {
     name: string;
     icon?: string;                     // SVG markup, optional
@@ -412,12 +417,26 @@ type MountConfig = {
   baseRoutes: Record<HashRoute, RouteEntry>;
 
   // Optional ──────────────────────────────────────────────────────────
+  __?: (text: string) => string;       // consumer's text-domain-bound translator.
+                                       // Recommended; becomes required at P3 when Tier-2
+                                       // default-label flow consumes it. P1 ignores.
+  tabsAriaLabel?: string;              // aria-label for the <nav> wrapping TabStrip
   helpItems?: HelpItem[];              // links in the header help dropdown
+  helpLabels?: {                       // English fallbacks shipped — see §5.10b
+    triggerLabel?: string;
+    heading?: string;
+  };
+  helpIcon?: unknown;                  // @wordpress/icons asset for the trigger button
+  helpItemIcon?: unknown;              // default per-item icon when item.icon omitted
   versionLabel?: string;               // e.g. 'v1.2.0 — Free'
   versionHref?: string;                // anchor for versionLabel (typically #changelog)
-  initialRoute?: HashRoute;            // default when hash is empty
+  versionAriaLabel?: string;           // aria-label for the version anchor
+  initialRoute?: HashRoute;            // default when hash is empty; defaults to '#welcome'
   notFoundComponent?: ComponentType;   // when route doesn't match
-  containerWidth?: 'narrow' | 'wide';  // 'narrow' = 1100px max, 'wide' = full viewport
+  fallback?: ReactNode;                // rendered inside <main> when no route matches AND
+                                       // notFoundComponent is unset (loading splash etc.)
+  containerWidth?: 'narrow' | 'wide';  // 'narrow' = 1100px max, 'wide' = full viewport.
+                                       // (lands in P2 with PageWrapper containerWidth fix)
 };
 
 type TabDefinition = {
@@ -440,7 +459,11 @@ The kit applies `applyFilters('{filterNamespace}.dashboard.tabs', baseTabs)` and
 
 ```ts
 function createFilterNamespace(prefix: string): {
+  boot: string;                  // 'prefix.dashboard.boot'              — see §9.1
   tabs: string;                  // 'prefix.dashboard.tabs'
+  tabsLocked: string;            // 'prefix.dashboard.tabs.locked'       — Pro-promo tab list
+                                 //   (Blocksify Free uses this to render locked tabs
+                                 //   alongside real tabs when `!boot.proActive`)
   routes: string;                // 'prefix.dashboard.routes'
   welcomeSections: string;       // 'prefix.dashboard.welcome.sections'
   welcomeChecklist: string;      // 'prefix.dashboard.welcome.checklist'
@@ -452,6 +475,56 @@ function createFilterNamespace(prefix: string): {
 ```
 
 Consumers use this for both their own `applyFilters` calls (when extending themselves) and to document the filter names Pro plugins should hook into.
+
+### 5.2b HashRouter public API
+
+The router is exposed as a flat set of named exports rather than a single `HashRouter` namespace — matches the Blocksify Free `dashboard/router.js` shape that consumers (Pro plugins + tab pages) already import from. All exports are stable: locked at 1.0, deprecation cycle for changes.
+
+```ts
+// Location primitives
+function readHash(fallback?: string): string;          // '#welcome' if hash empty
+function navigate(hash: string): void;                 // sets window.location.hash
+
+// Hooks
+function useHash(initialRoute?: string): string;       // subscribes to `hashchange`
+function useRoute(routes, initialRoute?): {            // resolved entry + params
+  route: string;
+  entry: unknown;
+  params: Record<string, string>;
+};
+function useNavigate(): (hash: string) => (event: MouseEvent) => void;
+//   Curried for the onClick={ onNav('#welcome') } call-site shape.
+//   Calls preventDefault() + honors NavigationGuardContext.
+
+// Pure helpers
+function matchRoute(hash, routes): {                   // null when no match
+  route: string;
+  entry: unknown;
+  params: Record<string, string>;
+} | null;
+function activeTabId(route: string): string;           // first path segment
+
+// Navigation guard (P3 dirty-state hook-in point — kit invention)
+const NavigationGuardContext: React.Context<() => boolean>;
+function NavigationGuardProvider({ guard, children }): JSX.Element;
+//   Wrap dashboard tree with a `guard()` predicate. `useNavigate()`
+//   consults it; returning `false` cancels the nav. P3's useDirtyState
+//   wires the dirty-buffer confirm dialog through this hook without
+//   the router needing to know about settings state.
+
+// A11y SPA focus management
+function useFocusOnRouteChange(route: string): React.RefObject<HTMLElement>;
+//   Attach the ref to `<main tabIndex={-1}>` so screen readers get a
+//   landmark announcement on route transitions. No-op on initial mount.
+
+// Boot accessor
+function readBoot(bootGlobal: string): Record<string, unknown>;
+function BootProvider({ boot, children }): JSX.Element;
+function useBoot(): Record<string, unknown>;
+const BootContext: React.Context<Record<string, unknown>>;
+```
+
+Route-pattern syntax: `'#tab'` for static, `'#tab/:id'` for one param, multi-segment params allowed (`'#editor/:cpt/:id'`). Static segments win over params when both match.
 
 ### 5.3 Layout components
 
@@ -797,11 +870,12 @@ MenuHelpers::printSubmenuActiveSync([
 | `currentBadge` | `Current` |
 | `dateFormat` (Intl options) | `{ dateStyle: 'medium' }` |
 
-**`<HelpPanel>` props**
+**`<HelpPanel>` `labels` props**
 
-| Prop | English fallback |
+| Key | English fallback |
 |---|---|
-| `triggerLabel` (aria) | `Help` |
+| `triggerLabel` (aria) | `Open help panel` |
+| `heading` | `Help` |
 | (item labels) | consumer-provided per item |
 
 **Total**: ~50 strings across the full kit. Lightweight consumers using only `mountDashboard` + `<Hero>` + `<SchemaForm>` + `<SaveBar>` need to translate ~12 strings.
@@ -919,7 +993,9 @@ To prevent the consumer's i18n burden from ballooning, kit components are split 
 
 These components are pure containers. They render no text directly; consumers compose own UI inside.
 
-`PageWrapper`, `EditorViewLayout`, `ListPageHeader` (text comes from props), `EditorPageHeader` (text from props), `SchemaField`, `FieldRow`, `Stack`, `Grid` — all zero strings.
+`PageWrapper`, `EditorViewLayout`, `ListPageHeader` (text comes from props), `EditorPageHeader` (text from props except `backLabel` — see carve-out below), `SchemaField`, `FieldRow`, `Stack`, `Grid` — all zero strings.
+
+**A11y carve-out**: a Tier-1 component MAY ship a hardcoded English default for *visible navigational text* (back-link, "More", etc.) when omitting the text would leak an unlabelled control to screen readers. Currently the only sanctioned exception is `<EditorPageHeader backLabel="Back">` — the back-link arrow without text would be a bare `←` glyph in the accessibility tree. Consumers SHOULD pass a translated `backLabel` in production; the English default is a safety net, not the intended path. Adding a new carve-out requires SPEC sign-off.
 
 ### Tier 2 — Page components (strings via labels prop)
 
@@ -1254,6 +1330,7 @@ Customify Theme's `mountDashboard` applies these filters → tabs + routes exten
 | Filter (replace `{ns}` with consumer prefix) | Signature | Purpose |
 |---|---|---|
 | `{ns}.dashboard.tabs` | `(tabs: TabDefinition[]) => TabDefinition[]` | Add / remove / reorder top-level tabs |
+| `{ns}.dashboard.tabs.locked` | `(promoTabs: LockedTab[]) => LockedTab[]` | Locked / Pro-promo tab list shown alongside real tabs when Pro is inactive (Blocksify Free uses this for the Pro upsell tabs) |
 | `{ns}.dashboard.routes` | `(routes: Record<HashRoute, RouteEntry>) => same` | Register nested routes for new tabs |
 | `{ns}.dashboard.welcome.sections` | `(sections: WelcomeSection[]) => same` | Append sections below the welcome checklist |
 | `{ns}.dashboard.welcome.checklist` | `(items: ChecklistItem[]) => same` | Add / reorder / remove onboarding tasks |
@@ -1516,8 +1593,9 @@ Each phase below includes implementation + tests + review buffer. Estimates are 
 | Phase | Scope | Impl | Tests + review | Total |
 |---|---|---|---|---|
 | **P0 — Repo bootstrap** | Create `pressmaximum/dashboard-kit` repo. package.json + composer.json + ESLint config + Jest/Vitest config + CI workflow (lint + test + build) + README skeleton + LICENSE + `.editorconfig` + Storybook scaffold (§13.2) + test consumer scaffold (§13.2) | 1.5 | 0.5 | 2 d |
-| **P1 — Core extract** | `mountDashboard`, `DashboardShell`, `TabStrip`, `HashRouter`, `BootDataLoader`, `SnackbarSlot`, `HelpPanel`, `createFilterNamespace`, `createI18nBag`. Unit tests for each. Migrate Blocksify Free dashboard's `App.js` / `router.js` / `boot.js` / `index.js` to consume kit. Blocksify Free becomes first internal consumer | 5 | 2 | 7 d |
-| **P2 — Layouts + PageWrapper containerWidth fix** | `ListPageHeader`, `EditorPageHeader`, `EditorViewLayout`, `PageWrapper` + CSS. Validate PageWrapper solves DataViews containerWidth issue (spike hack #3) by mounting a DataViews-using test fixture | 2 | 1 | 3 d |
+| **P1 — Core extract** | `mountDashboard`, `DashboardShell`, `TabStrip`, `HashRouter` (+ `NavigationGuardProvider` + `useFocusOnRouteChange`), `BootDataLoader`, `SnackbarSlot`, `HelpPanel`, `createFilterNamespace`, `createI18nBag`. **Absorbed from P2:** all Tier-1 layout primitives (`PageWrapper`, `ListPageHeader`, `EditorPageHeader`, `EditorViewLayout`, `SubNav`) since their CSS surface ships in the same locked §16.2 class table. Storybook stories for each shipped component. Unit tests for the pure-function surface (`matchRoute`, `activeTabId`, `createFilterNamespace`, `createI18nBag`, `readBoot`). Blocksify Free migration deferred to P8 (single cutover after Settings + Welcome + Datasets land) | 5 | 2 | 7 d |
+| **P1.5 — SPEC reconcile** | Amend §5.1, §5.2, §5.10b, §5.13, §9.1 against P1 implementation reality. Fix broken `./styles/tokens.css` export. Tighten `size-limit` to SPEC §17.10 budgets. Wire test consumer to `mountDashboard`. Seed CHANGELOG `[Unreleased]` | 0.5 | 0.5 | 1 d |
+| **P2 — PageWrapper containerWidth fix** | Harden `PageWrapper` flex chain to give DataViews's `useResizeObserver` a stable `containerWidth` (spike hack #3). Implement `mountDashboard.containerWidth` config (`'narrow' \| 'wide'`). Validate by mounting a DataViews-using test fixture | 1 | 1 | 2 d |
 | **P3 — Settings** | `SchemaForm`, `SchemaField`, `SaveBar`, `createSettingsStore`, `useDirtyState`. Tests for store action sequence (load → edit → save → reset → discard). Migrate Blocksify Free Settings tab | 3 | 2 | 5 d |
 | **P4 — Welcome + Compare + Changelog** | `Hero`, `Checklist`, `ChecklistItem`, `createOnboardingStore`, `CompareTable`, `ReleaseBlock`. Migrate Blocksify Free Welcome / Free-vs-Pro / Changelog tabs | 3 | 1.5 | 4.5 d |
 | **P5 — Editor helpers** | `forceFullscreenMode`, `rewireBackButton`, `registerSubmenuActive` + PHP equivalents in composer package. Test on actual post.php edit flow | 2 | 1 | 3 d |

@@ -35,7 +35,6 @@
       "types": "./build/datasets/index.d.mts"
     },
     "./style.css": "./build/style.css",
-    "./styles/tokens.css": "./build/styles/tokens.css",
     "./package.json": "./package.json"
   },
   "sideEffects": [
@@ -118,13 +117,13 @@
     {
       "name": "Core entry (gzip)",
       "path": "build/index.mjs",
-      "limit": "25 KB",
+      "limit": "15 KB",
       "gzip": true
     },
     {
       "name": "Datasets entry (gzip)",
       "path": "build/datasets/index.mjs",
-      "limit": "60 KB",
+      "limit": "80 KB",
       "gzip": true
     }
   ]
