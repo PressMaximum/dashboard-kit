@@ -104,8 +104,12 @@ final class SchemaBuilderTest extends TestCase {
 			$panel['fields'][1]['options']
 		);
 
-		$this->assertSame( 0.0, $panel['fields'][2]['min'] );
-		$this->assertSame( 3600.0, $panel['fields'][2]['max'] );
+		// `buildSchema()` preserves the caller's literal min/max types
+		// (here: int). `sanitize()` casts to float for clamping arithmetic
+		// — that's a separate code path verified by
+		// test_sanitize_clamps_number_to_min_max().
+		$this->assertSame( 0, $panel['fields'][2]['min'] );
+		$this->assertSame( 3600, $panel['fields'][2]['max'] );
 	}
 
 	public function test_re_opening_a_panel_merges_more_fields(): void {
