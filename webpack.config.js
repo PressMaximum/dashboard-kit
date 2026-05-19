@@ -114,7 +114,23 @@ export default ( env, argv ) => {
 		},
 		plugins: [
 			new MiniCssExtractPlugin( {
-				filename: 'style.css',
+				// Per-entry CSS output:
+				//   `index`              → `build/style.css`            (back-compat
+				//                                                       with `@pressmaximum/dashboard-kit/style.css`).
+				//   `datasets/index`     → `build/datasets/style.css`   (only ships
+				//                                                       when consumer imports the datasets sub-entry,
+				//                                                       so theme-only consumers don't pay for
+				//                                                       EntityListPage / EntityPreviewFrame CSS).
+				//   `editor-helpers/...` → `build/editor-helpers/style.css`
+				//                                                       (currently empty — the editor helpers
+				//                                                       are pure runtime JS, no CSS).
+				filename: ( { chunk } ) => {
+					if ( chunk.name === 'index' ) {
+						return 'style.css';
+					}
+					const dir = chunk.name.replace( /\/index$/, '' );
+					return `${ dir }/style.css`;
+				},
 			} ),
 		],
 		optimization: {

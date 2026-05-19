@@ -356,12 +356,14 @@ src/
 │   ├── forceFullscreenMode.js         // flips core/edit-post.fullscreenMode via wp.data
 │   ├── rewireBackButton.js            // capture-phase click intercept on the close button
 │   └── registerSubmenuActive.js       // submenu `.current` sync on hashchange
-├── datasets/                          // (P6) TREE-SHAKEABLE — heavy DataViews deps
+├── datasets/                          // P6 — TREE-SHAKEABLE — heavy DataViews deps
 │   ├── index.mjs                      // re-exports for the `./datasets` sub-entry
-│   ├── EntityListPage.jsx             // (planned) full list view: header + DataViews + actions
-│   ├── EntityPreviewFrame.jsx         // (planned) per-card iframe preview
-│   ├── ViewPersistence.js             // (planned) localStorage / core/preferences adapter
-│   └── filterTrashByDefault.js        // (planned) visibleItems pre-filter
+│   ├── EntityListPage.jsx             // Tier-2 page: PageWrapper + ListPageHeader + DataViews
+│   ├── EntityListPage.css
+│   ├── EntityPreviewFrame.jsx         // CSS-scaled iframe preview (container queries)
+│   ├── EntityPreviewFrame.css
+│   ├── ViewPersistence.js             // localStorage adapter (factory)
+│   └── filterTrashByDefault.js        // (items, view) → items minus trash unless opted-in
 └── styles/
     └── tokens.css                     // CSS custom properties shared across components
 
@@ -836,10 +838,14 @@ resolves; failures roll back to the prior value.
 />
 
 <EntityPreviewFrame
-  src={string}                              // full URL the iframe loads
+  src={string}                              // full URL the iframe loads.
+                                            //   When empty / undefined, the empty
+                                            //   placeholder renders instead.
   title={string}                            // iframe accessible title
-  viewportWidth?={number}                   // default 1200
-  emptyLabel?={string}                      // shown when src empty
+  viewportWidth?={number}                   // desktop viewport, default 1200
+  viewportHeight?={number}                  // iframe height in px, default 900
+  emptyLabel?={string}                      // shown when src empty; English fallback
+                                            //   `'No preview'`
   className?={string}
 />
 
@@ -853,6 +859,12 @@ ViewPersistence.create({
 
 filterTrashByDefault(items, view): Array
 ```
+
+`<EntityListPage>` always wraps its content in `<PageWrapper>` so DataViews's `useResizeObserver` sees a real `containerWidth` (SPEC §11 hack #3 — proper fix shipped in P2, validated end-to-end in P6).
+
+`<EntityListPage>` does NOT import `@wordpress/dataviews`'s CSS. The kit relies on the consumer's `wp-scripts` build pipeline to detect the externalized `@wordpress/dataviews` JS import + auto-register the `wp-dataviews` script-and-style handle via `DependencyExtractionWebpackPlugin`. WordPress core ≥6.5 enqueues the matching stylesheet automatically. The spike's `dataviews-vendor.css` (74 KB) is therefore NOT ported — this is how SPEC §11 hack #2 actually closes.
+
+The `className` prop on both components is appended to the locked-class wrapper, never replaces it.
 
 ### 5.7 Editor helpers
 
@@ -998,37 +1010,20 @@ MenuHelpers::printSubmenuActiveSync([
 
 **`<EntityListPage>` `labels` object**
 
+The kit only owns the two strings that decorate the page-level loading / empty states. All toolbar / pagination / density / sort / bulk-action strings come from `@wordpress/dataviews` itself (which handles its own i18n via WP's text domain `default`); the kit does NOT proxy them. This decision (made during P6 implementation per §5.13's slot-pattern audit) keeps the labels surface at 2 instead of ~22 — the rest never had to be threaded through.
+
 | Key | English fallback |
 |---|---|
 | `loading` | `Loading items…` |
 | `noResults` | `No items match your filters.` |
-| `noItems` | `No items yet.` |
-| `bulkActions` | `Bulk actions` |
-| `bulkSelectAll` | `Select all` |
-| `bulkSelected` | `%d selected` (sprintf-style) |
-| `addNew` | `Add new` |
-| `searchPlaceholder` | `Search…` |
-| `viewToggleLabel` | `View options` |
-| `layoutToggleLabel` | `Layout` |
-| `densityCompact` | `Compact` |
-| `densityBalanced` | `Balanced` |
-| `densityComfortable` | `Comfortable` |
-| `previewSizeLabel` | `Preview size` |
-| `itemsPerPageLabel` | `Items per page` |
-| `paginationCurrent` | `Page %1$d of %2$d` |
-| `paginationPrev` | `Previous page` |
-| `paginationNext` | `Next page` |
-| `sortLabel` | `Sort by` |
-| `sortAsc` | `Ascending` |
-| `sortDesc` | `Descending` |
-| `confirmDelete` | `Permanently delete selected items? This cannot be undone.` |
+
+Consumers wanting to override DataViews's own strings should configure their own `@wordpress/i18n` text-domain `default` translation per the WP convention.
 
 **`<EntityPreviewFrame>` props**
 
 | Prop | English fallback |
 |---|---|
-| `emptyLabel` | `No preview available` |
-| `loadingLabel` | `Loading preview…` |
+| `emptyLabel` | `No preview` |
 
 **`<Hero>` props** — all required from consumer, no defaults
 
@@ -1701,9 +1696,9 @@ The Surfaces spike accumulated six documented hacks. Each maps to a kit version 
 | Hack | Spike location | Proper fix | Kit version |
 |---|---|---|---|
 | CSS rename script overwrites root-entry editor chunk | `scripts/rename-css.js` in Blocksify Free | Kit ships own build pipeline (rollup or webpack) that doesn't have this bug. Blocksify Free's rename script also patched independently to merge instead of overwrite | **0.1.0** (kit doesn't inherit the bug) |
-| Vendored DataViews CSS (74KB) | `src/dashboard/tabs/Surfaces/dataviews-vendor.css` | Kit's webpack config explicitly marks `node_modules/@wordpress/dataviews/build-style/*.css` as `sideEffects: true` via a module rule override (verified to work in spike's webpack.config.js attempt — needs to actually land in kit build) | **0.1.0** |
-| DataViews `containerWidth: 0` → 1-card-per-row | `display: contents` row flatten in Surfaces editor.css | Kit's `<PageWrapper>` provides the flex chain DataViews's `useResizeObserver` requires (`flex-grow: 1` + `min-height: 0` + `min-width: 0` + `height: 100%` chain). `<EntityListPage>` always wraps itself in `<PageWrapper>` | **0.1.0** — infrastructure **shipped in P2**; `<EntityListPage>` lands P6. Validated by `stories/PageWrapper.dataviews.stories.jsx` |
-| `view.layout.previewSize` → CSS var bridge for grid template | `style={{ '--bsy-surfaces-preview-size': ... }}` in `SurfacesListPage` | Once `<PageWrapper>` fixes containerWidth, DataViews's native `previewSize` computation works, no CSS var bridge needed | **0.1.0** (along with above) — shipped in P2 |
+| Vendored DataViews CSS (74KB) | `src/dashboard/tabs/Surfaces/dataviews-vendor.css` | Kit does NOT import or vendor `@wordpress/dataviews`'s CSS at all. WordPress core ≥6.5 registers a `wp-dataviews` script-and-style handle pair; the consumer's `wp-scripts` build (via `DependencyExtractionWebpackPlugin`) detects the kit's externalized `@wordpress/dataviews` JS import and adds `wp-dataviews` to the generated `asset.php` deps, after which WP auto-enqueues the matching stylesheet | **0.1.0** — **shipped in P6** (by deletion: spike's `dataviews-vendor.css` simply never ported) |
+| DataViews `containerWidth: 0` → 1-card-per-row | `display: contents` row flatten in Surfaces editor.css | Kit's `<PageWrapper>` provides the flex chain DataViews's `useResizeObserver` requires (`flex-grow: 1` + `min-height: 0` + `min-width: 0` + `height: 100%` chain). `<EntityListPage>` always wraps itself in `<PageWrapper>` | **0.1.0** — infrastructure **shipped in P2**; `<EntityListPage>` lands P6 + always wraps itself. Validated by `stories/PageWrapper.dataviews.stories.jsx` + `stories/EntityListPage.dataviews.stories.jsx` |
+| `view.layout.previewSize` → CSS var bridge for grid template | `style={{ '--bsy-surfaces-preview-size': ... }}` in `SurfacesListPage` | Once `<PageWrapper>` fixes containerWidth, DataViews's native `previewSize` computation works, no CSS var bridge needed | **0.1.0** — shipped in P2 + verified absent from P6's `EntityListPage.css` |
 | Submenu `hashchange` JS active-state toggle | `sync_submenu_active()` PHP method emitting `<script>` | JS helper `registerSubmenuActive({ menuId, hash })` ships the same reusable behavior; kit version 1.0 keeps this hack since WP doesn't expose a server-side hash-detection API. P7 `MenuHelpers::printSubmenuActiveSync()` will wrap it as the inline-script convenience | **0.1.0** — JS helper **shipped in P5**; PHP wrapper lands P7. Tracked upstream for v2.x WP API change |
 | Fullscreen close button click delegation hijack | `force_fullscreen_mode()` inline JS | JS helper `rewireBackButton({ selector, href })` ships the capture-phase intercept as a runtime function. Track Gutenberg PR for `editor.PostBackButton` slot; when upstream lands, the kit replaces the hijack with a proper slot fill but keeps the hack as fallback | **0.1.0** — JS helper **shipped in P5** (paired with `forceFullscreenMode()`). Slot-fill replacement deferred to a 0.x.y minor once WP min-version bumps |
 | **DataViews bundle duplication** across Pro consumers (Blocksify Pro + Customify Pro each ship ~50KB) | Architectural consequence of §2.4 independent-release decision | Track Gutenberg issue #56680 + related discussions for `wp-dataviews` standalone script handle. When WP Core exposes the handle, consumer's `wp-scripts` auto-externalizes — kit code unchanged, consumers re-build and shed the duplication. Kit only bumps the `peerDependencies` WordPress minimum version | **Upstream-dependent** — likely WP 7.x |
@@ -1802,7 +1797,7 @@ Each phase below includes implementation + tests + review buffer. Estimates are 
 | **P3 — Settings** | `SchemaForm` (single-panel), `SchemaField` (consumer-injected `fieldTypes` map), `SaveBar` (Tier-2 `labels` prop), `createSettingsStore({ storeName, endpoint, fetch, seedSaved? })`, `useDirtyState` (+ module-level `isAnyDirty` / `confirmDiscardAny`). `mountDashboard` wires `confirmDiscardAny` as the default `NavigationGuardProvider` guard. Tests cover the full store action sequence (load → edit → save → reset → clearDirty + error paths). Blocksify Free Settings tab migration deferred to P8 with the other consumer cutovers | 3 | 2 | 5 d |
 | **P4 — Welcome + Compare + Changelog** | `Hero`, `Checklist`, `ChecklistItem`, `createOnboardingStore` (full action surface with optimistic updates + rollback), `CompareTable` (mixed-content cell dispatch), `ReleaseBlock` + `CategoryBadge` (with `toneOverrides`). Tests cover the onboarding store action sequence + CategoryBadge label / tone resolution. Blocksify Free Welcome / Free-vs-Pro / Changelog migration deferred to P8 with the other consumer cutovers | 3 | 1.5 | 4.5 d |
 | **P5 — Editor helpers** | JS runtime helpers behind the `/editor-helpers` sub-entry: `forceFullscreenMode`, `rewireBackButton`, `registerSubmenuActive`. Each returns an unsubscribe handle for symmetric teardown; all short-circuit in SSR / non-browser contexts. Tests: 18 unit cases covering arg validation, idempotency, click-capture interception, hashchange sync, and `wp.data.subscribe` deferral. PHP wrappers (`Admin\EditorIntegration`, `MenuHelpers::printSubmenuActiveSync`) lands with P7's composer package | 2 | 1 | 3 d |
-| **P6 — Datasets** | `EntityListPage`, `EntityPreviewFrame`, `ViewPersistence`, `filterTrashByDefault`. Verify spike hacks #3, #4, #5 disappear with PageWrapper from P2. Verify DataViews CSS sideEffects override works (spike hack #2) | 4 | 2 | 6 d |
+| **P6 — Datasets** | `<EntityListPage>` (Tier-2: auto-wraps in `<PageWrapper>`, header chrome via `<ListPageHeader>`, switches between loading / empty / populated states, forwards everything else to `<DataViews>`). `<EntityPreviewFrame>` (CSS container-query scaling, configurable viewport via `--pmdk-preview-viewport`). `ViewPersistence.create({ storageKey, defaultView })` (factory; localStorage adapter with forgiving error handling). `filterTrashByDefault(items, view)` (pure pre-filter). Kit deliberately does NOT vendor DataViews CSS — relies on `wp-scripts`'s asset chain to enqueue `wp-dataviews` style handle (closes hack #2 by deletion). Spike hacks #3 + #4 verified absent from `EntityListPage.css`. 20 new tests (ViewPersistence 13 / filterTrashByDefault 9 / EntityPreviewFrame 7 / EntityListPage 10 — actions/fields/view are consumer-supplied, kit just forwards). Validation story (`stories/EntityListPage.dataviews.stories.jsx`) exercises the full chain end-to-end. Webpack `MiniCssExtractPlugin` filename function now emits per-entry CSS (`build/datasets/style.css` ships separately from `build/style.css`) so theme-only consumers don't pay DataViews-page CSS bytes. Blocksify Free Surfaces migration deferred to P8 with the other consumer cutovers | 4 | 2 | 6 d |
 | **P7 — PHP composer package** | `Boot`, `REST\PreviewEndpointRegistrar`, `REST\SettingsControllerBase`, `Admin\MenuHelpers`, `Admin\AssetEnqueue`, `Admin\EditorIntegration`, `Schema\SchemaBuilder`. PHPUnit tests. **Parallelisable with P3-P6** | 3 | 2 | 5 d |
 | **P8 — Surfaces spike → kit consumer** | Refactor `src/dashboard/tabs/Surfaces/` + `class-blocksify-dashboard-surfaces-spike.php` to import from kit. Delete spike-specific hacks. Verify Surfaces still works end-to-end | 2 | 1 | 3 d |
 | **P9 — Documentation + 0.1.0 release** | README, API reference (JSDoc → `.d.ts` + typedoc HTML), 4 cookbook examples (Theme / Free plugin / Pro plugin / standalone), CHANGELOG seeded, Storybook published, npm publish 0.1.0, packagist publish 0.1.0, semver tags | 2 | 1 | 3 d |

@@ -39,6 +39,7 @@
       "types": "./build/editor-helpers/index.d.mts"
     },
     "./style.css": "./build/style.css",
+    "./datasets/style.css": "./build/datasets/style.css",
     "./package.json": "./package.json"
   },
   "sideEffects": [

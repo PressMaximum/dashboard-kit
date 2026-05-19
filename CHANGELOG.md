@@ -175,6 +175,94 @@ public API per the deprecation cycle in §12.2.
   - `webpack.config.js` adds the `editor-helpers/index` entry;
     `package.json` adds the `./editor-helpers` export + a 2 KB
     size-limit budget (actual: 816 B gzipped).
+- **P6 — Datasets** (the heaviest JS phase) ported + i18n-cleaned from
+  Blocksify Free's Surfaces spike:
+  - `<EntityListPage>` — Tier-2 page component for CPT list views built
+    on `@wordpress/dataviews`. Auto-wraps itself in `<PageWrapper>` so
+    DataViews's `useResizeObserver` sees a real `containerWidth`
+    (proves SPEC §11 hack #3 closes end-to-end). Renders header chrome
+    via the existing `<ListPageHeader>` (`title` + `description` +
+    optional `primaryAction`); switches between loading / empty /
+    populated states; forwards `items` + `fields` + `view` +
+    `onChangeView` + `actions` + `paginationInfo` + `defaultLayouts` +
+    `getItemId` straight to `<DataViews>`. Per SPEC §3.3 the kit does
+    NOT import `@wordpress/core-data` / `@wordpress/api-fetch` —
+    consumer fetches records and passes `items` + `isLoading` in.
+    Labels surface deliberately small (`loading`, `noResults` only);
+    all toolbar / pagination / density / sort / bulk strings come from
+    `@wordpress/dataviews`'s own i18n via WP's `default` text domain.
+    Locked class `.pmdk-entity-list-page`.
+  - `<EntityPreviewFrame>` — full-page iframe preview that renders at
+    a desktop-realistic viewport (`viewportWidth` × `viewportHeight`,
+    defaults 1200 × 900) then CSS-scales the result to fit any card
+    container. The scale ratio is computed via container query units
+    (`transform: scale(calc(100cqw / var(--pmdk-preview-viewport)))`)
+    so the wrapper needs no JS / `ResizeObserver` to be responsive.
+    Browser baseline (Chrome 105+, Firefox 110+, Safari 16+) matches
+    SPEC §2.2 already. Locked classes `.pmdk-entity-preview`,
+    `.pmdk-entity-preview__frame`, `.pmdk-entity-preview.is-empty`.
+  - `ViewPersistence.create({ storageKey, defaultView })` — factory
+    returning `{ load, save }`. `load()` returns `defaultView` when
+    storage is empty / unreadable / corrupt; `save(next)` swallows
+    storage quota / private-mode errors. Pure JS — no React dep —
+    so consumers can later swap for a REST-backed
+    `@wordpress/preferences` adapter without changing call sites.
+  - `filterTrashByDefault(items, view)` — pre-filter helper that
+    matches `WP_List_Table`'s subsubsub UX: trashed records hidden
+    unless the user explicitly opts in via a `status` filter
+    (single-value `'trash'` or array containing `'trash'`).
+    Pure function.
+  - SPEC §11 hack #2 closes by **deletion**: the kit does NOT vendor
+    or import `@wordpress/dataviews`'s 74 KB CSS. Consumer's
+    `wp-scripts` builds detect the kit's externalized
+    `@wordpress/dataviews` JS import + `DependencyExtractionWebpackPlugin`
+    auto-adds `wp-dataviews` to the generated `asset.php` deps; WP
+    core ≥6.5 then enqueues the matching stylesheet handle. No vendor
+    CSS in the kit's tree.
+  - SPEC §11 hacks #3 + #4 verified absent from `EntityListPage.css` —
+    neither the spike's `display: contents` row-flatten nor the
+    `--bsy-surfaces-preview-size` CSS-var bridge are needed once the
+    P2 PageWrapper flex chain reaches DataViews.
+  - 39 new tests across 4 files: ViewPersistence (13) covers
+    argument validation, load merge semantics, corrupt JSON,
+    non-object values, SSR localStorage-undefined, getItem-throws,
+    save quota errors; filterTrashByDefault (9) covers single vs
+    `isAny` status filters, default-hide-trash, missing view, missing
+    `filters` array, non-array items, items with no status field;
+    EntityPreviewFrame (7) covers iframe render, empty placeholder,
+    English fallback, viewport CSS variable + iframe sizing, default
+    viewport 1200×900, className merge in both states; EntityListPage
+    (10) covers PageWrapper auto-wrap, header rendering, primary
+    Button, className append, loading state with `role="status"`,
+    empty state, English label fallbacks, populated → DataViews path,
+    refresh-with-stale-data path, and full prop forwarding to
+    DataViews. Total: 125 / 125 passing.
+  - Webpack `MiniCssExtractPlugin` filename now emits per-entry CSS:
+    `build/style.css` for the root entry,
+    `build/datasets/style.css` for the datasets entry. Theme-only
+    consumers never pay DataViews-page CSS bytes (per-entry CSS
+    tree-shake is a small win the spike never claimed).
+    `package.json` adds `./datasets/style.css` export.
+  - Storybook validation: new
+    `stories/EntityListPage.dataviews.stories.jsx` mounts a real
+    `@wordpress/dataviews` grid inside the kit's wide- and narrow-mode
+    dashboard chassis (wide should render multi-column, narrow capped
+    at 1100px reading width). Plus loading + empty state stories.
+    Imports via `../src/datasets/index.mjs` so the fixture doubles as
+    a regression check on the `/datasets` export surface.
+  - SPEC §4.1 datasets tree updated (no longer "(planned)"); §5.6
+    amended with `viewportHeight` + `className` props; §5.10b
+    `<EntityListPage>` `labels` table trimmed from ~22 strings to 2
+    with a rationale paragraph (decision deferred from §5.13's audit);
+    §5.10b `<EntityPreviewFrame>` `loadingLabel` dropped (iframe
+    browser-native loading is enough); §11 hacks #2 / #3 / #4 rows
+    updated to reflect actual P6 state; §13 P6 row expanded with the
+    shipped scope.
+  - Size: datasets entry 2.46 KB gzipped (under 80 KB budget by a
+    very wide margin because `@wordpress/dataviews` +
+    `@wordpress/components` externalize to `wp.dataviews` /
+    `wp.components` globals — the kit ships only its own wrapper +
+    component CSS).
 
 ### Fixed
 

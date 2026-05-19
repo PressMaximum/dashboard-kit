@@ -1,0 +1,43 @@
+/*
+ * EntityPreviewFrame — scaled iframe preview. SPEC §5.6 + §16.2.
+ *
+ * The trick: the iframe renders at its real desktop viewport
+ * (`width: var(--pmdk-preview-viewport, 1200px)`), then the wrapper
+ * uses container query units to scale it down to the actual card
+ * width — `transform: scale(calc(100cqw / <viewport>))`.
+ *
+ * Container queries deliberately picked over ResizeObserver: the
+ * spike's `--bsy-surfaces-preview-size` CSS var bridge (P2 hack #4)
+ * was JS-driven; this is pure CSS. Browser baseline (Chrome 105+,
+ * Firefox 110+, Safari 16+) matches SPEC §2.2 already.
+ */
+
+.pmdk-entity-preview {
+	aspect-ratio: 4 / 3;
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	border-radius: var( --pmdk-radius-small, 4px );
+	container-type: inline-size;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+}
+
+.pmdk-entity-preview__frame {
+	border: 0;
+	left: 0;
+	pointer-events: none;
+	position: absolute;
+	top: 0;
+	transform: scale(
+		calc( 100cqw / var( --pmdk-preview-viewport, 1200px ) )
+	);
+	transform-origin: top left;
+}
+
+.pmdk-entity-preview.is-empty {
+	align-items: center;
+	color: var( --pmdk-color-text-muted, #757575 );
+	display: flex;
+	font-size: 12px;
+	justify-content: center;
+}

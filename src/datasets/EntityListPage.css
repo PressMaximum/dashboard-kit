@@ -1,0 +1,56 @@
+/*
+ * EntityListPage — Tier-2 layout. SPEC §5.6 + §16.2.
+ *
+ * The flex chain mirrors what the Surfaces spike's `.bsy-dashboard-
+ * surfaces__body` set up:
+ *
+ *   .pmdk-page-wrapper                 — provided by PageWrapper (P2)
+ *     .pmdk-entity-list-page__body     — flex column, flex:1, min-height:0
+ *       .dataviews-wrapper             — DataViews's own root
+ *
+ * The DataViews container then receives a measurable width via
+ * `ResizeObserver`, computes >1 columns, and renders the grid as
+ * intended (closes SPEC §11 hack #3 + #4 without the spike's
+ * `display: contents` row-flatten + `--bsy-surfaces-preview-size` CSS
+ * var bridge — those land "for free" once the chain is right).
+ */
+
+.pmdk-entity-list-page {
+	gap: 30px;
+}
+
+.pmdk-entity-list-page__body {
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #dcdcde );
+	border-radius: var( --pmdk-radius-small, 4px );
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	min-height: 360px;
+	min-width: 0;
+	overflow: hidden;
+}
+
+/* DataViews's own wrapper. Selector targets the vendor class so we don't
+   own its naming. Same flex-grow / min-height:0 pattern Site Editor
+   uses. */
+.pmdk-entity-list-page__body > .dataviews-wrapper {
+	flex-grow: 1;
+	min-height: 0;
+}
+
+.pmdk-entity-list-page__loading {
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	padding: 64px 16px;
+}
+
+.pmdk-entity-list-page__empty {
+	align-items: center;
+	color: var( --pmdk-color-text-muted, #50575e );
+	display: flex;
+	font-size: 14px;
+	justify-content: center;
+	padding: 64px 16px;
+}
