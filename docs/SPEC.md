@@ -435,8 +435,10 @@ type MountConfig = {
   notFoundComponent?: ComponentType;   // when route doesn't match
   fallback?: ReactNode;                // rendered inside <main> when no route matches AND
                                        // notFoundComponent is unset (loading splash etc.)
-  containerWidth?: 'narrow' | 'wide';  // 'narrow' = 1100px max, 'wide' = full viewport.
-                                       // (lands in P2 with PageWrapper containerWidth fix)
+  containerWidth?: 'narrow' | 'wide';  // 'narrow' (default) = 1100px max reading column.
+                                       // 'wide' = full viewport, DataViews-friendly.
+                                       // Sets `data-container-width` on `.pmdk-dashboard`;
+                                       // unrecognised values fall back to 'narrow'.
 };
 
 type TabDefinition = {
@@ -1499,8 +1501,8 @@ The Surfaces spike accumulated six documented hacks. Each maps to a kit version 
 |---|---|---|---|
 | CSS rename script overwrites root-entry editor chunk | `scripts/rename-css.js` in Blocksify Free | Kit ships own build pipeline (rollup or webpack) that doesn't have this bug. Blocksify Free's rename script also patched independently to merge instead of overwrite | **0.1.0** (kit doesn't inherit the bug) |
 | Vendored DataViews CSS (74KB) | `src/dashboard/tabs/Surfaces/dataviews-vendor.css` | Kit's webpack config explicitly marks `node_modules/@wordpress/dataviews/build-style/*.css` as `sideEffects: true` via a module rule override (verified to work in spike's webpack.config.js attempt — needs to actually land in kit build) | **0.1.0** |
-| DataViews `containerWidth: 0` → 1-card-per-row | `display: contents` row flatten in Surfaces editor.css | Kit's `<PageWrapper>` provides the flex chain DataViews's `useResizeObserver` requires (`flex-grow: 1` + `min-height: 0` + `min-width: 0` + `height: 100%` chain). `<EntityListPage>` always wraps itself in `<PageWrapper>` | **0.1.0** |
-| `view.layout.previewSize` → CSS var bridge for grid template | `style={{ '--bsy-surfaces-preview-size': ... }}` in `SurfacesListPage` | Once `<PageWrapper>` fixes containerWidth, DataViews's native `previewSize` computation works, no CSS var bridge needed | **0.1.0** (along with above) |
+| DataViews `containerWidth: 0` → 1-card-per-row | `display: contents` row flatten in Surfaces editor.css | Kit's `<PageWrapper>` provides the flex chain DataViews's `useResizeObserver` requires (`flex-grow: 1` + `min-height: 0` + `min-width: 0` + `height: 100%` chain). `<EntityListPage>` always wraps itself in `<PageWrapper>` | **0.1.0** — infrastructure **shipped in P2**; `<EntityListPage>` lands P6. Validated by `stories/PageWrapper.dataviews.stories.jsx` |
+| `view.layout.previewSize` → CSS var bridge for grid template | `style={{ '--bsy-surfaces-preview-size': ... }}` in `SurfacesListPage` | Once `<PageWrapper>` fixes containerWidth, DataViews's native `previewSize` computation works, no CSS var bridge needed | **0.1.0** (along with above) — shipped in P2 |
 | Submenu `hashchange` JS active-state toggle | `sync_submenu_active()` PHP method emitting `<script>` | Helper API `MenuHelpers::printSubmenuActiveSync()` ships the same inline script reusably; kit version 1.0 keeps this hack since WP doesn't expose a server-side hash-detection API | **0.1.0** (helper) → tracked upstream for v2.x WP API change |
 | Fullscreen close button click delegation hijack | `force_fullscreen_mode()` inline JS | Track Gutenberg PR for `editor.PostBackButton` slot. When upstream lands, kit replaces capture-phase click hijack with proper slot fill. Old hack stays available as fallback for older WP versions | **0.1.0** (hack as default) → **0.x.y** (slot fill when WP version detected) |
 | **DataViews bundle duplication** across Pro consumers (Blocksify Pro + Customify Pro each ship ~50KB) | Architectural consequence of §2.4 independent-release decision | Track Gutenberg issue #56680 + related discussions for `wp-dataviews` standalone script handle. When WP Core exposes the handle, consumer's `wp-scripts` auto-externalizes — kit code unchanged, consumers re-build and shed the duplication. Kit only bumps the `peerDependencies` WordPress minimum version | **Upstream-dependent** — likely WP 7.x |

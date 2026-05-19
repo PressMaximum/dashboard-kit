@@ -52,6 +52,10 @@ export default function DashboardShell( {
 	// Routes
 	routes,
 	initialRoute = '#welcome',
+	// Layout — `'narrow'` (default) caps the reading column at 1100px;
+	// `'wide'` removes the cap so DataViews-heavy pages can fill the
+	// viewport. SPEC §5.1 + §11 hack #3. See DashboardShell.css.
+	containerWidth = 'narrow',
 	// Optional version anchor
 	versionLabel,
 	versionHref,
@@ -77,8 +81,14 @@ export default function DashboardShell( {
 	const brandName = brand?.name;
 	const brandIcon = brand?.icon;
 
+	const safeContainerWidth =
+		containerWidth === 'wide' ? 'wide' : 'narrow';
+
 	return (
-		<div className="pmdk-dashboard">
+		<div
+			className="pmdk-dashboard"
+			data-container-width={ safeContainerWidth }
+		>
 			<header className="pmdk-dashboard__header">
 				<h1 className="pmdk-dashboard__brand">
 					{ brandIcon && (

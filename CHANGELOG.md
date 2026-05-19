@@ -20,7 +20,7 @@ public API per the deprecation cycle in §12.2.
   - Layouts (Tier-1 primitives, locked CSS surface per SPEC §16.2): `PageWrapper`, `ListPageHeader`, `EditorPageHeader`, `EditorViewLayout`, `SubNav`.
   - CSS rename: every `bsy-dashboard-*` class becomes `pmdk-*`. `tokens.css` drives the palette via `--pmdk-color-*` / `--pmdk-radius-*` / `--pmdk-spacing-*` custom properties.
   - Storybook stories for the seven shipped Tier-1 + Tier-2 surfaces.
-- **P1.5 — SPEC reconcile** (this entry):
+- **P1.5 — SPEC reconcile**:
   - SPEC §5.1 amended with the six optional `MountConfig` props the implementation already accepts (`tabsAriaLabel`, `helpLabels`, `helpIcon`, `helpItemIcon`, `versionAriaLabel`, `fallback`). `__` relaxed from required to recommended (becomes required at P3).
   - SPEC §5.2 amended to include `boot` and `tabsLocked` keys actually returned by `createFilterNamespace` (Blocksify Free uses `tabsLocked` for the Pro-promo tab flow).
   - SPEC §5.2b added: enumerates the flat HashRouter public API.
@@ -31,6 +31,15 @@ public API per the deprecation cycle in §12.2.
   - SPEC §2.3 install command + peerDependencies example updated to include `react` / `react-dom`.
   - Smoke tests added for the pure-function surface (`matchRoute`, `activeTabId`, `createFilterNamespace`, `createI18nBag`, `readBoot`).
   - Test consumer wired to a real `mountDashboard()` call (was a `console.log` stub).
+- **P2 — PageWrapper containerWidth fix**:
+  - `<PageWrapper>` flex chain hardened to give `@wordpress/dataviews`'s grid layout a measurable container at mount time. The new chain is `flex: 1 1 auto` + `min-width: 0` + `min-height: 0` + `width: 100%` + `height: 100%`, matching the Site Editor's DataViews-page recipe. Closes SPEC §11 hack #3 + #4: the spike's `display: contents` row-flatten + CSS-var grid-template bridge are no longer required.
+  - `<DashboardShell>` `.pmdk-dashboard__main` rewritten as a flex column with `min-height: 0` so the chain reaches PageWrapper at full available height. The reading-column cap (max-width 1100px, centred, generous vertical padding) is now gated behind a `[data-container-width="narrow"]` attribute selector instead of being baked in.
+  - `mountDashboard({ containerWidth: 'narrow' | 'wide' })` sets `data-container-width` on the outer `.pmdk-dashboard` element. `'narrow'` (default) preserves the existing reading-column look. `'wide'` removes the cap and tightens vertical padding so DataViews-heavy pages can fill the viewport. Unrecognised values fall back to `'narrow'`.
+  - `<SnackbarSlot>` made defensive against missing `core/notices` registration so unit tests and consumers without `@wordpress/notices` don't crash at mount.
+  - Storybook: new `Validation/PageWrapper × DataViews` story mounts a real `@wordpress/dataviews` instance inside the wide-mode chain to prove the grid renders multi-column (the spike's failure mode was one-card-per-row). The same data in narrow mode is included as a contrast.
+  - `@wordpress/dataviews` added as devDependency for the validation story.
+  - Tests: 4 new containerWidth tests (defaults to narrow, sets wide, sanitizes unknown values, resolves rootEl via selector string).
+  - Rename batch (P2-driven follow-up to P1.5's HashRouter/BootDataLoader rename): every remaining JSX-containing module in `src/core/` + `src/layouts/*` moves from `.js` to `.jsx` so vitest can parse them without per-file loader hints. Webpack's `resolve.extensions` already includes `.jsx`; internal imports are extension-less; `src/index.mjs` switches to extension-less re-exports. No public API surface change.
 
 ### Fixed
 

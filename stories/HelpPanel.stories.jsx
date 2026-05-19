@@ -1,4 +1,4 @@
-import HelpPanel from '../src/core/HelpPanel.js';
+import HelpPanel from '../src/core/HelpPanel.jsx';
 
 export default {
 	title: 'Core/HelpPanel',

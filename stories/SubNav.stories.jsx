@@ -1,4 +1,4 @@
-import SubNav from '../src/layouts/SubNav/index.js';
+import SubNav from '../src/layouts/SubNav/index.jsx';
 
 export default {
 	title: 'Layouts/SubNav',

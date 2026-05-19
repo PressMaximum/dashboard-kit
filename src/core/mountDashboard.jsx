@@ -69,6 +69,9 @@ export function mountDashboard( config ) {
 		initialRoute = '#welcome',
 		notFoundComponent,
 		fallback,
+		// `'narrow'` (default) → 1100px reading column.
+		// `'wide'`             → full viewport, DataViews-friendly. SPEC §5.1.
+		containerWidth = 'narrow',
 	} = config;
 
 	if ( ! filterNamespace ) {
@@ -115,6 +118,7 @@ export function mountDashboard( config ) {
 				tabsAriaLabel={ tabsAriaLabel }
 				routes={ routes }
 				initialRoute={ initialRoute }
+				containerWidth={ containerWidth }
 				versionLabel={ filteredVersionLabel }
 				versionHref={ versionHref }
 				versionAriaLabel={ versionAriaLabel }

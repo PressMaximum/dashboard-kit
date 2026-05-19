@@ -50,11 +50,11 @@ export { createI18nBag } from './core/createI18nBag';
  * Layouts — Tier-1 layout primitives. Zero translatable strings; text
  * arrives via props or slot children (SPEC §5.3 + §5.13).
  * ------------------------------------------------------------------------ */
-export { default as PageWrapper } from './layouts/PageWrapper/index.js';
-export { default as ListPageHeader } from './layouts/ListPageHeader/index.js';
-export { default as EditorPageHeader } from './layouts/EditorPageHeader/index.js';
-export { default as EditorViewLayout } from './layouts/EditorViewLayout/index.js';
-export { default as SubNav } from './layouts/SubNav/index.js';
+export { default as PageWrapper } from './layouts/PageWrapper';
+export { default as ListPageHeader } from './layouts/ListPageHeader';
+export { default as EditorPageHeader } from './layouts/EditorPageHeader';
+export { default as EditorViewLayout } from './layouts/EditorViewLayout';
+export { default as SubNav } from './layouts/SubNav';
 
 /* ------------------------------------------------------------------------
  * Version stamp — flipped via release tooling once 0.1.0 ships.

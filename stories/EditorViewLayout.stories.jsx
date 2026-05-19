@@ -1,4 +1,4 @@
-import EditorViewLayout from '../src/layouts/EditorViewLayout/index.js';
+import EditorViewLayout from '../src/layouts/EditorViewLayout/index.jsx';
 
 export default {
 	title: 'Layouts/EditorViewLayout',

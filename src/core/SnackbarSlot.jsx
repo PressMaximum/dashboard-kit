@@ -28,7 +28,12 @@ export default function SnackbarSlot( { className } ) {
 		( select ) => select( NOTICES_STORE )?.getNotices() ?? [],
 		[],
 	);
-	const { removeNotice } = useDispatch( NOTICES_STORE );
+	// `useDispatch` against an unregistered store returns `null` in older
+	// WP data versions + in vitest/jsdom (no WP runtime). Default to a
+	// no-op so the kit doesn't crash when the consumer happens not to
+	// have @wordpress/notices registered (typical in unit tests).
+	const dispatchers = useDispatch( NOTICES_STORE ) || {};
+	const removeNotice = dispatchers.removeNotice || ( () => undefined );
 
 	const snackbarNotices = notices.filter( ( n ) => n.type === 'snackbar' );
 

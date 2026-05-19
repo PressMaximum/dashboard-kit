@@ -1,6 +1,6 @@
 import { Button } from '@wordpress/components';
 
-import EditorPageHeader from '../src/layouts/EditorPageHeader/index.js';
+import EditorPageHeader from '../src/layouts/EditorPageHeader/index.jsx';
 
 export default {
 	title: 'Layouts/EditorPageHeader',

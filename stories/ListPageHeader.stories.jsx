@@ -1,6 +1,6 @@
 import { Button } from '@wordpress/components';
 
-import ListPageHeader from '../src/layouts/ListPageHeader/index.js';
+import ListPageHeader from '../src/layouts/ListPageHeader/index.jsx';
 
 export default {
 	title: 'Layouts/ListPageHeader',

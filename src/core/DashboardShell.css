@@ -95,17 +95,45 @@
 	box-shadow: none;
 }
 
-/* Main — centered horizontally inside the wrapper, capped to a
-   reading-column width (matches WP's about.php pattern). Top padding
-   sits heavier than the chassis baseline so the active tab strip
-   doesn't crowd the page heading. */
+/* Main — flex column so DataViews + other height-greedy children get a
+   measurable flex chain (SPEC §11 hack #3 / PageWrapper). `min-height: 0`
+   lets the flex item actually shrink below its intrinsic content height,
+   which is what unlocks DataViews's `useResizeObserver` to fire with a
+   real width on first mount.
+
+   `containerWidth` mode comes off the outer `.pmdk-dashboard` element via
+   the `data-container-width` attribute (set by `mountDashboard({
+   containerWidth: 'narrow' | 'wide' })`, default `narrow`):
+
+     narrow — the about.php reading-column look: capped at 1100px, centred,
+              generous top + bottom padding so the active tab underline
+              doesn't crowd the page heading. Suits Welcome / Settings /
+              Changelog / Free-vs-Pro tabs.
+
+     wide   — full viewport minus the header gutter. Required for
+              DataViews-heavy CPT lists where horizontal real estate is
+              the whole point. Top + bottom padding tightens so the data
+              grid maximises vertical space too. */
 .pmdk-dashboard__main {
-	flex: 1;
-	padding: 60px var( --pmdk-header-gutter, 24px ) 80px;
-	max-width: 1100px;
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
 	width: 100%;
-	margin: 0 auto;
 	box-sizing: border-box;
+}
+
+.pmdk-dashboard[ data-container-width='narrow' ] .pmdk-dashboard__main,
+.pmdk-dashboard:not( [ data-container-width ] ) .pmdk-dashboard__main {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 60px var( --pmdk-header-gutter, 24px ) 80px;
+}
+
+.pmdk-dashboard[ data-container-width='wide' ] .pmdk-dashboard__main {
+	max-width: none;
+	margin: 0;
+	padding: 24px var( --pmdk-header-gutter, 24px );
 }
 
 /* Suppress the focus ring on programmatic main focus (route-change SPA

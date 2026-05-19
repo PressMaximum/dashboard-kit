@@ -1,4 +1,4 @@
-import TabStrip from '../src/core/TabStrip.js';
+import TabStrip from '../src/core/TabStrip.jsx';
 
 export default {
 	title: 'Core/TabStrip',
