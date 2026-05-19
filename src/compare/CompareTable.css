@@ -30,11 +30,12 @@
 	grid-template-columns: 2fr 1fr 1fr;
 	align-items: center;
 	gap: 16px;
-	padding: 14px 24px;
+	padding: var( --pmdk-compare-row-padding-y, 14px )
+		var( --pmdk-compare-row-padding-x, 24px );
 }
 
 .pmdk-compare__head {
-	background: #fafafa;
+	background: var( --pmdk-compare-head-bg, #fafafa );
 	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
 }
 
@@ -63,8 +64,11 @@
    label aligns with the feature labels in the rows below. */
 .pmdk-compare__section-title {
 	margin: 0;
-	padding: 12px 24px;
-	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	padding: 12px var( --pmdk-compare-row-padding-x, 24px );
+	background: var(
+		--pmdk-compare-section-title-bg,
+		var( --pmdk-color-bg-subtle, #f6f7f7 )
+	);
 	border-top: 1px solid var( --pmdk-color-border, #e0e0e0 );
 	font-size: 11px;
 	font-weight: 700;
@@ -146,8 +150,8 @@
 	align-items: center;
 	gap: 24px;
 	padding: 24px;
-	background: #fffbf0;
-	border-top: 1px solid #f0d57c;
+	background: var( --pmdk-compare-cta-bg, #fffbf0 );
+	border-top: 1px solid var( --pmdk-compare-cta-border, #f0d57c );
 	flex-wrap: wrap;
 }
 

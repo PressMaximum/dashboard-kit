@@ -33,6 +33,7 @@
 
 	/* Shape */
 	--pmdk-radius-small: 4px;
+	--pmdk-radius-card: 8px;
 	--pmdk-radius-pill: 9999px;
 
 	/* Type */
@@ -44,6 +45,36 @@
 	--pmdk-header-gutter: 24px;
 	--pmdk-tab-padding-y: 16px;
 	--pmdk-tab-padding-x: 18px;
+
+	/* Hero (Welcome intro card) ---------------------------------------
+	 * Consumers override these to re-skin the hero without touching
+	 * `.pmdk-hero` class targets. Each token has a primitive fallback
+	 * so layered overrides degrade cleanly (KIT_ISSUES K-007). */
+	--pmdk-hero-padding: 48px;
+	--pmdk-hero-bg: #ececec;
+	--pmdk-hero-radius: var( --pmdk-radius-card, 8px );
+	--pmdk-hero-title-size: 28px;
+
+	/* Compare table -------------------------------------------------- */
+	--pmdk-compare-head-bg: #fafafa;
+	--pmdk-compare-section-title-bg: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	--pmdk-compare-row-padding-y: 14px;
+	--pmdk-compare-row-padding-x: 24px;
+	--pmdk-compare-cta-bg: #fffbf0;
+	--pmdk-compare-cta-border: #f0d57c;
+
+	/* Checklist (Welcome onboarding) -------------------------------- */
+	--pmdk-checklist-item-padding-y: 16px;
+	--pmdk-checklist-item-padding-x: 24px;
+
+	/* SubNav rail --------------------------------------------------- */
+	--pmdk-subnav-bg: var( --pmdk-color-bg, #fff );
+	--pmdk-subnav-radius: var( --pmdk-radius-card, 8px );
+
+	/* ReleaseBlock (Changelog card) --------------------------------- */
+	--pmdk-release-block-padding-y: 20px;
+	--pmdk-release-block-padding-x: 24px;
+	--pmdk-release-block-radius: var( --pmdk-radius-small, 4px );
 }
 
 /*

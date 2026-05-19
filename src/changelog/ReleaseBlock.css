@@ -13,8 +13,12 @@
 .pmdk-release-block {
 	background: var( --pmdk-color-bg, #fff );
 	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
-	border-radius: var( --pmdk-radius-small, 4px );
-	padding: 20px 24px;
+	border-radius: var(
+		--pmdk-release-block-radius,
+		var( --pmdk-radius-small, 4px )
+	);
+	padding: var( --pmdk-release-block-padding-y, 20px )
+		var( --pmdk-release-block-padding-x, 24px );
 	margin: 0 0 16px;
 }
 
