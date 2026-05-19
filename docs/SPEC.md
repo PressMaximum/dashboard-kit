@@ -351,10 +351,11 @@ src/
 ├── changelog/                         // P4
 │   ├── ReleaseBlock.jsx
 │   └── CategoryBadge.jsx              // tone-coded pill, exportable standalone
-├── editor-helpers/                    // (P5) helpers riding on top of post.php block editor
-│   ├── forceFullscreenMode.js         // inline-script generator
-│   ├── rewireBackButton.js
-│   └── registerSubmenuActive.js
+├── editor-helpers/                    // P5 — JS runtime helpers, /editor-helpers sub-entry
+│   ├── index.mjs                      // barrel re-exports for the sub-entry
+│   ├── forceFullscreenMode.js         // flips core/edit-post.fullscreenMode via wp.data
+│   ├── rewireBackButton.js            // capture-phase click intercept on the close button
+│   └── registerSubmenuActive.js       // submenu `.current` sync on hashchange
 ├── datasets/                          // (P6) TREE-SHAKEABLE — heavy DataViews deps
 │   ├── index.mjs                      // re-exports for the `./datasets` sub-entry
 │   ├── EntityListPage.jsx             // (planned) full list view: header + DataViews + actions
@@ -855,17 +856,60 @@ filterTrashByDefault(items, view): Array
 
 ### 5.7 Editor helpers
 
-```jsx
-// JS — consumer's editor-script entry imports this if needed
-import { rewireBackButton } from '@pressmaximum/dashboard-kit/editor-helpers';
-rewireBackButton({
-  selector: '.edit-post-fullscreen-mode-close',
-  href: 'admin.php?page=customify#templates',
-});
+JS-side helpers ship behind the `/editor-helpers` sub-entry (the same
+tree-shake pattern as `/datasets`) so dashboard-only consumers never
+bundle them. Each helper is an idempotent runtime function — call it
+once from the consumer's editor-script entry; it returns an
+unsubscribe function for symmetric teardown.
+
+```ts
+import {
+  rewireBackButton,
+  forceFullscreenMode,
+  registerSubmenuActive,
+} from '@pressmaximum/dashboard-kit/editor-helpers';
+
+// Intercept clicks on the fullscreen-close button + redirect to a
+// dashboard tab. Capture-phase + preventDefault — React keeps the
+// `href` attribute pinned across renders so attribute rewires lose
+// the race.
+function rewireBackButton(config: {
+  selector?: string;          // default '.edit-post-fullscreen-mode-close'
+  href: string;               // destination URL (required)
+}): (() => void) | null;
+
+// Flip the editor into fullscreen via core/preferences. Defers via
+// wp.data.subscribe until the store registers, so calling at the top
+// of the consumer's editor entry is safe.
+function forceFullscreenMode(): (() => void) | null;
+
+// Toggle WP submenu `.current` based on the dashboard's hash route.
+// Returns null when the DOM is absent or no item matches `hash`.
+function registerSubmenuActive(config: {
+  menuId: string;             // e.g. 'toplevel_page_customify'
+  hash: string;               // e.g. '#templates'
+}): (() => void) | null;
+```
+
+Typical consumer wiring (Pattern A CPT editor flow):
+
+```js
+// consumer-plugin/src/editor.js — enqueued via enqueue_block_editor_assets
+import {
+  rewireBackButton,
+  forceFullscreenMode,
+} from '@pressmaximum/dashboard-kit/editor-helpers';
+
+forceFullscreenMode();
+rewireBackButton( {
+  href: window.customifyEditorBoot.backUrl, // PHP-localized
+} );
 ```
 
 ```php
-// PHP — consumer's PHP calls these from enqueue_block_editor_assets
+// PHP wrapper (lands in P7 — Admin\EditorIntegration class). Until
+// then consumers wire their own enqueue_block_editor_assets handler
+// that bundles the JS above.
 use PressMaximum\DashboardKit\Admin\EditorIntegration;
 
 EditorIntegration::forceFullscreenMode([
@@ -877,6 +921,8 @@ EditorIntegration::rewireBackButton([
     'back_url'  => admin_url('admin.php?page=customify#templates'),
 ]);
 ```
+
+SSR safety: all three helpers short-circuit when `typeof document === 'undefined'` (or `typeof window === 'undefined'` for `forceFullscreenMode`) so the kit can be imported in non-browser contexts without crashing.
 
 ### 5.8 PHP — preview endpoint registrar
 
@@ -1642,8 +1688,8 @@ The Surfaces spike accumulated six documented hacks. Each maps to a kit version 
 | Vendored DataViews CSS (74KB) | `src/dashboard/tabs/Surfaces/dataviews-vendor.css` | Kit's webpack config explicitly marks `node_modules/@wordpress/dataviews/build-style/*.css` as `sideEffects: true` via a module rule override (verified to work in spike's webpack.config.js attempt — needs to actually land in kit build) | **0.1.0** |
 | DataViews `containerWidth: 0` → 1-card-per-row | `display: contents` row flatten in Surfaces editor.css | Kit's `<PageWrapper>` provides the flex chain DataViews's `useResizeObserver` requires (`flex-grow: 1` + `min-height: 0` + `min-width: 0` + `height: 100%` chain). `<EntityListPage>` always wraps itself in `<PageWrapper>` | **0.1.0** — infrastructure **shipped in P2**; `<EntityListPage>` lands P6. Validated by `stories/PageWrapper.dataviews.stories.jsx` |
 | `view.layout.previewSize` → CSS var bridge for grid template | `style={{ '--bsy-surfaces-preview-size': ... }}` in `SurfacesListPage` | Once `<PageWrapper>` fixes containerWidth, DataViews's native `previewSize` computation works, no CSS var bridge needed | **0.1.0** (along with above) — shipped in P2 |
-| Submenu `hashchange` JS active-state toggle | `sync_submenu_active()` PHP method emitting `<script>` | Helper API `MenuHelpers::printSubmenuActiveSync()` ships the same inline script reusably; kit version 1.0 keeps this hack since WP doesn't expose a server-side hash-detection API | **0.1.0** (helper) → tracked upstream for v2.x WP API change |
-| Fullscreen close button click delegation hijack | `force_fullscreen_mode()` inline JS | Track Gutenberg PR for `editor.PostBackButton` slot. When upstream lands, kit replaces capture-phase click hijack with proper slot fill. Old hack stays available as fallback for older WP versions | **0.1.0** (hack as default) → **0.x.y** (slot fill when WP version detected) |
+| Submenu `hashchange` JS active-state toggle | `sync_submenu_active()` PHP method emitting `<script>` | JS helper `registerSubmenuActive({ menuId, hash })` ships the same reusable behavior; kit version 1.0 keeps this hack since WP doesn't expose a server-side hash-detection API. P7 `MenuHelpers::printSubmenuActiveSync()` will wrap it as the inline-script convenience | **0.1.0** — JS helper **shipped in P5**; PHP wrapper lands P7. Tracked upstream for v2.x WP API change |
+| Fullscreen close button click delegation hijack | `force_fullscreen_mode()` inline JS | JS helper `rewireBackButton({ selector, href })` ships the capture-phase intercept as a runtime function. Track Gutenberg PR for `editor.PostBackButton` slot; when upstream lands, the kit replaces the hijack with a proper slot fill but keeps the hack as fallback | **0.1.0** — JS helper **shipped in P5** (paired with `forceFullscreenMode()`). Slot-fill replacement deferred to a 0.x.y minor once WP min-version bumps |
 | **DataViews bundle duplication** across Pro consumers (Blocksify Pro + Customify Pro each ship ~50KB) | Architectural consequence of §2.4 independent-release decision | Track Gutenberg issue #56680 + related discussions for `wp-dataviews` standalone script handle. When WP Core exposes the handle, consumer's `wp-scripts` auto-externalizes — kit code unchanged, consumers re-build and shed the duplication. Kit only bumps the `peerDependencies` WordPress minimum version | **Upstream-dependent** — likely WP 7.x |
 | **`@wordpress/components` `<Spinner>` margin** — legacy `margin: 5px 11px 0 0` pushes the spinner off-centre inside flex-centred containers (visible in Blocksify Free's Welcome checklist status circle, fixed via CSS override in commit `7e6b7ba`) | `@wordpress/components` legacy CSS (decade-old back-when-spinners-sat-next-to-Save-buttons assumption) | Kit's `<Spinner>` wrapper exports `<PMDKSpinner>` with `margin: 0` baked in. Consumers use this wrapper instead of importing `@wordpress/components` `<Spinner>` directly. Documented in kit README + ESLint warning suggesting the swap | **0.1.0** (kit wrapper) — upstream WP fix would deprecate the wrapper |
 
@@ -1739,7 +1785,7 @@ Each phase below includes implementation + tests + review buffer. Estimates are 
 | **P2 — PageWrapper containerWidth fix** | Harden `PageWrapper` flex chain to give DataViews's `useResizeObserver` a stable `containerWidth` (spike hack #3). Implement `mountDashboard.containerWidth` config (`'narrow' \| 'wide'`). Validate by mounting a DataViews-using test fixture | 1 | 1 | 2 d |
 | **P3 — Settings** | `SchemaForm` (single-panel), `SchemaField` (consumer-injected `fieldTypes` map), `SaveBar` (Tier-2 `labels` prop), `createSettingsStore({ storeName, endpoint, fetch, seedSaved? })`, `useDirtyState` (+ module-level `isAnyDirty` / `confirmDiscardAny`). `mountDashboard` wires `confirmDiscardAny` as the default `NavigationGuardProvider` guard. Tests cover the full store action sequence (load → edit → save → reset → clearDirty + error paths). Blocksify Free Settings tab migration deferred to P8 with the other consumer cutovers | 3 | 2 | 5 d |
 | **P4 — Welcome + Compare + Changelog** | `Hero`, `Checklist`, `ChecklistItem`, `createOnboardingStore` (full action surface with optimistic updates + rollback), `CompareTable` (mixed-content cell dispatch), `ReleaseBlock` + `CategoryBadge` (with `toneOverrides`). Tests cover the onboarding store action sequence + CategoryBadge label / tone resolution. Blocksify Free Welcome / Free-vs-Pro / Changelog migration deferred to P8 with the other consumer cutovers | 3 | 1.5 | 4.5 d |
-| **P5 — Editor helpers** | `forceFullscreenMode`, `rewireBackButton`, `registerSubmenuActive` + PHP equivalents in composer package. Test on actual post.php edit flow | 2 | 1 | 3 d |
+| **P5 — Editor helpers** | JS runtime helpers behind the `/editor-helpers` sub-entry: `forceFullscreenMode`, `rewireBackButton`, `registerSubmenuActive`. Each returns an unsubscribe handle for symmetric teardown; all short-circuit in SSR / non-browser contexts. Tests: 18 unit cases covering arg validation, idempotency, click-capture interception, hashchange sync, and `wp.data.subscribe` deferral. PHP wrappers (`Admin\EditorIntegration`, `MenuHelpers::printSubmenuActiveSync`) lands with P7's composer package | 2 | 1 | 3 d |
 | **P6 — Datasets** | `EntityListPage`, `EntityPreviewFrame`, `ViewPersistence`, `filterTrashByDefault`. Verify spike hacks #3, #4, #5 disappear with PageWrapper from P2. Verify DataViews CSS sideEffects override works (spike hack #2) | 4 | 2 | 6 d |
 | **P7 — PHP composer package** | `Boot`, `REST\PreviewEndpointRegistrar`, `REST\SettingsControllerBase`, `Admin\MenuHelpers`, `Admin\AssetEnqueue`, `Admin\EditorIntegration`, `Schema\SchemaBuilder`. PHPUnit tests. **Parallelisable with P3-P6** | 3 | 2 | 5 d |
 | **P8 — Surfaces spike → kit consumer** | Refactor `src/dashboard/tabs/Surfaces/` + `class-blocksify-dashboard-surfaces-spike.php` to import from kit. Delete spike-specific hacks. Verify Surfaces still works end-to-end | 2 | 1 | 3 d |

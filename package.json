@@ -34,6 +34,10 @@
       "import": "./build/datasets/index.mjs",
       "types": "./build/datasets/index.d.mts"
     },
+    "./editor-helpers": {
+      "import": "./build/editor-helpers/index.mjs",
+      "types": "./build/editor-helpers/index.d.mts"
+    },
     "./style.css": "./build/style.css",
     "./package.json": "./package.json"
   },
@@ -125,6 +129,12 @@
       "name": "Datasets entry (gzip)",
       "path": "build/datasets/index.mjs",
       "limit": "80 KB",
+      "gzip": true
+    },
+    {
+      "name": "Editor helpers entry (gzip)",
+      "path": "build/editor-helpers/index.mjs",
+      "limit": "2 KB",
       "gzip": true
     }
   ]

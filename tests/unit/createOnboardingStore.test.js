@@ -38,19 +38,19 @@ describe( 'createOnboardingStore — construction', () => {
 			createOnboardingStore( {
 				endpoint: '/x',
 				fetch: () => Promise.resolve(),
-			} )
+			} ),
 		).toThrow( /storeName/ );
 		expect( () =>
 			createOnboardingStore( {
 				storeName: nextName(),
 				fetch: () => Promise.resolve(),
-			} )
+			} ),
 		).toThrow( /endpoint/ );
 		expect( () =>
 			createOnboardingStore( {
 				storeName: nextName(),
 				endpoint: '/x',
-			} )
+			} ),
 		).toThrow( /fetch/ );
 	} );
 } );
@@ -141,7 +141,7 @@ describe( 'createOnboardingStore — complete / uncomplete', () => {
 		const { select, dispatch } = setup( { fetchImpl: fetch } );
 		await dispatch.load();
 		await expect( dispatch.complete( 'configure' ) ).rejects.toThrow(
-			'server down'
+			'server down',
 		);
 		expect( select.isCompleted( 'configure' ) ).toBe( false );
 		expect( select.getError() ).toBe( err );

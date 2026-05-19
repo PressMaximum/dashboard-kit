@@ -59,10 +59,10 @@ describe( 'CategoryBadge', () => {
 			<CategoryBadge
 				category="fixed"
 				labels={ { fixed: 'Đã sửa' } }
-			/>
+			/>,
 		);
 		expect( host.querySelector( '.pmdk-category-badge' ).textContent ).toBe(
-			'Đã sửa'
+			'Đã sửa',
 		);
 	} );
 
@@ -71,10 +71,10 @@ describe( 'CategoryBadge', () => {
 			<CategoryBadge
 				category="security"
 				toneOverrides={ { security: 'updated' } }
-			/>
+			/>,
 		);
 		expect(
-			host.querySelector( '.pmdk-category-badge' ).className
+			host.querySelector( '.pmdk-category-badge' ).className,
 		).toContain( 'pmdk-category-badge--updated' );
 	} );
 } );

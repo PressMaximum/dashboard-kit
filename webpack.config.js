@@ -51,6 +51,10 @@ export default ( env, argv ) => {
 				__dirname,
 				'src/datasets/index.mjs'
 			),
+			'editor-helpers/index': path.resolve(
+				__dirname,
+				'src/editor-helpers/index.mjs'
+			),
 		},
 		output: {
 			path: path.resolve( __dirname, 'build' ),

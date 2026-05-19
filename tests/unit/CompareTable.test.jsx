@@ -36,23 +36,26 @@ function render( node ) {
 	act( () => root.render( node ) );
 }
 
-/** Pull the rendered cells of a given row out of the host DOM. */
+/**
+ * Pull the rendered cells of a given row out of the host DOM.
+ * @param rowId
+ */
 function cellsOfRow( rowId ) {
 	const row = host.querySelector(
-		`.pmdk-compare__row:has(.pmdk-compare__feature)`
+		`.pmdk-compare__row:has(.pmdk-compare__feature)`,
 	);
 	// host may contain multiple rows — find by feature text instead.
 	const allRows = Array.from(
-		host.querySelectorAll( '.pmdk-compare__row' )
+		host.querySelectorAll( '.pmdk-compare__row' ),
 	);
 	const target = allRows.find( ( r ) =>
-		r.textContent.includes( rowId )
+		r.textContent.includes( rowId ),
 	);
 	if ( ! target ) {
 		throw new Error( `row "${ rowId }" not found in render` );
 	}
 	const wraps = Array.from(
-		target.querySelectorAll( '.pmdk-compare__cell-wrap' )
+		target.querySelectorAll( '.pmdk-compare__cell-wrap' ),
 	);
 	return wraps.map( ( w ) => w.firstElementChild );
 }
@@ -124,10 +127,10 @@ describe( 'CompareTable — structure', () => {
 					headFree: 'Free',
 					headPro: 'Pro',
 				} }
-			/>
+			/>,
 		);
 		const headCells = host.querySelectorAll(
-			'.pmdk-compare__head-cell'
+			'.pmdk-compare__head-cell',
 		);
 		expect( headCells[ 0 ].textContent ).toBe( 'Tính năng' );
 	} );
@@ -142,12 +145,12 @@ describe( 'CompareTable — structure', () => {
 					ctaLabel: 'Buy',
 					ctaHref: 'https://example.com',
 				} }
-			/>
+			/>,
 		);
 		const cta = host.querySelector( '.pmdk-compare__cta' );
 		expect( cta ).toBeTruthy();
 		expect( cta.querySelector( 'a' )?.getAttribute( 'href' ) ).toBe(
-			'https://example.com'
+			'https://example.com',
 		);
 	} );
 } );

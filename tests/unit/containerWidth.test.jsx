@@ -63,7 +63,7 @@ describe( 'mountDashboard containerWidth', () => {
 		const dashboard = host.querySelector( '.pmdk-dashboard' );
 		expect( dashboard ).toBeTruthy();
 		expect( dashboard.getAttribute( 'data-container-width' ) ).toBe(
-			'narrow'
+			'narrow',
 		);
 	} );
 
@@ -77,7 +77,7 @@ describe( 'mountDashboard containerWidth', () => {
 		} );
 		const dashboard = host.querySelector( '.pmdk-dashboard' );
 		expect( dashboard.getAttribute( 'data-container-width' ) ).toBe(
-			'wide'
+			'wide',
 		);
 	} );
 
@@ -91,7 +91,7 @@ describe( 'mountDashboard containerWidth', () => {
 		} );
 		const dashboard = host.querySelector( '.pmdk-dashboard' );
 		expect( dashboard.getAttribute( 'data-container-width' ) ).toBe(
-			'narrow'
+			'narrow',
 		);
 	} );
 
@@ -106,7 +106,7 @@ describe( 'mountDashboard containerWidth', () => {
 		const dashboard = host.querySelector( '.pmdk-dashboard' );
 		expect( dashboard ).toBeTruthy();
 		expect( dashboard.getAttribute( 'data-container-width' ) ).toBe(
-			'wide'
+			'wide',
 		);
 	} );
 } );

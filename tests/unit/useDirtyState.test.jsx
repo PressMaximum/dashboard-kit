@@ -27,8 +27,10 @@ import {
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-/** Each `renderHook` call mounts a fresh root so multiple hooks can
- *  coexist (the cross-tab guard tests need 2+ keys live at once). */
+/**
+ * Each `renderHook` call mounts a fresh root so multiple hooks can
+ *  coexist (the cross-tab guard tests need 2+ keys live at once).
+ */
 const MOUNTS = [];
 
 beforeEach( () => {

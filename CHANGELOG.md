@@ -136,6 +136,45 @@ public API per the deprecation cycle in §12.2.
     Empty) + 3 CompareTable stories (Default / WithFooterCta /
     LocalizedLabels) + 3 ReleaseBlock stories (Current / Prior /
     LocalizedCategoryLabels).
+- **P5 — Editor helpers**:
+  - New `/editor-helpers` sub-entry (tree-shake pattern like
+    `/datasets`) so dashboard-only consumers don't bundle the editor
+    surface. Importable via
+    `import { ... } from '@pressmaximum/dashboard-kit/editor-helpers'`.
+  - `rewireBackButton({ selector?, href })` — capture-phase click
+    intercept on the block editor's fullscreen-close button (default
+    selector `.edit-post-fullscreen-mode-close`). Redirects to `href`
+    via `window.location.href`. Closes SPEC §11 hack #6's JS half
+    (the PHP wrapper lands with P7 `Admin\EditorIntegration`).
+  - `forceFullscreenMode()` — flips
+    `core/edit-post.fullscreenMode` via the `core/preferences` store.
+    Subscribes via `wp.data.subscribe` until the store registers, so
+    calling the helper at the top of the consumer's editor entry is
+    safe even when boot hasn't finished. Idempotent: re-running when
+    the flag is already on is a no-op.
+  - `registerSubmenuActive({ menuId, hash })` — toggles `.current` on
+    the WP submenu item matching `hash` (drives the SPA tab highlight
+    that WP's `?page=`-only server-side detection can't see).
+    Hashchange-driven; falls back to the first item (parent mirror)
+    when route is elsewhere. Closes SPEC §11 hack #5's JS half.
+  - All three helpers return an unsubscribe handle (or `null` in
+    non-browser contexts) for symmetric teardown. SSR-safe.
+  - 18 unit tests: rewireBackButton (6) covering default + custom
+    selector, nested-icon `closest()` traversal, unsubscribe, and
+    arg validation; forceFullscreenMode (4) covering no-op
+    branches, current=true skip, and `wp.data.subscribe` deferral;
+    registerSubmenuActive (8) covering DOM-absent / no-match nulls,
+    initial mount sync, hashchange propagation, and unsubscribe.
+    Total: 87 / 87 passing.
+  - SPEC §5.7 amended: replaced the original PHP-wrapper-only example
+    with the JS runtime signatures actually shipped + the consumer
+    wiring pattern. SSR safety + idempotency noted.
+  - SPEC §11 hack #5 + #6 marked "JS helper shipped in P5"; PHP
+    wrappers tracked for P7. SPEC §13 P5 row expanded with the
+    helper-level scope reality.
+  - `webpack.config.js` adds the `editor-helpers/index` entry;
+    `package.json` adds the `./editor-helpers` export + a 2 KB
+    size-limit budget (actual: 816 B gzipped).
 
 ### Fixed
 

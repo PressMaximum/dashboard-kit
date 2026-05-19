@@ -45,7 +45,7 @@ describe( 'createSettingsStore — construction', () => {
 			createSettingsStore( {
 				endpoint: '/x',
 				fetch: () => Promise.resolve(),
-			} )
+			} ),
 		).toThrow( /storeName/ );
 	} );
 
@@ -54,7 +54,7 @@ describe( 'createSettingsStore — construction', () => {
 			createSettingsStore( {
 				storeName: nextName(),
 				fetch: () => Promise.resolve(),
-			} )
+			} ),
 		).toThrow( /endpoint/ );
 	} );
 
@@ -63,14 +63,14 @@ describe( 'createSettingsStore — construction', () => {
 			createSettingsStore( {
 				storeName: nextName(),
 				endpoint: '/x',
-			} )
+			} ),
 		).toThrow( /fetch/ );
 		expect( () =>
 			createSettingsStore( {
 				storeName: nextName(),
 				endpoint: '/x',
 				fetch: 'nope',
-			} )
+			} ),
 		).toThrow( /fetch/ );
 	} );
 
