@@ -68,7 +68,16 @@ function isHashHref( href ) {
 
 export default function ChecklistItem( { item, labels: callerLabels } ) {
 	const labels = createI18nBag( DEFAULT_LABELS, callerLabels );
-	const cached = CHECK_CACHE.get( item.id );
+	// Destructure so the effect's dep array reads PRIMITIVE / FUNCTION
+	// references instead of the surrounding `item` object — the parent
+	// (Welcome page) typically rebuilds the items array on every render
+	// to inject `manualCompleted`, so depending on `item` directly would
+	// re-run the check on every parent render. With these three deps,
+	// the check runs only when (a) the user navigated to a different
+	// task, (b) the consumer's store flipped manualCompleted, or
+	// (c) the consumer provided a new check function (rare).
+	const { id, check, manualCompleted } = item;
+	const cached = CHECK_CACHE.get( id );
 	const hasCached = cached !== undefined;
 
 	const [ completed, setCompleted ] = useState(
@@ -79,14 +88,14 @@ export default function ChecklistItem( { item, labels: callerLabels } ) {
 	useEffect( () => {
 		let cancelled = false;
 		try {
-			const result = item.check ? item.check() : false;
+			const result = check ? check() : false;
 			Promise.resolve( result )
 				.then( ( value ) => {
 					if ( cancelled ) {
 						return;
 					}
 					const boolValue = Boolean( value );
-					CHECK_CACHE.set( item.id, boolValue );
+					CHECK_CACHE.set( id, boolValue );
 					setCompleted( boolValue );
 					setChecking( false );
 				} )
@@ -102,10 +111,7 @@ export default function ChecklistItem( { item, labels: callerLabels } ) {
 		return () => {
 			cancelled = true;
 		};
-		// `manualCompleted` is the consumer-supplied signal that
-		// re-checks (e.g. the user marked the task done in another tab
-		// — the consumer's onboarding store flips this flag).
-	}, [ item, item.manualCompleted ] );
+	}, [ id, check, manualCompleted ] );
 
 	const onNavigate = useNavigate();
 	const isHash = isHashHref( item.ctaHref );

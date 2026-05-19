@@ -9,13 +9,16 @@
  *   - a tone modifier class via the kit's category→tone map + optional
  *     `toneOverrides`
  *
- * The CSS file (`ReleaseBlock.css`) owns the color palette per tone.
- * Tones: `new` / `improved` / `fixed` / `updated` / `removed` /
- * `security` / `deprecated` / `neutral`.
+ * CategoryBadge.css owns the color palette per tone — imported here so
+ * consumers using the badge standalone (without ReleaseBlock) still get
+ * styling. Tones: `new` / `improved` / `fixed` / `updated` / `removed`
+ * / `security` / `deprecated` / `neutral`.
  *
  * Unknown categories render with the raw category text (uppercased)
  * and the `neutral` tone — drift-tolerant display.
  */
+
+import './CategoryBadge.css';
 
 const DEFAULT_LABELS = {
 	added: 'New',

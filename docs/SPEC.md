@@ -1887,6 +1887,8 @@ Consumer override:
 | `.pmdk-compare__row` | Compare row |
 | `.pmdk-compare__check-yes` / `__check-no` | Compare cells |
 | `.pmdk-release-block` | Changelog release card |
+| `.pmdk-category-badge` | Changelog category pill (also usable standalone) |
+| `.pmdk-category-badge--{tone}` | Tone modifier — one of `new` / `improved` / `fixed` / `updated` / `removed` / `security` / `deprecated` / `neutral` |
 | `.pmdk-help-panel` | Header help dropdown wrapper |
 | `.pmdk-entity-list-page` | List view page wrapper |
 | `.pmdk-entity-preview` | Preview iframe container |

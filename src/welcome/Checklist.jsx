@@ -29,13 +29,20 @@ import ChecklistItem from './ChecklistItem.jsx';
 
 import './Checklist.css';
 
+// SPEC §5.10b: English fallback so the section's accessible name is
+// never empty when the consumer forgets to wire `ariaLabel`.
+const DEFAULT_ARIA_LABEL = 'Onboarding checklist';
+
 export default function Checklist( { items, ariaLabel, itemLabels } ) {
 	if ( ! Array.isArray( items ) || items.length === 0 ) {
 		return null;
 	}
 
 	return (
-		<section className="pmdk-checklist" aria-label={ ariaLabel }>
+		<section
+			className="pmdk-checklist"
+			aria-label={ ariaLabel || DEFAULT_ARIA_LABEL }
+		>
 			<ul className="pmdk-checklist__list">
 				{ items.map( ( item ) => (
 					<ChecklistItem
