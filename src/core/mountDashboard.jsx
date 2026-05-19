@@ -54,9 +54,11 @@ export function mountDashboard( config ) {
 		rootEl,
 		bootGlobal,
 		filterNamespace,
-		// `__` is recommended (SPEC §5.1) and will become required at P3
-		// when Tier-2 default translations consume it. P1 reads it off
-		// `config` only to forward to future flows — no destructure needed.
+		// `__` is intentionally NOT destructured. SPEC §5.1 documents
+		// it as "recommended" pre-1.0 — Tier-2 components own their own
+		// label-merging via `createI18nBag`, so no kit code needs the
+		// callback yet. Consumers may still pass it in for forward
+		// compatibility; it sits in `config` unused.
 		brand,
 		baseTabs,
 		baseRoutes,

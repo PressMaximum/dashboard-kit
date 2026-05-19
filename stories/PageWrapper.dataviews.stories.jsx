@@ -20,10 +20,17 @@
 import { useMemo, useState } from '@wordpress/element';
 import { DataViews, filterSortAndPaginate } from '@wordpress/dataviews';
 
-import PageWrapper from '../src/layouts/PageWrapper/index.jsx';
-import ListPageHeader from '../src/layouts/ListPageHeader/index.jsx';
+// Imported via the public-API entry so this fixture doubles as a
+// regression check on the export tree (any rename / drop of these
+// names from src/index.mjs would break the story build).
+import { PageWrapper, ListPageHeader } from '../src/index.mjs';
 
-import '../src/styles/tokens.css';
+// DashboardShell.css is internal — it's pulled in transitively by
+// `src/index.mjs`'s `import './styles/tokens.css'`, but the chassis
+// class definitions sit alongside `DashboardShell.jsx`. The fixture
+// fakes the dashboard chassis (no full mount), so we explicitly load
+// the chassis stylesheet to exercise the same `.pmdk-dashboard__main`
+// flex chain a real mount would apply.
 import '../src/core/DashboardShell.css';
 
 const ITEMS = Array.from( { length: 18 }, ( _, i ) => ( {

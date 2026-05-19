@@ -11,20 +11,28 @@
  * → `gridColumns: 1` → every record stacks one-per-row in grid view
  * (the spike's `display:contents` row-flatten hack worked around this).
  *
- * The chain that works (verified against Site Editor's DataViews pages):
+ * The chain that works (reverse-engineered from Site Editor's
+ * DataViews pages — the spike never had a PageWrapper):
  *
  *   .pmdk-dashboard           — flex column, full viewport height
  *     .pmdk-dashboard__main   — flex column, flex:1, min-height:0
  *       .pmdk-page-wrapper    — flex column, flex:1, min-height:0, min-width:0, width:100%
- *         <consumer page>     — flex:1
- *           <.dataviews-wrapper>  — flex:1, min-height:0
- *             <.dataviews-view-grid>  — observed by useResizeObserver, now sees a real width
+ *         <.dataviews-wrapper>  — DataViews's own root (flex:1 + min-height:0 are
+ *           <.dataviews-view-grid>  baked into the package's CSS); observed by
+ *                                   useResizeObserver, now sees a real width
  *
- * The two min-* zeros are load-bearing: in a flex column, the default
- * `min-height: auto` resolves to the content's intrinsic height, which
- * prevents a child from shrinking below its content. Without `min-height: 0`,
- * the wrapper can't actually fill the available height even when `flex: 1`
- * grants it growth, and DataViews's observer fires too late / wrong.
+ * A consumer page is welcome to wrap DataViews in its own div between
+ * PageWrapper and the DataViews root — when it does, that wrapper
+ * needs `flex: 1 1 auto; min-height: 0` to forward the chain. When it
+ * doesn't (the typical case + what the validation story exercises),
+ * DataViews sits as a direct flex child of PageWrapper and just works.
+ *
+ * The two `min-*: 0` declarations on PageWrapper are load-bearing: in
+ * a flex column, the default `min-height: auto` resolves to the
+ * content's intrinsic height, which prevents a child from shrinking
+ * below its content. Without them, `flex: 1` grants growth but no
+ * actual fill — DataViews's observer fires too late / with the
+ * wrong width.
  */
 
 .pmdk-page-wrapper {

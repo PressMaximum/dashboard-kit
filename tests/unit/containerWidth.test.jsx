@@ -6,8 +6,10 @@
  * branches on this attribute to switch between the narrow (1100px max)
  * reading column and wide (full-viewport) DataViews layout.
  *
- * The test uses `act()` from `react-dom/test-utils` to flush the kit's
- * `createRoot` render synchronously, then reads the rendered DOM.
+ * The test uses `React.act` (the React 18+ canonical import) to flush
+ * the kit's `createRoot` render synchronously, then reads the rendered
+ * DOM. `react-dom/test-utils#act` was deprecated upstream and removed
+ * from the kit in P3.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
