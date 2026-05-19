@@ -1,0 +1,67 @@
+/*
+ * SubNav — vertical nav rail used by Settings (panels) + Changelog
+ * (sources) intra-tab.
+ *
+ * The CSS surface is not on the SPEC §16.2 locked list (those classes
+ * cover the dashboard chassis + tab strip + entity list); these
+ * pmdk-subnav-* classes are part of the public surface from 1.0 onward.
+ */
+
+.pmdk-subnav {
+	position: sticky;
+	top: 24px;
+	padding: 6px;
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: 8px;
+}
+
+.pmdk-subnav__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.pmdk-subnav__item {
+	display: block;
+	padding: 10px 12px;
+	border-radius: var( --pmdk-radius-small, 4px );
+	color: var( --pmdk-color-text, #1e1e1e );
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	text-decoration: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Keyboard focus gets the same background tint as hover (mirroring the
+   top tab strip pattern) so the AT cue is preserved without a heavy
+   outline. WP admin's `a:focus { box-shadow: 0 0 0 2px … }` baseline is
+   suppressed too — neither click nor keyboard focus paints a frame. */
+.pmdk-subnav__item:hover,
+.pmdk-subnav__item:focus,
+.pmdk-subnav__item:focus-visible {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text, #1e1e1e );
+	outline: none;
+	box-shadow: none;
+}
+
+/* Active item: scheme-accent tint + accent text, mirroring the top tab
+   strip's is-active language. `color-mix` produces a light wash from
+   the user's admin color scheme; the hardcoded fallback covers older
+   browsers + admins that disabled scheme variables. */
+.pmdk-subnav__item.is-active,
+.pmdk-subnav__item.is-active:hover {
+	background: color-mix(
+		in srgb,
+		var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) )
+			12%,
+		var( --pmdk-color-bg, #fff )
+	);
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+	font-weight: 600;
+}

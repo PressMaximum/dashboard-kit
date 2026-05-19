@@ -1,0 +1,16 @@
+/*
+ * PageWrapper — flex-chain wrapper. Locked class per SPEC §16.2:
+ *   .pmdk-page-wrapper
+ *
+ * P2 will add the `useResizeObserver`-driven width inheritance that
+ * unlocks DataViews — for now the wrapper is a plain flex column so
+ * direct children can `flex: 1` without bumping into a `block` parent.
+ */
+
+.pmdk-page-wrapper {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	width: 100%;
+}

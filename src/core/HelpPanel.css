@@ -1,0 +1,109 @@
+/*
+ * HelpPanel — popover anchored to the header `?` button via
+ * `<Dropdown>`. Dropdown manages open / close + focus + click-outside
+ * + Esc; CSS just sizes the content surface + the trigger button.
+ *
+ * Locked class per SPEC §16.2:
+ *   .pmdk-help-panel    Header help dropdown wrapper
+ * Plus non-locked styling hooks:
+ *   .pmdk-dashboard__help-trigger, __help-trigger-button
+ */
+
+/* Trigger button — Dropdown wraps `renderToggle` in a div carrying
+   `__help-trigger`; the Button inside is `__help-trigger-button` so
+   we can tint icon vs wrapper independently. */
+.pmdk-dashboard__help-trigger-button.components-button.has-icon {
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-dashboard__help-trigger-button.components-button.has-icon:hover,
+.pmdk-dashboard__help-trigger-button.components-button.has-icon[ aria-expanded='true' ] {
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+/* Suppress every focus visual on the trigger — the popover's open state
+   is the affordance; no extra ring needed. */
+.pmdk-dashboard__help-trigger-button.components-button:focus,
+.pmdk-dashboard__help-trigger-button.components-button:focus-visible,
+.pmdk-dashboard__help-trigger-button.components-button.is-pressed,
+.pmdk-dashboard__help-trigger-button.components-button:focus:not( :disabled ) {
+	outline: none;
+	box-shadow: none;
+}
+
+/* Popover content surface */
+.pmdk-help-panel .components-popover__content {
+	width: 280px;
+	padding: 0;
+	border-radius: var( --pmdk-radius-small, 4px );
+}
+
+.pmdk-help-panel__panel {
+	padding: 4px 0;
+}
+
+.pmdk-help-panel__heading {
+	margin: 0;
+	padding: 10px 16px 6px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #757575;
+}
+
+.pmdk-help-panel__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pmdk-help-panel__item {
+	/* WP admin's `li { margin-bottom: 6px }` would otherwise leak through
+	   as a white gap above the hovered item. */
+	margin: 0;
+}
+
+.pmdk-help-panel__link {
+	display: grid;
+	grid-template-columns: 20px 1fr 16px;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 16px;
+	color: var( --pmdk-color-text, #1e1e1e );
+	font-size: 13px;
+	font-weight: 500;
+	text-decoration: none;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pmdk-help-panel__link:hover,
+.pmdk-help-panel__link:focus-visible {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+/* Suppress every focus visual on the popover links. Keyboard users get
+   the hover-style tint via `:focus-visible` above, so the active item
+   stays readable without WP's default 2px ring. */
+.pmdk-help-panel__link:focus,
+.pmdk-help-panel__link:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.pmdk-help-panel__icon,
+.pmdk-help-panel__chevron {
+	color: #757575;
+}
+
+.pmdk-help-panel__link:hover .pmdk-help-panel__icon,
+.pmdk-help-panel__link:hover .pmdk-help-panel__chevron,
+.pmdk-help-panel__link:focus-visible .pmdk-help-panel__icon,
+.pmdk-help-panel__link:focus-visible .pmdk-help-panel__chevron {
+	color: inherit;
+}
+
+.pmdk-help-panel__label {
+	min-width: 0;
+}

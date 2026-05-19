@@ -1,0 +1,61 @@
+/*
+ * Locked class per SPEC §16.2:
+ *   .pmdk-editor-page-header
+ */
+
+.pmdk-editor-page-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	margin: 0 0 24px;
+	padding: 0 0 16px;
+	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+.pmdk-editor-page-header__left {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	min-width: 0;
+}
+
+.pmdk-editor-page-header__back {
+	color: var( --pmdk-color-text-muted, #50575e );
+	text-decoration: none;
+	font-size: 13px;
+}
+
+.pmdk-editor-page-header__back:hover {
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-editor-page-header__title {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pmdk-editor-page-header__status {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: 2px;
+	background: var( --pmdk-color-border-subtle, #f0f0f1 );
+	color: var( --pmdk-color-text-muted, #50575e );
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.pmdk-editor-page-header__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+}

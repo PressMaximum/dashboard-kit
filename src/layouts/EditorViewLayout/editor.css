@@ -1,0 +1,50 @@
+/*
+ * Locked class per SPEC §16.2:
+ *   .pmdk-editor-view-layout
+ */
+
+.pmdk-editor-view-layout {
+	display: grid;
+	grid-template-columns: 240px 1fr 280px;
+	gap: 24px;
+	align-items: start;
+}
+
+.pmdk-editor-view-layout__subnav,
+.pmdk-editor-view-layout__rail {
+	position: sticky;
+	top: 80px;
+	max-height: calc( 100vh - 100px );
+	overflow: auto;
+	padding: 16px;
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var( --pmdk-radius-small, 4px );
+	background: var( --pmdk-color-bg, #fff );
+}
+
+.pmdk-editor-view-layout__main {
+	min-width: 0;
+}
+
+@media ( max-width: 1100px ) {
+	.pmdk-editor-view-layout {
+		grid-template-columns: 240px 1fr;
+	}
+
+	.pmdk-editor-view-layout__rail {
+		grid-column: 1 / -1;
+		position: static;
+		max-height: none;
+	}
+}
+
+@media ( max-width: 782px ) {
+	.pmdk-editor-view-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.pmdk-editor-view-layout__subnav {
+		position: static;
+		max-height: none;
+	}
+}

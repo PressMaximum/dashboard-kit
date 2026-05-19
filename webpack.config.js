@@ -68,12 +68,22 @@ export default ( env, argv ) => {
 		externals: externalsAsModules,
 		resolve: {
 			extensions: [ '.mjs', '.js', '.jsx' ],
+			// Webpack defaults to strict ESM resolution when the entry is
+			// `.mjs` / `"type": "module"`, which forbids directory imports
+			// like `./layouts/PageWrapper` (it'd require `/index.js`).
+			// The kit's source uses `.js` files with directory-index
+			// conventions; relax so internal imports resolve naturally.
+			fullySpecified: false,
 		},
 		module: {
 			rules: [
 				{
 					test: /\.(?:js|mjs|jsx)$/,
 					exclude: /node_modules/,
+					// Inherit the top-level `resolve.fullySpecified: false`
+					// per-rule so directory-index imports inside .mjs entries
+					// still resolve naturally.
+					resolve: { fullySpecified: false },
 					use: {
 						loader: 'babel-loader',
 						options: {
