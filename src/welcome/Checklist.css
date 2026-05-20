@@ -80,7 +80,7 @@
 .pmdk-checklist__label {
 	margin: 0;
 	font-size: 14px;
-	font-weight: 600;
+	font-weight: var( --pmdk-font-weight-label, 400 );
 	line-height: 1.4;
 	color: var( --pmdk-color-text, #1e1e1e );
 }

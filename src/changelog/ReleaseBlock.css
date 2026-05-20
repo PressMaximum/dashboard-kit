@@ -33,7 +33,7 @@
 .pmdk-release-block__version {
 	margin: 0;
 	font-size: 18px;
-	font-weight: 600;
+	font-weight: var( --pmdk-font-weight-heading, 500 );
 	color: var( --pmdk-color-text, #1e1e1e );
 	display: inline-flex;
 	align-items: center;

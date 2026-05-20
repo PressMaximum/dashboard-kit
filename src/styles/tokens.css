@@ -40,6 +40,25 @@
 	--pmdk-font-size-base: 14px;
 	--pmdk-line-height-base: 1.5;
 
+	/* Font weight tier (KIT_ISSUES K-010) ----------------------------
+	 * Two-tier hierarchy that consumers can re-tune at the root:
+	 *
+	 *   --pmdk-font-weight-heading  — hero title, card heads. One step
+	 *                                 above body so section heads stand
+	 *                                 out without going to a bold cue.
+	 *   --pmdk-font-weight-label    — item-level titles (checklist
+	 *                                 rows, release-block version,
+	 *                                 module rows). Matches body so
+	 *                                 in-body lists read consistently.
+	 *
+	 * Earlier component CSS hardcoded `font-weight: 600` across the
+	 * board — fine in isolation, but produces a wall-of-bold on a
+	 * Welcome page that combines hero + cards + checklist + lists.
+	 * Centralising the tier here keeps the visual hierarchy editable
+	 * via two CSS variables. */
+	--pmdk-font-weight-heading: 500;
+	--pmdk-font-weight-label: 400;
+
 	/* Spacing */
 	--pmdk-spacing-unit: 8px;
 	--pmdk-header-gutter: 24px;
