@@ -46,12 +46,19 @@
 	--pmdk-tab-padding-y: 16px;
 	--pmdk-tab-padding-x: 18px;
 
+	/* Dashboard chassis ---------------------------------------------
+	 * Outer `.pmdk-dashboard` background. Distinct from
+	 * `--pmdk-color-bg` (which governs header / cards / SubNav surfaces)
+	 * so the chassis can tint the body while inner surfaces stay white
+	 * by default — closer to the WP `about.php` chrome pattern. */
+	--pmdk-dashboard-bg: #ececec;
+
 	/* Hero (Welcome intro card) ---------------------------------------
 	 * Consumers override these to re-skin the hero without touching
 	 * `.pmdk-hero` class targets. Each token has a primitive fallback
 	 * so layered overrides degrade cleanly (KIT_ISSUES K-007). */
 	--pmdk-hero-padding: 48px;
-	--pmdk-hero-bg: #ececec;
+	--pmdk-hero-bg: #ffffff;
 	--pmdk-hero-radius: var( --pmdk-radius-card, 8px );
 	--pmdk-hero-title-size: 28px;
 

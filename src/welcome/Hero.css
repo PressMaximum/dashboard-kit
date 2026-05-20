@@ -12,10 +12,13 @@
  * so the kit doesn't constrain dimensions — only its container.
  */
 
-/* Visual distilled from WP's `about.php` hero pattern (light-gray card,
-   generous padding, large title). KIT_ISSUES K-003 — the earlier
-   white-with-border treatment lost the about.php-like feel the kit
-   was originally designed for. */
+/* White card on a tinted chassis — the hero is the first inner surface
+   inside `.pmdk-dashboard` (default `--pmdk-dashboard-bg: #ececec`),
+   so it sits on the chassis as a clean white panel. Earlier iterations
+   used `#ececec` directly here (matching WP's `about.php` light-gray
+   block — KIT_ISSUES K-003); the current direction is
+   white-on-tinted-chassis. Consumers override `--pmdk-hero-bg` to
+   restore the older look or pick any other tone. */
 .pmdk-hero {
 	display: flex;
 	flex-direction: row;
@@ -23,7 +26,7 @@
 	gap: 32px;
 	padding: var( --pmdk-hero-padding, 48px );
 	margin: 0 0 24px;
-	background: var( --pmdk-hero-bg, #ececec );
+	background: var( --pmdk-hero-bg, #ffffff );
 	border: 0;
 	border-radius: var( --pmdk-hero-radius, 8px );
 }
