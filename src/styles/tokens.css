@@ -56,7 +56,7 @@
 	--pmdk-hero-title-size: 28px;
 
 	/* Compare table -------------------------------------------------- */
-	--pmdk-compare-head-bg: #fafafa;
+	--pmdk-compare-head-bg: #fff;
 	--pmdk-compare-section-title-bg: var( --pmdk-color-bg-subtle, #f6f7f7 );
 	--pmdk-compare-row-padding-y: 14px;
 	--pmdk-compare-row-padding-x: 24px;
