@@ -81,18 +81,8 @@ export default function DashboardShell( {
 	const brandName = brand?.name;
 	const brandIcon = brand?.icon;
 
-	// Per-route override beats the mountDashboard-level prop. Lets a
-	// single page (Welcome with a sidebar layout, list pages with
-	// DataViews, etc.) opt into the full-viewport `wide` chrome while
-	// sibling tabs keep the default `narrow` reading column.
-	// Route entry shape: `{ component, type, containerWidth?, ... }`.
-	const routeContainerWidth =
-		entry?.containerWidth === 'wide' || entry?.containerWidth === 'narrow'
-			? entry.containerWidth
-			: null;
 	const safeContainerWidth =
-		routeContainerWidth ||
-		( containerWidth === 'wide' ? 'wide' : 'narrow' );
+		containerWidth === 'wide' ? 'wide' : 'narrow';
 
 	return (
 		<div

@@ -75,12 +75,6 @@
 	--pmdk-release-block-padding-y: 20px;
 	--pmdk-release-block-padding-x: 24px;
 	--pmdk-release-block-radius: var( --pmdk-radius-small, 4px );
-
-	/* SidebarPageLayout (main + aside) ------------------------------ */
-	--pmdk-sidebar-width: 320px;
-	--pmdk-sidebar-gap: 30px;
-	--pmdk-sidebar-stack-gap: 16px;
-	--pmdk-sidebar-breakpoint: 960px;
 }
 
 /*

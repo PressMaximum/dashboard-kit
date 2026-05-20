@@ -54,7 +54,6 @@ export { default as PageWrapper } from './layouts/PageWrapper';
 export { default as ListPageHeader } from './layouts/ListPageHeader';
 export { default as EditorPageHeader } from './layouts/EditorPageHeader';
 export { default as EditorViewLayout } from './layouts/EditorViewLayout';
-export { default as SidebarPageLayout } from './layouts/SidebarPageLayout';
 export { default as SubNav } from './layouts/SubNav';
 
 /* ------------------------------------------------------------------------
