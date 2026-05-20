@@ -122,45 +122,70 @@ final class SchemaBuilder {
 	/**
 	 * Declare a select field with an enum of options.
 	 *
-	 * @param string                $id      Field id.
-	 * @param string                $label   Translatable label.
-	 * @param string                $default Default option value (must
-	 *                                       appear in `$options`).
-	 * @param array<string, string> $options Map `value => label`.
-	 * @param array<string, mixed>  $extra   Optional `description` etc.
+	 * Accepts two `$options` shapes:
+	 *
+	 *   - Map (preferred, terser):  `[ 'v1' => 'Version 1', 'v2' => 'Version 2' ]`
+	 *   - Shaped array (verbose):   `[ ['value' => 'v1', 'label' => 'Version 1'], ... ]`
+	 *
+	 * Both produce the same `{value, label}[]` schema entry. KIT_ISSUES K-008
+	 * — earlier versions silently coerced the shaped form to literal `"Array"`
+	 * + raised `Array to string conversion` warnings.
+	 *
+	 * @param string $id      Field id.
+	 * @param string $label   Translatable label.
+	 * @param string $default Default option value (must appear in `$options`).
+	 * @param array  $options Either a `value => label` map OR an array of
+	 *                        `['value' => ..., 'label' => ...]` entries.
+	 * @param array  $extra   Optional `description` etc.
 	 */
 	public function selectField( string $id, string $label, string $default, array $options, array $extra = array() ): self {
-		$shaped = array();
-		foreach ( $options as $value => $optionLabel ) {
-			$shaped[] = array(
-				'value' => (string) $value,
-				'label' => (string) $optionLabel,
-			);
-		}
-		$extra['options'] = $shaped;
+		$extra['options'] = self::normalizeOptions( $options );
 		return $this->addField( 'select', $id, $label, $default, $extra );
 	}
 
 	/**
 	 * Declare a radio field (same shape as `select` but rendered as
-	 * radio buttons).
+	 * radio buttons). Accepts the same two `$options` shapes — see
+	 * {@see selectField()} for the contract.
 	 *
-	 * @param string                $id      Field id.
-	 * @param string                $label   Translatable label.
-	 * @param string                $default Default option value.
-	 * @param array<string, string> $options Map `value => label`.
-	 * @param array<string, mixed>  $extra   Optional `description` etc.
+	 * @param string $id      Field id.
+	 * @param string $label   Translatable label.
+	 * @param string $default Default option value.
+	 * @param array  $options Either a `value => label` map OR an array of
+	 *                        `['value' => ..., 'label' => ...]` entries.
+	 * @param array  $extra   Optional `description` etc.
 	 */
 	public function radioField( string $id, string $label, string $default, array $options, array $extra = array() ): self {
+		$extra['options'] = self::normalizeOptions( $options );
+		return $this->addField( 'radio', $id, $label, $default, $extra );
+	}
+
+	/**
+	 * Coerce either input shape into the canonical `{value, label}[]`
+	 * array the SchemaField JSX dispatch expects.
+	 *
+	 * @param array<int|string, mixed> $options Caller's options array.
+	 * @return array<int, array{value: string, label: string}>
+	 */
+	private static function normalizeOptions( array $options ): array {
 		$shaped = array();
 		foreach ( $options as $value => $optionLabel ) {
+			// Already-shaped entry: `[ 'value' => ..., 'label' => ... ]`.
+			// Pass through so consumers can mix the verbose form alongside
+			// the map form without hitting the `(string) $array` coerce.
+			if ( is_array( $optionLabel ) && isset( $optionLabel['value'], $optionLabel['label'] ) ) {
+				$shaped[] = array(
+					'value' => (string) $optionLabel['value'],
+					'label' => (string) $optionLabel['label'],
+				);
+				continue;
+			}
 			$shaped[] = array(
 				'value' => (string) $value,
 				'label' => (string) $optionLabel,
 			);
 		}
-		$extra['options'] = $shaped;
-		return $this->addField( 'radio', $id, $label, $default, $extra );
+		return $shaped;
 	}
 
 	/**
