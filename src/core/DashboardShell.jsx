@@ -19,8 +19,8 @@
  *   .pmdk-dashboard__brand
  *   .pmdk-dashboard__main
  * Plus non-locked styling hooks:
- *   .pmdk-dashboard__brand-icon, __brand-text, __header-right,
- *   .pmdk-dashboard__version
+ *   .pmdk-dashboard__brand-icon, __brand-text, __brand-link,
+ *   __header-right, .pmdk-dashboard__version
  */
 
 import { activeTabId, useNavigate, useRoute } from './HashRouter';
@@ -80,9 +80,32 @@ export default function DashboardShell( {
 
 	const brandName = brand?.name;
 	const brandIcon = brand?.icon;
+	const brandHref = brand?.href;
+	const brandAriaLabel = brand?.ariaLabel;
 
 	const safeContainerWidth =
 		containerWidth === 'wide' ? 'wide' : 'narrow';
+
+	// Inner content of the `<h1>` brand cluster. Reused twice so the
+	// linked + static variants don't duplicate the icon/text markup.
+	const brandContent = (
+		<>
+			{ brandIcon && (
+				<span
+					className="pmdk-dashboard__brand-icon"
+					/* eslint-disable-next-line react/no-danger -- SVG is consumer-controlled boot data, not user input. */
+					dangerouslySetInnerHTML={ {
+						__html: brandIcon,
+					} }
+				/>
+			) }
+			{ brandName && (
+				<span className="pmdk-dashboard__brand-text">
+					{ brandName }
+				</span>
+			) }
+		</>
+	);
 
 	return (
 		<div
@@ -91,19 +114,17 @@ export default function DashboardShell( {
 		>
 			<header className="pmdk-dashboard__header">
 				<h1 className="pmdk-dashboard__brand">
-					{ brandIcon && (
-						<span
-							className="pmdk-dashboard__brand-icon"
-							/* eslint-disable-next-line react/no-danger -- SVG is consumer-controlled boot data, not user input. */
-							dangerouslySetInnerHTML={ {
-								__html: brandIcon,
-							} }
-						/>
-					) }
-					{ brandName && (
-						<span className="pmdk-dashboard__brand-text">
-							{ brandName }
-						</span>
+					{ brandHref ? (
+						<a
+							className="pmdk-dashboard__brand-link"
+							href={ brandHref }
+							aria-label={ brandAriaLabel }
+							onClick={ onNavigate( brandHref ) }
+						>
+							{ brandContent }
+						</a>
+					) : (
+						brandContent
 					) }
 				</h1>
 

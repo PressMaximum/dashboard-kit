@@ -14,7 +14,7 @@
 	display: flex;
 	flex-direction: column;
 	min-height: calc( 100vh - 32px );
-	background: var( --pmdk-color-bg, #fff );
+	background: var( --pmdk-dashboard-bg, #ececec );
 }
 
 /* Header — three-column grid: brand left, tabs centered, header-right
@@ -43,6 +43,39 @@
 	font-size: 16px;
 	font-weight: 600;
 	line-height: 1;
+}
+
+/* Brand link — present only when consumer supplies `brand.href` to
+   `mountDashboard()`. Rendered as `<h1><a>icon + text</a></h1>` so the
+   `<h1>` semantics are preserved. Resets the WP-admin default blue
+   underline so the linked brand looks identical to the static one;
+   `:focus-visible` brings back a keyboard ring. Hover lifts the icon
+   colour to the scheme accent as a subtle affordance. */
+.pmdk-dashboard__brand-link {
+	display: inline-flex;
+	align-items: center;
+	gap: inherit;
+	color: inherit;
+	text-decoration: none;
+}
+
+.pmdk-dashboard__brand-link:hover,
+.pmdk-dashboard__brand-link:focus-visible {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pmdk-dashboard__brand-link:focus,
+.pmdk-dashboard__brand-link:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.pmdk-dashboard__brand-link:focus-visible {
+	outline: 2px solid
+		var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+	outline-offset: 4px;
+	border-radius: 2px;
 }
 
 /* The brand mark keeps a brand-stable hue (dark slate) instead of
