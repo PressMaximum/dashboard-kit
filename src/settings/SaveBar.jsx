@@ -12,7 +12,7 @@
  *   saveLabel      primary button copy (default 'Save changes')
  *   savingLabel    primary button copy while saving (default 'Saving…')
  *   resetLabel     reset button copy (default 'Reset to defaults')
- *   statusSaved    left-side status when clean (default 'All changes saved')
+ *   statusSaved    left-side status when clean (default 'No pending changes')
  *   statusDirty    left-side status when dirty (default 'Unsaved changes')
  *   statusSaving   left-side status while saving (default 'Saving…')
  *
@@ -20,6 +20,13 @@
  * (browser-native `confirm()` with their translated copy) — keeps the
  * kit free of the `confirm()` text. SPEC §5.10b `resetConfirmLabel` is
  * a consumer-side string, not a kit prop.
+ *
+ * `resetDisabledWhenNotDirty` (default `false`) — when `true`, the
+ * Reset button disables alongside Save when the form is clean. Use
+ * for consumers where Reset semantically means "discard dirty edits"
+ * (per-section forms, modal settings panels). Leave `false` for
+ * factory-defaults reset semantics where the button should stay
+ * clickable even when nothing is dirty. KIT_ISSUES K-011.
  */
 
 import { Button, Flex, FlexItem, Icon, Spinner } from '@wordpress/components';
@@ -34,7 +41,11 @@ const DEFAULT_LABELS = {
 	saveLabel: 'Save changes',
 	savingLabel: 'Saving…',
 	resetLabel: 'Reset to defaults',
-	statusSaved: 'All changes saved',
+	// Neutral phrasing instead of the older "All changes saved" — that
+	// label read as a confirmation of a save the user never performed on
+	// first page load (KIT_ISSUES K-011). The consumer's snackbar covers
+	// the actual "just saved" cue; the SaveBar describes state.
+	statusSaved: 'No pending changes',
 	statusDirty: 'Unsaved changes',
 	statusSaving: 'Saving…',
 };
@@ -69,8 +80,11 @@ export default function SaveBar( {
 	onSave,
 	onReset,
 	labels: callerLabels,
+	resetDisabledWhenNotDirty = false,
 } ) {
 	const labels = createI18nBag( DEFAULT_LABELS, callerLabels );
+	const resetDisabled =
+		isSaving || ( resetDisabledWhenNotDirty && ! isDirty );
 	return (
 		<div
 			className="pmdk-save-bar"
@@ -92,7 +106,7 @@ export default function SaveBar( {
 								variant="tertiary"
 								isDestructive
 								onClick={ onReset }
-								disabled={ isSaving }
+								disabled={ resetDisabled }
 							>
 								{ labels.resetLabel }
 							</Button>
