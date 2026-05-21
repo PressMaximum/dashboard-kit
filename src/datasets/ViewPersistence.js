@@ -29,6 +29,43 @@
  *       setView( next );
  *       persistence.save( next );
  *   };
+ *
+ * NOTE on DataViews v14.3 mount-normalize (drift finding 6.4): DataViews
+ * occasionally fires `onChangeView` ~50ms post-mount that silently demotes
+ * `type: 'grid'` → `'table'` even when the persisted view said `'grid'`.
+ * Consumers persisting view state should guard the setter so the
+ * normalize call is swallowed and the user's saved layout survives:
+ *
+ *   const mountedAt = useRef( Date.now() );
+ *   const lastInteract = useRef( 0 );
+ *   useEffect( () => {
+ *       const note = () => { lastInteract.current = Date.now(); };
+ *       window.addEventListener( 'pointerdown', note, true );
+ *       window.addEventListener( 'keydown', note, true );
+ *       return () => {
+ *           window.removeEventListener( 'pointerdown', note, true );
+ *           window.removeEventListener( 'keydown', note, true );
+ *       };
+ *   }, [] );
+ *
+ *   const handleChangeView = ( next ) => {
+ *       const isMountNormalize =
+ *           Date.now() - mountedAt.current < 1500 &&
+ *           lastInteract.current < mountedAt.current &&
+ *           view?.type === 'grid' &&
+ *           next?.type === 'table';
+ *       if ( isMountNormalize ) {
+ *           return; // swallow; preserve the grid the user persisted
+ *       }
+ *       setView( next );
+ *       persistence.save( next );
+ *   };
+ *
+ * Real user Layout-button clicks fall through via the `lastInteract`
+ * check. The 1500ms window is empirical (DataViews v14.3 fires the
+ * normalize within ~50ms of mount; the wider gate is forgiving). Kit may
+ * ship a `mountNormalizeGuard()` helper in a future minor pending a
+ * second consumer use case.
  */
 
 function readStorage() {

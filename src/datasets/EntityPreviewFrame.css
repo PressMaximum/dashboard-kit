@@ -13,13 +13,23 @@
  */
 
 .pmdk-entity-preview {
-	aspect-ratio: 4 / 3;
 	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
 	border-radius: var( --pmdk-radius-small, 4px );
 	container-type: inline-size;
 	overflow: hidden;
 	position: relative;
 	width: 100%;
+}
+
+/* Default + explicit fixed mode: uniform 4/3 cells. */
+.pmdk-entity-preview,
+.pmdk-entity-preview[data-aspect-mode="fixed"] {
+	aspect-ratio: 4 / 3;
+}
+
+/* Content mode: height comes from the measurement effect's inline style. */
+.pmdk-entity-preview[data-aspect-mode="content"] {
+	aspect-ratio: auto;
 }
 
 .pmdk-entity-preview__frame {

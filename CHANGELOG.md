@@ -10,8 +10,69 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+(no changes yet)
+
+## [0.0.1-dev] — 2026-05-21
+
+First version tag. The pre-1.0 buildup (P0 through P7 + the P6 follow-up
+drift findings below) was previously rolling under `[Unreleased]`; this
+tag stamps a snapshot so consumers integrating against a known git ref
+have something to pin to.
+
 ### Added
 
+- **P6 follow-up — Drift findings from Surfaces blob+iframe preview
+  spike (6.1-6.5)**:
+  - `<EntityPreviewFrame>` gains a `previewDoc` prop (6.1). When set,
+    the kit builds a `blob:` URL from the HTML string client-side and
+    imperatively assigns it to the iframe via a `useRef`-stored URL.
+    Cleanup revokes the URL on both prop change and unmount with a
+    `=== url` identity guard so React strict mode's double-invoke is
+    idempotent. Precedence: when both `src` and `previewDoc` are set,
+    `previewDoc` wins.
+  - `<EntityPreviewFrame>` gains `aspectMode: 'fixed' | 'content'`
+    (6.2; defaults to `'fixed'` — backwards-compatible) plus
+    `onContentHeight(itemId, heightPx)` callback and `itemId` prop. In
+    content mode the wrapper drops `aspect-ratio: 4/3` (via a new
+    `data-aspect-mode="content"` attribute selector in
+    `EntityPreviewFrame.css`), and a measurement effect reads
+    `body.firstElementChild.getBoundingClientRect()` plus body padding
+    (NOT `body.scrollHeight` — see 6.5) to size the iframe inline. A
+    `ResizeObserver` re-measures for late content (fonts loading,
+    images decoding). Callbacks aren't deduped; the parent skips
+    identical values itself if it cares.
+  - SPEC §11 hack table gains three rows (6.3 CSS pipeline
+    force-enqueue, 6.4 DataViews v14.3 mount-normalize guard, 6.5
+    `body.scrollHeight` pitfall) for traceability. 6.3 and 6.4 are
+    documentation-only; 6.5 ships in the 6.2 implementation.
+  - SPEC §5.6 `<EntityPreviewFrame>` doc block extended with the new
+    props + a pitfall paragraph quoting the `body.scrollHeight`
+    warning: once the iframe element has explicit `style.height`, body
+    inherits the viewport via html's `height: 100%` chain, so
+    `body.scrollHeight` returns the iframe element's own height rather
+    than the content. Always measure `body.firstElementChild`'s
+    bounding rect + body padding instead.
+  - `ViewPersistence.js` JSDoc gains the DataViews v14.3
+    mount-normalize guard recipe (6.4): use a `mountedAt` ref + a
+    `pointerdown`/`keydown` interaction tracker so the consumer can
+    swallow the silent grid→table normalize call DataViews fires
+    ~50ms post-mount, without masking real user Layout-button clicks.
+    Optional `mountNormalizeGuard()` helper deferred to a later minor
+    pending a second consumer use case.
+  - Tests: 12 new cases on `EntityPreviewFrame` covering previewDoc
+    blob URL lifecycle (render, change, unmount, src+previewDoc
+    precedence, fallback-to-src on clear) and aspectMode content-mode
+    measurement (fixed-mode default still 4:3, content-mode skips
+    `body.scrollHeight` via a throwing-getter assertion, onContentHeight
+    fires with `(itemId, height)`, zero-measurement skip, fixed mode
+    doesn't wire measurement). All 137 existing tests still pass.
+  - First validated against the Blocksify Surfaces spike
+    (`SurfaceBlobPreview.js`); API surface ready for Surfaces v1
+    production consumption (Track C Phase B).
+  - **Pending**: dedicated Storybook story for
+    `<EntityPreviewFrame>` (covering both `aspectMode` variants +
+    `previewDoc` mode) — deferred to a follow-up minor; no story file
+    currently exists for this component.
 - **P0 — Repo bootstrap**: `package.json` + `composer.json` + ESLint (`no-restricted-imports` enforcing the i18n-clean contract per SPEC §6.1) + Vitest + GitHub Actions (lint / test / build / release) + Storybook + test-consumer scaffold + `LICENSE` + `README` + `.editorconfig` + `.gitignore`.
 - **P1 — Core extract** ported from Blocksify Free `src/dashboard/`:
   - Core: `mountDashboard`, `DashboardShell`, `TabStrip`, `HelpPanel`, `SnackbarSlot`, `createFilterNamespace`, `createI18nBag`, `BootDataLoader` (+ `readBoot`, `BootProvider`, `useBoot`, `BootContext`).

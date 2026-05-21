@@ -839,13 +839,35 @@ resolves; failures roll back to the prior value.
 
 <EntityPreviewFrame
   src={string}                              // full URL the iframe loads.
-                                            //   When empty / undefined, the empty
-                                            //   placeholder renders instead.
+                                            //   When empty AND `previewDoc` is
+                                            //   empty, the empty placeholder
+                                            //   renders instead.
+  previewDoc?={string}                      // full HTML doc string. When set,
+                                            //   the iframe loads a `blob:` URL
+                                            //   built from this doc. Wins over
+                                            //   `src` when both are provided.
+                                            //   Revoked on prop change + unmount.
   title={string}                            // iframe accessible title
   viewportWidth?={number}                   // desktop viewport, default 1200
-  viewportHeight?={number}                  // iframe height in px, default 900
-  emptyLabel?={string}                      // shown when src empty; English fallback
-                                            //   `'No preview'`
+  viewportHeight?={number}                  // iframe height in px, default 900.
+                                            //   Ignored when aspectMode='content'
+                                            //   (measurement drives height).
+  aspectMode?={'fixed' | 'content'}         // 'fixed' (default): wrapper holds
+                                            //   4:3 + uses `viewportHeight`.
+                                            //   'content': measure same-origin
+                                            //   doc + size the iframe to it.
+  itemId?={string | number}                 // forwarded as the first arg of
+                                            //   `onContentHeight`. Required when
+                                            //   the parent does state-lift on
+                                            //   several frames at once.
+  onContentHeight?={(itemId, heightPx) => void}
+                                            // fires on every successful measure
+                                            //   in content mode (initial load +
+                                            //   each ResizeObserver tick). Not
+                                            //   deduped — parent skips identical
+                                            //   values itself.
+  emptyLabel?={string}                      // shown when src + previewDoc empty;
+                                            //   English fallback `'No preview'`
   className?={string}
 />
 
@@ -865,6 +887,12 @@ filterTrashByDefault(items, view): Array
 `<EntityListPage>` does NOT import `@wordpress/dataviews`'s CSS. The kit relies on the consumer's `wp-scripts` build pipeline to detect the externalized `@wordpress/dataviews` JS import + auto-register the `wp-dataviews` script-and-style handle via `DependencyExtractionWebpackPlugin`. WordPress core ≥6.5 enqueues the matching stylesheet automatically. The spike's `dataviews-vendor.css` (74 KB) is therefore NOT ported — this is how SPEC §11 hack #2 actually closes.
 
 The `className` prop on both components is appended to the locked-class wrapper, never replaces it.
+
+`<EntityPreviewFrame>`'s `previewDoc` prop (added 0.0.1-dev) is the blob-URL path: pass the full HTML and the kit builds the `blob:` URL client-side. Preferred over `src` when the consumer already has the doc in memory (avoids an HTTP round-trip + works inside admin-only contexts where the preview URL would need its own REST authentication). Cleaned up on prop change and on unmount via `URL.revokeObjectURL`. Precedence: when both `src` and `previewDoc` are set, `previewDoc` wins. The string is rendered as-is — any inline styles or CSS vars the preview needs (e.g. `--wp--style--global--content-size` for constrained-layout-aware previews) must be embedded by the consumer before passing the doc in.
+
+`<EntityPreviewFrame>`'s `aspectMode` prop (added 0.0.1-dev) selects between the default uniform 4:3 cell sizing (`'fixed'`) and content-aware sizing (`'content'`). Content mode measures `body.firstElementChild.getBoundingClientRect()` plus body `padding-top`/`padding-bottom` from `getComputedStyle`, applies the result as an inline `height` on the iframe element, and fires `onContentHeight(itemId, heightPx)`. A `ResizeObserver` re-measures whenever the first child resizes (fonts loading late, images decoding). Requires same-origin content (a blob URL or a same-origin `src`) so the kit can read `contentDocument`.
+
+**Pitfall — never read `body.scrollHeight` for iframe content measurement (drift finding 6.5).** Once the iframe element has an explicit `style.height`, the body inherits the viewport via html's `height: 100%` chain, and `body.scrollHeight` returns the iframe element's own height instead of the real content height. Always measure `body.firstElementChild.getBoundingClientRect()` (plus body padding) for the true content size. The kit's content-mode measurement uses this path; consumers extending or copying the pattern should follow it.
 
 ### 5.7 Editor helpers
 
@@ -1703,8 +1731,11 @@ The Surfaces spike accumulated six documented hacks. Each maps to a kit version 
 | Fullscreen close button click delegation hijack | `force_fullscreen_mode()` inline JS | JS helper `rewireBackButton({ selector, href })` ships the capture-phase intercept as a runtime function. Track Gutenberg PR for `editor.PostBackButton` slot; when upstream lands, the kit replaces the hijack with a proper slot fill but keeps the hack as fallback | **0.1.0** — JS helper **shipped in P5** (paired with `forceFullscreenMode()`). Slot-fill replacement deferred to a 0.x.y minor once WP min-version bumps |
 | **DataViews bundle duplication** across Pro consumers (Blocksify Pro + Customify Pro each ship ~50KB) | Architectural consequence of §2.4 independent-release decision | Track Gutenberg issue #56680 + related discussions for `wp-dataviews` standalone script handle. When WP Core exposes the handle, consumer's `wp-scripts` auto-externalizes — kit code unchanged, consumers re-build and shed the duplication. Kit only bumps the `peerDependencies` WordPress minimum version | **Upstream-dependent** — likely WP 7.x |
 | **`@wordpress/components` `<Spinner>` margin** — legacy `margin: 5px 11px 0 0` pushes the spinner off-centre inside flex-centred containers (visible in Blocksify Free's Welcome checklist status circle, fixed via CSS override in commit `7e6b7ba`) | `@wordpress/components` legacy CSS (decade-old back-when-spinners-sat-next-to-Save-buttons assumption) | Kit's `<Spinner>` wrapper exports `<PMDKSpinner>` with `margin: 0` baked in. Consumers use this wrapper instead of importing `@wordpress/components` `<Spinner>` directly. Documented in kit README + ESLint warning suggesting the swap | **0.1.0** (kit wrapper) — upstream WP fix would deprecate the wrapper |
+| **CSS pipeline force-enqueue during preview generation (6.3)** | Surfaces spike PHP `render_preview_bundle()` flips a `blocksify.css.force_enqueue` filter before assembling the preview HTML, so admin / REST contexts (which normally skip frontend stylesheet emission) still receive the CSS the preview needs | Kit doesn't ship its own CSS pipeline, so the fix is a consumer recipe rather than kit code. Documented in §5.6 (EntityPreviewFrame note) + commit-side cookbook: consumer declares a `<ns>.css.force_enqueue` filter in their stylesheet enqueue path, flips it `true` for the duration of preview-doc assembly, then restores. Kit's `previewDoc` prop is the receiving end of this pattern | **0.0.1-dev** — documentation only |
+| **DataViews v14.3 mount-normalize guard (6.4)** | DataViews occasionally fires `onChangeView` ~50ms post-mount that silently demotes `type: 'grid'` → `'table'` even when the persisted view said `'grid'`. Surfaces spike's `setView` swallows this fire when `< 1500ms since mount AND no user pointer/keydown event AND prev?.type === 'grid' AND next?.type === 'table'` | Kit doesn't auto-apply the guard (would mask legitimate config changes in non-Surfaces contexts). Documented as a recipe in `ViewPersistence.js` JSDoc; optional `mountNormalizeGuard()` helper deferred until a second consumer needs the same workaround | **0.0.1-dev** — documentation only |
+| **`body.scrollHeight` on iframe content (6.5)** | Surfaces spike originally measured `body.scrollHeight` for content-aware iframe sizing. With the iframe element's `style.height` set, body inherits the viewport via html's `height: 100%` chain → `body.scrollHeight` returns the iframe's own height instead of the real content. Fixed by measuring `body.firstElementChild.getBoundingClientRect()` + body `padding-top`/`padding-bottom` | `<EntityPreviewFrame>`'s `aspectMode='content'` measurement uses the firstElementChild approach. Inline comment in `EntityPreviewFrame.jsx` warns against `body.scrollHeight` for any consumer extending the path; §5.6 pitfall paragraph repeats the warning at spec level | **0.0.1-dev** — shipped in the 6.2 / `aspectMode='content'` implementation |
 
-Kit's first release (0.1.0) ships with proper fixes for 4 of 6 spike hacks. Two remaining (submenu hash detection, fullscreen close button) are limited by WordPress core's API surface and stay as documented helpers until upstream changes. The DataViews-duplication tracking item is architectural, not a spike workaround — listed here for completeness so the upstream dependency stays visible.
+Kit's first release (0.1.0) ships with proper fixes for 4 of 6 spike hacks. Two remaining (submenu hash detection, fullscreen close button) are limited by WordPress core's API surface and stay as documented helpers until upstream changes. The DataViews-duplication tracking item is architectural, not a spike workaround — listed here for completeness so the upstream dependency stays visible. The three drift findings (6.3 / 6.4 / 6.5) extracted from the Surfaces blob+iframe preview spike are documentation-only or already-shipped patches; they're listed for traceability so the same pitfalls don't get rediscovered.
 
 ---
 
