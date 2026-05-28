@@ -1,0 +1,27 @@
+# export-ignore: excluded from `git archive` output and Composer dist
+# downloads (Packagist / `composer install --prefer-dist`).
+#
+# Composer consumers only need `includes/` (PSR-4 autoload) + composer.json +
+# LICENSE. Everything below is npm-side or dev-only.
+
+/.editorconfig     export-ignore
+/.eslintrc.cjs     export-ignore
+/.gitattributes    export-ignore
+/.github           export-ignore
+/.gitignore        export-ignore
+/.prettierrc.cjs   export-ignore
+/.storybook        export-ignore
+/CHANGELOG.md      export-ignore
+/KIT_ISSUES.md     export-ignore
+/build             export-ignore
+/docs              export-ignore
+/package.json      export-ignore
+/package-lock.json export-ignore
+/packages          export-ignore
+/phpunit.xml.dist  export-ignore
+/src               export-ignore
+/stories           export-ignore
+/tests             export-ignore
+/tsconfig.json     export-ignore
+/vitest.config.js  export-ignore
+/webpack.config.js export-ignore

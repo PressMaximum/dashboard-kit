@@ -3,7 +3,10 @@ node_modules/
 vendor/
 
 # Build output
-build/
+# build/ is intentionally tracked: it's the npm distribution. Consumers install
+# this package via `github:PressMaximum/dashboard-kit#main`, which means npm
+# only sees what's committed — no build step runs on install. Rebuild + commit
+# build/ before pushing a release.
 dist/
 storybook-static/
 

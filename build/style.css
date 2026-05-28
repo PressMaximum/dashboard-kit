@@ -1,0 +1,1357 @@
+/*
+ * CSS custom properties for @pressmaximum/dashboard-kit.
+ *
+ * Authoritative source: docs/SPEC.md §16.1. Override at any scope; the
+ * defaults below match the WordPress admin look so a freshly-mounted
+ * dashboard inherits the user's current WP admin color scheme without
+ * the consumer doing anything.
+ */
+
+:root {
+	/* Accent RGB triplet — used by color-mix fallbacks that don't depend
+	   on the cascade level the WP scheme is written at. The accent token
+	   itself (`--pmdk-color-accent`) is declared at `body.wp-admin` +
+	   `.pmdk-dashboard` scopes below so it sees the body-level
+	   `--wp-admin-theme-color`. See KIT_ISSUES K-001 for history. */
+	--pmdk-color-accent-rgb: 56, 88, 233;
+
+	/* Text */
+	--pmdk-color-text: #1e1e1e;
+	--pmdk-color-text-muted: #50575e;
+
+	/* Surfaces */
+	--pmdk-color-bg: #ffffff;
+	--pmdk-color-bg-subtle: #f6f7f7;
+
+	/* Borders */
+	--pmdk-color-border: #e0e0e0;
+	--pmdk-color-border-subtle: #f0f0f1;
+
+	/* State */
+	--pmdk-color-success: #00a32a;
+	--pmdk-color-error: #b91c1c;
+
+	/* Shape */
+	--pmdk-radius-small: 4px;
+	--pmdk-radius-card: 8px;
+	--pmdk-radius-pill: 9999px;
+
+	/* Type */
+	--pmdk-font-size-base: 14px;
+	--pmdk-line-height-base: 1.5;
+
+	/* Font weight tier (KIT_ISSUES K-010) ----------------------------
+	 * Two-tier hierarchy that consumers can re-tune at the root:
+	 *
+	 *   --pmdk-font-weight-heading  — hero title, card heads. One step
+	 *                                 above body so section heads stand
+	 *                                 out without going to a bold cue.
+	 *   --pmdk-font-weight-label    — item-level titles (checklist
+	 *                                 rows, release-block version,
+	 *                                 module rows). Matches body so
+	 *                                 in-body lists read consistently.
+	 *
+	 * Earlier component CSS hardcoded `font-weight: 600` across the
+	 * board — fine in isolation, but produces a wall-of-bold on a
+	 * Welcome page that combines hero + cards + checklist + lists.
+	 * Centralising the tier here keeps the visual hierarchy editable
+	 * via two CSS variables. */
+	--pmdk-font-weight-heading: 500;
+	--pmdk-font-weight-label: 400;
+
+	/* Spacing */
+	--pmdk-spacing-unit: 8px;
+	--pmdk-header-gutter: 24px;
+	--pmdk-tab-padding-y: 16px;
+	--pmdk-tab-padding-x: 18px;
+
+	/* Dashboard chassis ---------------------------------------------
+	 * Outer `.pmdk-dashboard` background. Distinct from
+	 * `--pmdk-color-bg` (which governs header / cards / SubNav surfaces)
+	 * so the chassis can tint the body while inner surfaces stay white
+	 * by default — closer to the WP `about.php` chrome pattern. */
+	--pmdk-dashboard-bg: #ececec;
+
+	/* Hero (Welcome intro card) ---------------------------------------
+	 * Consumers override these to re-skin the hero without touching
+	 * `.pmdk-hero` class targets. Each token has a primitive fallback
+	 * so layered overrides degrade cleanly (KIT_ISSUES K-007). */
+	--pmdk-hero-padding: 48px;
+	--pmdk-hero-bg: #ffffff;
+	--pmdk-hero-radius: var( --pmdk-radius-card, 8px );
+	--pmdk-hero-title-size: 28px;
+
+	/* Compare table -------------------------------------------------- */
+	--pmdk-compare-head-bg: #fff;
+	--pmdk-compare-section-title-bg: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	--pmdk-compare-row-padding-y: 14px;
+	--pmdk-compare-row-padding-x: 24px;
+	--pmdk-compare-cta-bg: #fffbf0;
+	--pmdk-compare-cta-border: #f0d57c;
+
+	/* Checklist (Welcome onboarding) -------------------------------- */
+	--pmdk-checklist-item-padding-y: 16px;
+	--pmdk-checklist-item-padding-x: 24px;
+
+	/* SubNav rail --------------------------------------------------- */
+	--pmdk-subnav-bg: var( --pmdk-color-bg, #fff );
+	--pmdk-subnav-radius: var( --pmdk-radius-card, 8px );
+
+	/* ReleaseBlock (Changelog card) --------------------------------- */
+	--pmdk-release-block-padding-y: 20px;
+	--pmdk-release-block-padding-x: 24px;
+	--pmdk-release-block-radius: var( --pmdk-radius-small, 4px );
+}
+
+/*
+ * `--pmdk-color-accent` MUST be declared at a cascade level that sees the
+ * body-level `--wp-admin-theme-color` (WordPress 5.7+ writes the
+ * authoritative scheme accent on `body.wp-admin`). Declaring at `:root`
+ * would resolve `--wp-admin-theme-color` once at the root cascade level
+ * and freeze the value — defeats the entire reason for the indirection.
+ *
+ * Two scopes cover the deployment matrix:
+ *   - `body.wp-admin` — production WordPress admin pages.
+ *   - `.pmdk-dashboard` — Storybook + standalone test pages without
+ *     `body.wp-admin`; the chassis class is always present when the
+ *     kit's `<DashboardShell>` mounts.
+ *
+ * Theming consumers that override `--pmdk-color-accent` at `:root`,
+ * `body.wp-admin`, or `.pmdk-dashboard` keep working — their override
+ * wins on standard cascade specificity + source-order rules.
+ */
+body.wp-admin,
+.pmdk-dashboard {
+	--pmdk-color-accent: var( --wp-admin-theme-color, #3858e9 );
+}
+
+/*
+ * TabStrip — locked classes per SPEC §16.2:
+ *   .pmdk-dashboard__tabs
+ *   .pmdk-dashboard__tab
+ *   .pmdk-dashboard__tab.is-active
+ */
+
+.pmdk-dashboard__tabs {
+	display: flex;
+	justify-self: center;
+	align-items: stretch;
+	gap: 4px;
+	margin-bottom: -1px;
+}
+
+.pmdk-dashboard__tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: var( --pmdk-tab-padding-y, 16px ) var( --pmdk-tab-padding-x, 18px );
+	color: var( --pmdk-color-text, #1e1e1e );
+	font-size: var( --pmdk-font-size-base, 14px );
+	font-weight: 500;
+	line-height: 1.4;
+	text-decoration: none;
+	background: transparent;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Hover + keyboard-visible focus tint the label with the scheme accent.
+   Plain `:focus` is excluded — that leaves a click-induced focus ring
+   sitting on the anchor after navigation, which reads as "selected"
+   even after the user has visually moved on. `:focus-visible` only
+   fires for keyboard traversal so the AT cue is preserved. */
+.pmdk-dashboard__tab:hover,
+.pmdk-dashboard__tab:focus-visible {
+	background: transparent;
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+.pmdk-dashboard__tab:focus:not( :focus-visible ) {
+	outline: none;
+	box-shadow: none;
+}
+
+.pmdk-dashboard__tab.is-active {
+	background: transparent;
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+	border-bottom-color: var(
+		--pmdk-color-accent,
+		var( --wp-admin-theme-color, #2271b1 )
+	);
+	font-weight: 600;
+}
+
+/*
+ * HelpPanel — popover anchored to the header `?` button via
+ * `<Dropdown>`. Dropdown manages open / close + focus + click-outside
+ * + Esc; CSS just sizes the content surface + the trigger button.
+ *
+ * Locked class per SPEC §16.2:
+ *   .pmdk-help-panel    Header help dropdown wrapper
+ * Plus non-locked styling hooks:
+ *   .pmdk-dashboard__help-trigger, __help-trigger-button
+ */
+
+/* Trigger button — Dropdown wraps `renderToggle` in a div carrying
+   `__help-trigger`; the Button inside is `__help-trigger-button` so
+   we can tint icon vs wrapper independently. */
+.pmdk-dashboard__help-trigger-button.components-button.has-icon {
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-dashboard__help-trigger-button.components-button.has-icon:hover,
+.pmdk-dashboard__help-trigger-button.components-button.has-icon[ aria-expanded='true' ] {
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+/* Suppress every focus visual on the trigger — the popover's open state
+   is the affordance; no extra ring needed. */
+.pmdk-dashboard__help-trigger-button.components-button:focus,
+.pmdk-dashboard__help-trigger-button.components-button:focus-visible,
+.pmdk-dashboard__help-trigger-button.components-button.is-pressed,
+.pmdk-dashboard__help-trigger-button.components-button:focus:not( :disabled ) {
+	outline: none;
+	box-shadow: none;
+}
+
+/* Popover content surface */
+.pmdk-help-panel .components-popover__content {
+	width: 280px;
+	padding: 0;
+	border-radius: var( --pmdk-radius-small, 4px );
+}
+
+.pmdk-help-panel__panel {
+	padding: 4px 0;
+}
+
+.pmdk-help-panel__heading {
+	margin: 0;
+	padding: 10px 16px 6px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #757575;
+}
+
+.pmdk-help-panel__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pmdk-help-panel__item {
+	/* WP admin's `li { margin-bottom: 6px }` would otherwise leak through
+	   as a white gap above the hovered item. */
+	margin: 0;
+}
+
+.pmdk-help-panel__link {
+	display: grid;
+	grid-template-columns: 20px 1fr 16px;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 16px;
+	color: var( --pmdk-color-text, #1e1e1e );
+	font-size: 13px;
+	font-weight: 500;
+	text-decoration: none;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pmdk-help-panel__link:hover,
+.pmdk-help-panel__link:focus-visible {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+/* Suppress every focus visual on the popover links. Keyboard users get
+   the hover-style tint via `:focus-visible` above, so the active item
+   stays readable without WP's default 2px ring. */
+.pmdk-help-panel__link:focus,
+.pmdk-help-panel__link:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.pmdk-help-panel__icon,
+.pmdk-help-panel__chevron {
+	color: #757575;
+}
+
+.pmdk-help-panel__link:hover .pmdk-help-panel__icon,
+.pmdk-help-panel__link:hover .pmdk-help-panel__chevron,
+.pmdk-help-panel__link:focus-visible .pmdk-help-panel__icon,
+.pmdk-help-panel__link:focus-visible .pmdk-help-panel__chevron {
+	color: inherit;
+}
+
+.pmdk-help-panel__label {
+	min-width: 0;
+}
+
+/*
+ * DashboardShell chassis — header, brand, main, version anchor.
+ *
+ * Class names follow SPEC §16.2 (locked at 1.0):
+ *   .pmdk-dashboard
+ *   .pmdk-dashboard__header
+ *   .pmdk-dashboard__brand
+ *   .pmdk-dashboard__main
+ * Plus non-locked styling hooks for the header-right cluster +
+ * version anchor that consumers may target for hover / focus restyles.
+ */
+
+.pmdk-dashboard {
+	display: flex;
+	flex-direction: column;
+	min-height: calc( 100vh - 32px );
+	background: var( --pmdk-dashboard-bg, #ececec );
+}
+
+/* Header — three-column grid: brand left, tabs centered, header-right
+   cluster on the right. The brand and right tracks both flex to 1fr so
+   the auto-width center sits at the visual center of the page
+   regardless of brand width. Tabs flush with the bottom of the header;
+   active tab's underline overlaps the 1px divider via a -1px margin
+   (see TabStrip.css). */
+.pmdk-dashboard__header {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: stretch;
+	padding: 0 var( --pmdk-header-gutter, 24px );
+	background: var( --pmdk-color-bg, #fff );
+	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+.pmdk-dashboard__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	justify-self: start;
+	align-self: center;
+	margin: 0;
+	padding: 20px 0;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1;
+}
+
+/* Brand link — present only when consumer supplies `brand.href` to
+   `mountDashboard()`. Rendered as `<h1><a>icon + text</a></h1>` so the
+   `<h1>` semantics are preserved. Resets the WP-admin default blue
+   underline so the linked brand looks identical to the static one;
+   `:focus-visible` brings back a keyboard ring. Hover lifts the icon
+   colour to the scheme accent as a subtle affordance. */
+.pmdk-dashboard__brand-link {
+	display: inline-flex;
+	align-items: center;
+	gap: inherit;
+	color: inherit;
+	text-decoration: none;
+}
+
+.pmdk-dashboard__brand-link:hover,
+.pmdk-dashboard__brand-link:focus-visible {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pmdk-dashboard__brand-link:focus,
+.pmdk-dashboard__brand-link:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.pmdk-dashboard__brand-link:focus-visible {
+	outline: 2px solid
+		var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+	outline-offset: 4px;
+	border-radius: 2px;
+}
+
+/* The brand mark keeps a brand-stable hue (dark slate) instead of
+   tinting with the WP admin scheme accent — identity stays consistent
+   across the user's chosen WP color scheme. Consumers override via
+   `.pmdk-dashboard__brand-icon { color: ... }`. */
+.pmdk-dashboard__brand-icon {
+	display: inline-flex;
+	color: #1f2937;
+}
+
+.pmdk-dashboard__brand-icon svg {
+	display: block;
+}
+
+.pmdk-dashboard__brand-text {
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+/* Header right cluster — version label + help trigger. Right-aligned
+   inside the third grid track. */
+.pmdk-dashboard__header-right {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	justify-self: end;
+	align-self: center;
+}
+
+/* Version anchor — muted-gray when at rest; takes the scheme accent on
+   hover / keyboard focus. Plain `:focus` is intentionally suppressed
+   so a click-induced focus ring doesn't linger after navigation. */
+.pmdk-dashboard__version {
+	color: var( --pmdk-color-text-muted, #50575e );
+	font-size: 12px;
+	font-weight: 500;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+.pmdk-dashboard__version:hover,
+.pmdk-dashboard__version:focus-visible {
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+.pmdk-dashboard__version:focus,
+.pmdk-dashboard__version:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+/* Main — flex column so DataViews + other height-greedy children get a
+   measurable flex chain (SPEC §11 hack #3 / PageWrapper). `min-height: 0`
+   lets the flex item actually shrink below its intrinsic content height,
+   which is what unlocks DataViews's `useResizeObserver` to fire with a
+   real width on first mount.
+
+   `containerWidth` mode comes off the outer `.pmdk-dashboard` element via
+   the `data-container-width` attribute (set by `mountDashboard({
+   containerWidth: 'narrow' | 'wide' })`, default `narrow`):
+
+     narrow — the about.php reading-column look: capped at 1100px, centred,
+              generous top + bottom padding so the active tab underline
+              doesn't crowd the page heading. Suits Welcome / Settings /
+              Changelog / Free-vs-Pro tabs.
+
+     wide   — full viewport minus the header gutter. Required for
+              DataViews-heavy CPT lists where horizontal real estate is
+              the whole point. Top + bottom padding tightens so the data
+              grid maximises vertical space too. */
+.pmdk-dashboard__main {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* `:not([data-container-width])` keeps the narrow default when a
+   consumer renders `<div class="pmdk-dashboard">` manually instead of
+   via `<DashboardShell>` — the class is part of the §16.2 locked public
+   surface, so the CSS must produce a sensible layout without React
+   setting the attribute. `mountDashboard` always sets it to `narrow` or
+   `wide`, so this clause is dormant for the standard path. */
+.pmdk-dashboard[ data-container-width='narrow' ] .pmdk-dashboard__main,
+.pmdk-dashboard:not( [ data-container-width ] ) .pmdk-dashboard__main {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 60px var( --pmdk-header-gutter, 24px ) 80px;
+}
+
+.pmdk-dashboard[ data-container-width='wide' ] .pmdk-dashboard__main {
+	max-width: none;
+	margin: 0;
+	padding: 24px var( --pmdk-header-gutter, 24px );
+}
+
+/* Suppress the focus ring on programmatic main focus (route-change SPA
+   pattern). Keyboard `tab` into the area still surfaces a ring via
+   `:focus-visible`. */
+.pmdk-dashboard__main:focus:not( :focus-visible ) {
+	outline: none;
+}
+
+/* Snackbar list — center-bottom anchored. `pointer-events: none` on
+   the wrapper so it doesn't intercept clicks on empty space around
+   the visible snackbar; children re-enable. */
+.pmdk-dashboard__snackbar {
+	position: fixed;
+	bottom: 24px;
+	left: 0;
+	right: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	pointer-events: none;
+	z-index: 100000;
+}
+
+.pmdk-dashboard__snackbar > * {
+	pointer-events: auto;
+}
+
+/*
+ * PageWrapper — DataViews-friendly flex-chain wrapper.
+ *
+ * SPEC §11 hack #3 + §16.2 (locked class):
+ *   .pmdk-page-wrapper
+ *
+ * Purpose: provide the flex chain `@wordpress/dataviews`'s grid layout
+ * needs to compute a non-zero `containerWidth` from its `ResizeObserver`.
+ *
+ * Without this chain, DataViews's `useGridColumns` reads `containerWidth: 0`
+ * → `gridColumns: 1` → every record stacks one-per-row in grid view
+ * (the spike's `display:contents` row-flatten hack worked around this).
+ *
+ * The chain that works (reverse-engineered from Site Editor's
+ * DataViews pages — the spike never had a PageWrapper):
+ *
+ *   .pmdk-dashboard           — flex column, full viewport height
+ *     .pmdk-dashboard__main   — flex column, flex:1, min-height:0
+ *       .pmdk-page-wrapper    — flex column, flex:1, min-height:0, min-width:0, width:100%
+ *         <.dataviews-wrapper>  — DataViews's own root (flex:1 + min-height:0 are
+ *           <.dataviews-view-grid>  baked into the package's CSS); observed by
+ *                                   useResizeObserver, now sees a real width
+ *
+ * A consumer page is welcome to wrap DataViews in its own div between
+ * PageWrapper and the DataViews root — when it does, that wrapper
+ * needs `flex: 1 1 auto; min-height: 0` to forward the chain. When it
+ * doesn't (the typical case + what the validation story exercises),
+ * DataViews sits as a direct flex child of PageWrapper and just works.
+ *
+ * The two `min-*: 0` declarations on PageWrapper are load-bearing: in
+ * a flex column, the default `min-height: auto` resolves to the
+ * content's intrinsic height, which prevents a child from shrinking
+ * below its content. Without them, `flex: 1` grants growth but no
+ * actual fill — DataViews's observer fires too late / with the
+ * wrong width.
+ */
+
+.pmdk-page-wrapper {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/*
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-list-page-header
+ *   .pmdk-list-page-header__title
+ *   .pmdk-list-page-header__actions
+ */
+
+.pmdk-list-page-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 24px;
+	margin: 0 0 24px;
+	padding: 0 0 16px;
+	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+.pmdk-list-page-header__title {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.pmdk-list-page-header__description {
+	margin: 4px 0 0;
+	color: var( --pmdk-color-text-muted, #50575e );
+	font-size: 13px;
+}
+
+.pmdk-list-page-header__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/*
+ * Locked class per SPEC §16.2:
+ *   .pmdk-editor-page-header
+ */
+
+.pmdk-editor-page-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	margin: 0 0 24px;
+	padding: 0 0 16px;
+	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+.pmdk-editor-page-header__left {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	min-width: 0;
+}
+
+.pmdk-editor-page-header__back {
+	color: var( --pmdk-color-text-muted, #50575e );
+	text-decoration: none;
+	font-size: 13px;
+}
+
+.pmdk-editor-page-header__back:hover {
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-editor-page-header__title {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pmdk-editor-page-header__status {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: 2px;
+	background: var( --pmdk-color-border-subtle, #f0f0f1 );
+	color: var( --pmdk-color-text-muted, #50575e );
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.pmdk-editor-page-header__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+/*
+ * Locked class per SPEC §16.2:
+ *   .pmdk-editor-view-layout
+ *
+ * Intent: form-style editors (CPT meta forms with a left rail of panel
+ * groups + a right rail of save/help). NOT a DataViews container —
+ * `__main` is a CSS Grid track, not a flex column, so the PageWrapper
+ * `flex-grow:1 / min-height:0` chain stops here. DataViews-using lists
+ * should be rendered directly under `<PageWrapper>`, not inside
+ * `<EditorViewLayout main={...}>`. See SPEC §11 hack #3.
+ */
+
+.pmdk-editor-view-layout {
+	display: grid;
+	grid-template-columns: 240px 1fr 280px;
+	gap: 24px;
+	align-items: start;
+}
+
+.pmdk-editor-view-layout__subnav,
+.pmdk-editor-view-layout__rail {
+	position: sticky;
+	top: 80px;
+	max-height: calc( 100vh - 100px );
+	overflow: auto;
+	padding: 16px;
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var( --pmdk-radius-small, 4px );
+	background: var( --pmdk-color-bg, #fff );
+}
+
+.pmdk-editor-view-layout__main {
+	min-width: 0;
+}
+
+@media ( max-width: 1100px ) {
+	.pmdk-editor-view-layout {
+		grid-template-columns: 240px 1fr;
+	}
+
+	.pmdk-editor-view-layout__rail {
+		grid-column: 1 / -1;
+		position: static;
+		max-height: none;
+	}
+}
+
+@media ( max-width: 782px ) {
+	.pmdk-editor-view-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.pmdk-editor-view-layout__subnav {
+		position: static;
+		max-height: none;
+	}
+}
+
+/*
+ * SubNav — vertical nav rail used by Settings (panels) + Changelog
+ * (sources) intra-tab.
+ *
+ * The CSS surface is not on the SPEC §16.2 locked list (those classes
+ * cover the dashboard chassis + tab strip + entity list); these
+ * pmdk-subnav-* classes are part of the public surface from 1.0 onward.
+ */
+
+.pmdk-subnav {
+	position: sticky;
+	top: 24px;
+	padding: 6px;
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: 8px;
+}
+
+.pmdk-subnav__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.pmdk-subnav__item {
+	display: block;
+	padding: 10px 12px;
+	border-radius: var( --pmdk-radius-small, 4px );
+	color: var( --pmdk-color-text, #1e1e1e );
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	text-decoration: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Keyboard focus gets the same background tint as hover (mirroring the
+   top tab strip pattern) so the AT cue is preserved without a heavy
+   outline. WP admin's `a:focus { box-shadow: 0 0 0 2px … }` baseline is
+   suppressed too — neither click nor keyboard focus paints a frame. */
+.pmdk-subnav__item:hover,
+.pmdk-subnav__item:focus,
+.pmdk-subnav__item:focus-visible {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text, #1e1e1e );
+	outline: none;
+	box-shadow: none;
+}
+
+/* Active item: scheme-accent tint + accent text, mirroring the top tab
+   strip's is-active language. `color-mix` produces a light wash from
+   the user's admin color scheme; the hardcoded fallback covers older
+   browsers + admins that disabled scheme variables. */
+.pmdk-subnav__item.is-active,
+.pmdk-subnav__item.is-active:hover {
+	background: color-mix(
+		in srgb,
+		var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) )
+			12%,
+		var( --pmdk-color-bg, #fff )
+	);
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+	font-weight: 600;
+}
+
+/*
+ * SchemaForm — vertical field stack.
+ *
+ * Tier-1 layout primitive (SPEC §5.13). Provides the per-field spacing
+ * `@wordpress/components` Toggle/Select/Range fields don't ship on their
+ * own. Without this rule consumers re-add their own
+ * `.consumer-settings__fields { gap: ... }` wrapper. KIT_ISSUES K-005.
+ *
+ * Locked class per SPEC §16.2: `.pmdk-schema-form` is part of the
+ * public CSS surface from 1.0 onward.
+ */
+
+.pmdk-schema-form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+/*
+ * SaveBar — sticky-bottom save/reset cluster.
+ *
+ * Locked class per SPEC §16.2:
+ *   .pmdk-save-bar
+ *
+ * Layout: full-width row inside whatever container the consumer provides
+ * (typical: a Card's CardFooter). Status pill on the left mirrors the
+ * store lifecycle; right cluster holds Reset (tertiary destructive) +
+ * Save (primary, dirty-gated).
+ */
+
+.pmdk-save-bar {
+	width: 100%;
+	padding: 12px 0;
+	min-height: 48px;
+	box-sizing: border-box;
+}
+
+.pmdk-save-bar__status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-save-bar__status.is-dirty {
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+/* The "saved" state describes "no pending changes" — same state as
+ * "user hasn't edited anything yet". Keep the muted text colour
+ * instead of painting it with `--pmdk-color-success` (green check
+ * suggested a freshly-saved confirmation on first page load, see
+ * KIT_ISSUES K-011). Consumers wanting the celebratory cue dispatch
+ * their own snackbar in the `onSave` resolution. */
+.pmdk-save-bar__status.is-saved {
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-save-bar__status.is-saved svg {
+	fill: currentColor;
+}
+
+.pmdk-save-bar__status.is-saving {
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+/*
+ * Hero — Welcome page intro card.
+ *
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-hero
+ *   .pmdk-hero__title
+ *   .pmdk-hero__tagline
+ *   .pmdk-hero__cta
+ *
+ * Layout: 2-column flex when illustration is present; collapses to a
+ * single column under 800px. The illustration slot is consumer-supplied
+ * so the kit doesn't constrain dimensions — only its container.
+ */
+
+/* White card on a tinted chassis — the hero is the first inner surface
+   inside `.pmdk-dashboard` (default `--pmdk-dashboard-bg: #ececec`),
+   so it sits on the chassis as a clean white panel. Earlier iterations
+   used `#ececec` directly here (matching WP's `about.php` light-gray
+   block — KIT_ISSUES K-003); the current direction is
+   white-on-tinted-chassis. Consumers override `--pmdk-hero-bg` to
+   restore the older look or pick any other tone. */
+.pmdk-hero {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 32px;
+	padding: var( --pmdk-hero-padding, 48px );
+	margin: 0 0 24px;
+	background: var( --pmdk-hero-bg, #ffffff );
+	border: 0;
+	border-radius: var( --pmdk-hero-radius, 8px );
+}
+
+.pmdk-hero__content {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 560px;
+}
+
+.pmdk-hero__title {
+	margin: 0;
+	font-size: var( --pmdk-hero-title-size, 28px );
+	font-weight: var( --pmdk-font-weight-heading, 500 );
+	line-height: 1.3;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-hero__tagline {
+	margin: 8px 0 24px;
+	max-width: 56ch;
+	font-size: 15px;
+	line-height: 1.5;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-hero__cta {
+	display: inline-flex;
+}
+
+.pmdk-hero__illustration {
+	flex: 0 0 auto;
+	max-width: 240px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+@media ( max-width: 800px ) {
+	.pmdk-hero {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.pmdk-hero__illustration {
+		max-width: 100%;
+	}
+}
+
+/*
+ * Checklist — Welcome onboarding tasks list.
+ *
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-checklist
+ *   .pmdk-checklist__item
+ *   .pmdk-checklist__status
+ *   .pmdk-checklist__cta
+ *
+ * Each row is a flex layout: status indicator (left, 32px reserved),
+ * body (label + description, flex 1), CTA button (right, auto).
+ * Completed rows get the `.is-complete` modifier; the indicator swaps
+ * to the green check.
+ */
+
+/* No chrome on the kit container — the `<Checklist>` component owns the
+   semantic `<section>` + a11y label, but the visible card chrome
+   (border, background, radius, heading) is composed by the consumer
+   around it. Avoids double-card visuals when consumers wrap kit's
+   `<Checklist>` in `<Card><CardHeader/><CardBody>` so the "Get set up"
+   heading + the list read as a single panel. KIT_ISSUES K-002. */
+.pmdk-checklist {
+	/* layout-only — no border / background / radius. */
+}
+
+.pmdk-checklist__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.pmdk-checklist__item {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: var( --pmdk-checklist-item-padding-y, 16px )
+		var( --pmdk-checklist-item-padding-x, 24px );
+	border-bottom: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
+}
+
+.pmdk-checklist__item:last-child {
+	border-bottom: 0;
+}
+
+.pmdk-checklist__status {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 28px;
+	border-radius: 9999px;
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-checklist__item.is-complete .pmdk-checklist__status {
+	background: var( --pmdk-color-success, #00a32a );
+	color: #fff;
+}
+
+.pmdk-checklist__status svg {
+	fill: currentColor;
+}
+
+.pmdk-checklist__bullet {
+	display: block;
+	width: 8px;
+	height: 8px;
+	border-radius: 9999px;
+	background: currentColor;
+	opacity: 0.5;
+}
+
+.pmdk-checklist__body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.pmdk-checklist__label {
+	margin: 0;
+	font-size: 14px;
+	font-weight: var( --pmdk-font-weight-label, 400 );
+	line-height: 1.4;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-checklist__item.is-complete .pmdk-checklist__label {
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-checklist__description {
+	margin: 4px 0 0;
+	font-size: 13px;
+	line-height: 1.45;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-checklist__cta {
+	flex: 0 0 auto;
+}
+
+/*
+ * CompareTable — Free vs Pro matrix.
+ *
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-compare
+ *   .pmdk-compare__row
+ *   .pmdk-compare__check-yes
+ *   .pmdk-compare__check-no
+ *
+ * Grid template: 2fr / 1fr / 1fr — feature label gets the largest
+ * track so long copy doesn't truncate; the two check columns are
+ * symmetric. Header sticks at the top of the card.
+ */
+
+.pmdk-compare {
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var( --pmdk-radius-small, 4px );
+	overflow: hidden;
+}
+
+/* Head row + each body row share the grid + per-row padding so feature
+   labels + check cells sit on the same gutter. KIT_ISSUES K-004 — the
+   earlier "padding on cells, not on rows" pattern dropped consistent
+   inset and made section-title rows read as bare text instead of a
+   tinted band. */
+.pmdk-compare__head,
+.pmdk-compare__row {
+	display: grid;
+	grid-template-columns: 2fr 1fr 1fr;
+	align-items: center;
+	gap: 16px;
+	padding: var( --pmdk-compare-row-padding-y, 14px )
+		var( --pmdk-compare-row-padding-x, 24px );
+}
+
+.pmdk-compare__head {
+	background: var( --pmdk-compare-head-bg, #fafafa );
+	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+.pmdk-compare__head-cell {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var( --pmdk-color-text-muted, #757575 );
+}
+
+.pmdk-compare__head-cell--center {
+	text-align: center;
+}
+
+.pmdk-compare__head-cell--pro {
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+.pmdk-compare__section {
+	margin: 0;
+}
+
+/* Tinted section-title row — full-width band flush with the card's left
+   + right edges. Padding matches the row inset above so the section
+   label aligns with the feature labels in the rows below. */
+.pmdk-compare__section-title {
+	margin: 0;
+	padding: 12px var( --pmdk-compare-row-padding-x, 24px );
+	background: var(
+		--pmdk-compare-section-title-bg,
+		var( --pmdk-color-bg-subtle, #f6f7f7 )
+	);
+	border-top: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-compare__section:first-of-type .pmdk-compare__section-title {
+	border-top: 0;
+}
+
+.pmdk-compare__rows {
+	display: flex;
+	flex-direction: column;
+}
+
+.pmdk-compare__row {
+	border-top: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
+}
+
+/* First row of each section sits flush below the tinted title — no top
+   hairline (the title's bottom edge already separates them). */
+.pmdk-compare__section .pmdk-compare__row:first-child {
+	border-top: 0;
+}
+
+.pmdk-compare__feature {
+	font-size: 14px;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-compare__cell-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.pmdk-compare__check-yes,
+.pmdk-compare__check-no {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 9999px;
+	font-size: 14px;
+	line-height: 1;
+}
+
+.pmdk-compare__check-yes {
+	background: var( --pmdk-color-success, #00a32a );
+	color: #fff;
+}
+
+.pmdk-compare__check-yes svg {
+	fill: currentColor;
+}
+
+.pmdk-compare__check-no {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-compare__text {
+	font-size: 14px;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+.pmdk-compare__text.is-muted {
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+/* Internal CTA banner — lives at the bottom of the compare card so the
+   upgrade trigger stays attached to the matrix it summarizes. Cream bg
+   + yellow hairline matches WP's standard about.php highlight band. */
+.pmdk-compare__cta {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	padding: 24px;
+	background: var( --pmdk-compare-cta-bg, #fffbf0 );
+	border-top: 1px solid var( --pmdk-compare-cta-border, #f0d57c );
+	flex-wrap: wrap;
+}
+
+.pmdk-compare__cta-text {
+	flex: 1 1 auto;
+}
+
+.pmdk-compare__cta-title {
+	margin: 0 0 4px;
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.pmdk-compare__cta-description {
+	margin: 0;
+	font-size: 13px;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+/*
+ * CategoryBadge — small uppercase pill, color per tone modifier.
+ *
+ * Locked classes per SPEC §16.2:
+ *   .pmdk-category-badge
+ *   .pmdk-category-badge--new
+ *   .pmdk-category-badge--improved
+ *   .pmdk-category-badge--fixed
+ *   .pmdk-category-badge--updated
+ *   .pmdk-category-badge--removed
+ *   .pmdk-category-badge--security
+ *   .pmdk-category-badge--deprecated
+ *   .pmdk-category-badge--neutral
+ *
+ * Lives in its own file (not ReleaseBlock.css) so consumers using
+ * `<CategoryBadge>` standalone — e.g. inside a custom changelog
+ * renderer, or as a status pill on a non-changelog surface — still
+ * pick up the styling without importing ReleaseBlock.
+ */
+
+.pmdk-category-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	min-width: 72px;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	border-radius: 9999px;
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-category-badge--new {
+	background: #e6f7eb;
+	color: #00692b;
+}
+
+.pmdk-category-badge--improved {
+	background: #eef3ff;
+	color: #1d4ed8;
+}
+
+.pmdk-category-badge--fixed {
+	background: #e0f2fe;
+	color: #075985;
+}
+
+.pmdk-category-badge--updated {
+	background: #fef3c7;
+	color: #854d0e;
+}
+
+.pmdk-category-badge--removed {
+	background: #fee2e2;
+	color: #b91c1c;
+}
+
+.pmdk-category-badge--security {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.pmdk-category-badge--deprecated {
+	background: #f3e8ff;
+	color: #6b21a8;
+}
+
+.pmdk-category-badge--neutral {
+	background: var( --pmdk-color-bg-subtle, #f6f7f7 );
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+/*
+ * ReleaseBlock + CategoryBadge styling.
+ *
+ * Locked class per SPEC §16.2:
+ *   .pmdk-release-block
+ *
+ * Each release renders as a card; the CategoryBadge variants drive the
+ * color palette per tone (added/new = green, fixed = blue,
+ * security = red, etc.). Consumer can recolor via the same CSS
+ * custom-property surface.
+ */
+
+.pmdk-release-block {
+	background: var( --pmdk-color-bg, #fff );
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var(
+		--pmdk-release-block-radius,
+		var( --pmdk-radius-small, 4px )
+	);
+	padding: var( --pmdk-release-block-padding-y, 20px )
+		var( --pmdk-release-block-padding-x, 24px );
+	margin: 0 0 16px;
+}
+
+.pmdk-release-block__head {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 16px;
+}
+
+.pmdk-release-block__version {
+	margin: 0;
+	font-size: 18px;
+	font-weight: var( --pmdk-font-weight-heading, 500 );
+	color: var( --pmdk-color-text, #1e1e1e );
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.pmdk-release-block__current {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #fff;
+	background: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+	border-radius: 9999px;
+}
+
+.pmdk-release-block__date {
+	margin: 0;
+	font-size: 13px;
+	color: var( --pmdk-color-text-muted, #50575e );
+}
+
+.pmdk-release-block__items {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.pmdk-release-block__item {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 8px 0;
+}
+
+.pmdk-release-block__item + .pmdk-release-block__item {
+	border-top: 1px solid var( --pmdk-color-border-subtle, #f0f0f1 );
+}
+
+.pmdk-release-block__item-text {
+	font-size: 14px;
+	line-height: 1.5;
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+/* CategoryBadge styling lives in `CategoryBadge.css` so consumers
+   using the badge standalone (outside a ReleaseBlock) still pick up
+   the palette. ReleaseBlock just imports the badge component. */
+
+
+/*# sourceMappingURL=style.css.map*/
