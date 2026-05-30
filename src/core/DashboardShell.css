@@ -175,10 +175,15 @@
 	padding: 24px var( --pmdk-header-gutter, 24px );
 }
 
-/* Suppress the focus ring on programmatic main focus (route-change SPA
-   pattern). Keyboard `tab` into the area still surfaces a ring via
-   `:focus-visible`. */
-.pmdk-dashboard__main:focus:not( :focus-visible ) {
+/* Suppress the focus ring on `.pmdk-dashboard__main` (K-016). The element
+   is a `tabindex="-1"` landmark for SPA route-change focus(); the focus
+   move alone gives screen-reader landmark announcement, so the browser
+   default `:focus-visible` outline on a 1100×1400+ px wrapper would just
+   look like a giant blue rectangle around the whole content area. If a
+   visible cue is wanted later, shift the SPA's focus target to the active
+   panel heading inside `__main` and add a custom rule on that smaller
+   landmark. */
+.pmdk-dashboard__main:focus {
 	outline: none;
 }
 
