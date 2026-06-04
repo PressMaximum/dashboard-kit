@@ -57,14 +57,14 @@
  * @param {string}                                   [props.description]
  *                                                                          Sub-heading text.
  * @param {{ label: string, href: string }}          [props.primaryAction]
- *                                                                          Top-right CTA. When set, renders as a primary Button.
+ *                                                                          Top CTA beside the title. Renders as a native .page-title-action anchor.
  * @param {{ loading?: string, noResults?: string }} [props.labels]
  *                                                                          English fallbacks shipped — see SPEC §5.10b.
  * @param {string}                                   [props.className]
  *                                                                          Extra class names appended to the page wrapper.
  */
 
-import { Button, Spinner } from '@wordpress/components';
+import { Spinner } from '@wordpress/components';
 import { DataViews } from '@wordpress/dataviews';
 
 import PageWrapper from '../layouts/PageWrapper';
@@ -103,9 +103,9 @@ export default function EntityListPage( {
 	const isEmpty = ! isLoading && items.length === 0;
 
 	const headerActions = primaryAction ? (
-		<Button variant="primary" href={ primaryAction.href }>
+		<a className="page-title-action" href={ primaryAction.href }>
 			{ primaryAction.label }
-		</Button>
+		</a>
 	) : null;
 
 	return (

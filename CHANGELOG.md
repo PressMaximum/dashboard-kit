@@ -10,7 +10,23 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
-(no changes yet)
+### Changed
+
+- **`ListPageHeader` — WP-native header layout (BREAKING: DOM + visual).** The
+  title now renders with the action slot **inline beside it** (the core
+  "Posts [ Add New ]" pattern) inside a new `.pmdk-list-page-header__bar`, and the
+  description drops to a full-width row below. The bottom divider is removed and
+  the block carries a balanced 30px bottom margin (with the EntityListPage 30px
+  flex gap = the 60px main top padding, so the header reads as vertically
+  centered). The internal `.pmdk-list-page-header__text` wrapper is gone (it was
+  not a §16.2 locked class); `__title` / `__actions` / `__description` are
+  unchanged. Description `margin-top` 4px → 10px.
+- **`EntityListPage` — `primaryAction` renders a native `.page-title-action`
+  anchor** (BREAKING: visual) instead of a filled `<Button variant="primary">`.
+  WP only styles `.page-title-action` under `.wrap`; since kit dashboards are
+  full-bleed (no `.wrap`), the kit now ships the core outline-button look scoped
+  to `.pmdk-dashboard`, driven by `--wp-admin-theme-color` so it follows the admin
+  color scheme. Consumers that re-styled this in their own CSS can drop it.
 
 ## [0.0.1-dev] — 2026-05-21
 

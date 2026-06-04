@@ -469,10 +469,15 @@ body.wp-admin,
 	padding: 24px var( --pmdk-header-gutter, 24px );
 }
 
-/* Suppress the focus ring on programmatic main focus (route-change SPA
-   pattern). Keyboard `tab` into the area still surfaces a ring via
-   `:focus-visible`. */
-.pmdk-dashboard__main:focus:not( :focus-visible ) {
+/* Suppress the focus ring on `.pmdk-dashboard__main` (K-016). The element
+   is a `tabindex="-1"` landmark for SPA route-change focus(); the focus
+   move alone gives screen-reader landmark announcement, so the browser
+   default `:focus-visible` outline on a 1100×1400+ px wrapper would just
+   look like a giant blue rectangle around the whole content area. If a
+   visible cue is wanted later, shift the SPA's focus target to the active
+   panel heading inside `__main` and add a custom rule on that smaller
+   landmark. */
+.pmdk-dashboard__main:focus {
 	outline: none;
 }
 
@@ -548,16 +553,22 @@ body.wp-admin,
  *   .pmdk-list-page-header
  *   .pmdk-list-page-header__title
  *   .pmdk-list-page-header__actions
+ * Internal: __bar (title + action row), __description (row below).
  */
 
+/* Header block: title-row + description below. The bottom margin (30px) plus
+ * the EntityListPage flex gap (30px) equals the dashboard main's 60px top
+ * padding, so the header reads as a vertically balanced block. No bottom
+ * divider — the content card below provides the visual edge. */
 .pmdk-list-page-header {
+	margin: 0 0 30px;
+}
+
+/* Title + action inline, WP-native "Posts [ Add New ]" pattern. */
+.pmdk-list-page-header__bar {
 	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 24px;
-	margin: 0 0 24px;
-	padding: 0 0 16px;
-	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	align-items: center;
+	gap: 12px;
 }
 
 .pmdk-list-page-header__title {
@@ -568,7 +579,7 @@ body.wp-admin,
 }
 
 .pmdk-list-page-header__description {
-	margin: 4px 0 0;
+	margin: 10px 0 0;
 	color: var( --pmdk-color-text-muted, #50575e );
 	font-size: 13px;
 }
@@ -577,6 +588,36 @@ body.wp-admin,
 	display: flex;
 	align-items: center;
 	gap: 8px;
+}
+
+/*
+ * Native WP `.page-title-action` button (EntityListPage renders its
+ * `primaryAction` as one). WP only styles this class under `.wrap`, and kit
+ * dashboards are full-bleed SPAs with no `.wrap`, so re-apply core's outline
+ * look here — scoped to `.pmdk-dashboard`, driven by `--wp-admin-theme-color`
+ * so it follows the active admin color scheme.
+ */
+.pmdk-dashboard .page-title-action {
+	display: inline-flex;
+	box-sizing: border-box;
+	align-items: center;
+	min-height: 32px;
+	padding: 0 12px;
+	border: 1px solid var( --wp-admin-theme-color, #3858e9 );
+	border-radius: 2px;
+	background: transparent;
+	color: var( --wp-admin-theme-color, #3858e9 );
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+.pmdk-dashboard .page-title-action:hover,
+.pmdk-dashboard .page-title-action:focus {
+	border-color: var( --wp-admin-theme-color-darker-10, #2145e6 );
+	color: var( --wp-admin-theme-color-darker-10, #2145e6 );
 }
 
 /*
