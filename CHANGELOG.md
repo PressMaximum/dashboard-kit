@@ -10,6 +10,8 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-06-04
+
 ### Changed
 
 - **`ListPageHeader` — WP-native header layout (BREAKING: DOM + visual).** The
