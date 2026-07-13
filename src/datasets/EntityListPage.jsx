@@ -99,8 +99,21 @@ export default function EntityListPage( {
 	const wrapperClass =
 		'pmdk-entity-list-page' + ( className ? ' ' + className : '' );
 
+	// A filter/search is active when the view carries filters or a search
+	// term. `items` is the *post-filter* dataset the consumer passes in, so an
+	// empty `items` under an active query means "the query excluded
+	// everything" — NOT "there are no records". (K-017)
+	const hasActiveQuery =
+		( Array.isArray( view?.filters ) && view.filters.length > 0 ) ||
+		( typeof view?.search === 'string' && view.search.trim() !== '' );
+
 	const isInitialLoad = isLoading && items.length === 0;
-	const isEmpty = ! isLoading && items.length === 0;
+	// Only short-circuit to the bare empty state for a genuinely empty
+	// dataset. When a filter/search excluded everything we must keep
+	// <DataViews> mounted so its toolbar (filter chips + reset) stays
+	// reachable — otherwise a persisted filter that matches nothing traps the
+	// user with no way to clear it. (K-017)
+	const isEmpty = ! isLoading && items.length === 0 && ! hasActiveQuery;
 
 	const headerActions = primaryAction ? (
 		<a className="page-title-action" href={ primaryAction.href }>
