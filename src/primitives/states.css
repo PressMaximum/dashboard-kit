@@ -1,0 +1,97 @@
+/*
+ * @pressmaximum/dashboard-kit — five production states + empty (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-inline-empty,
+.pmdk-dashboard .pmdk-state-panel {
+  min-height:320px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:40px;text-align:center
+}
+.pmdk-dashboard .pmdk-inline-empty>span,
+.pmdk-dashboard .pmdk-state-icon {
+  width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-inline-empty svg,
+.pmdk-dashboard .pmdk-state-icon svg {
+  width:25px;height:25px
+}
+.pmdk-dashboard .pmdk-state-icon.is-error {
+  background:var(--pmdk-color-danger-subtle);color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-inline-empty h2,
+.pmdk-dashboard .pmdk-state-panel h2 {
+  margin:15px 0 0;font-size:var(--pmdk-font-size-subheading)
+}
+.pmdk-dashboard .pmdk-inline-empty p,
+.pmdk-dashboard .pmdk-state-panel p {
+  max-width:480px;margin:6px 0 16px;color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-state-loading {
+  align-items:stretch;text-align:start
+}
+.pmdk-dashboard .pmdk-state-skeleton-head {
+  display:flex;justify-content:space-between;margin-bottom:20px
+}
+.pmdk-dashboard .pmdk-state-skeleton-head i {
+  width:180px;height:40px;border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-state-skeleton-head i:last-child {
+  width:260px
+}
+.pmdk-dashboard .pmdk-state-skeleton-grid {
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1
+}
+/* Sizing only — the shimmer animation comes from `.pmdk-skeleton` (base.css),
+   which every grid span carries. Re-declaring it here would out-specificity
+   base.css's prefers-reduced-motion override. */
+.pmdk-dashboard .pmdk-state-skeleton-grid span {
+  min-height:72px;border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface-subtle)
+}
+@container (max-width:460px) {
+  .pmdk-dashboard .pmdk-state-panel {
+    min-height:300px;padding:28px 18px
+  }
+  .pmdk-dashboard .pmdk-state-skeleton-grid {
+    grid-template-columns:1fr
+  }
+  .pmdk-dashboard .pmdk-state-skeleton-grid span:nth-child(n+5) {
+    display:none
+  }
+}
+
+.pmdk-dashboard .pmdk-empty {
+  display:grid;place-items:center;min-height:260px;padding:40px;text-align:center
+}
+.pmdk-dashboard .pmdk-empty svg {
+  width:28px;height:28px;color:var(--pmdk-color-text-soft)
+}
+.pmdk-dashboard .pmdk-empty h2,
+.pmdk-dashboard .pmdk-empty p {
+  margin:0
+}
+.pmdk-dashboard .pmdk-empty h2 {
+  margin-top:12px;font-size:var(--pmdk-font-size-body)
+}
+.pmdk-dashboard .pmdk-empty p {
+  margin-top:4px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-empty {
+  min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:44px 24px;text-align:center
+}
+.pmdk-dashboard .pmdk-empty>.pmdk-react-icon {
+  width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted);line-height:0
+}
+.pmdk-dashboard .pmdk-empty>.pmdk-react-icon>svg {
+  width:28px;height:28px;display:block
+}
+.pmdk-dashboard .pmdk-empty h2 {
+  margin-top:16px
+}
+.pmdk-dashboard .pmdk-empty p {
+  margin-top:6px
+}

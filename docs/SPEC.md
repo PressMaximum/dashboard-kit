@@ -1193,6 +1193,118 @@ async function handleSave() {
 }
 ```
 
+### 5.12 Primitives + data table (added 0.2, KIT-P3 slices 1–2)
+
+Two new opt-in sub-entries carry the DS component layer extracted from the
+Aponto plugin-dashboard mockup. Both are separate from core — consumers that
+never import them (Blocksify, Customify) ship zero extra bytes and see zero
+look-change.
+
+```js
+import { createCombobox, buildComboboxMarkup } from '@pressmaximum/dashboard-kit/primitives';
+import { PMDKDataTable, defaultRenderIcon, normalizeColumnOrder,
+         useTablePersistence, readTablePrefs, writeTablePrefs } from '@pressmaximum/dashboard-kit/table';
+import '@pressmaximum/dashboard-kit/primitives/style.css'; // chrome for both
+```
+
+- `primitives` — framework-agnostic headless behaviors (no React). Slice 1
+  ships the combobox; tablist / resizer / preferences land in later slices.
+- `table` — React. Bundles `@tanstack/react-table` + `@dnd-kit/*` (≈37 kB gzip
+  total entry); `react`, `react-dom`, `@wordpress/*` stay external. Q13
+  decision: shipping the wiring once beats copy-per-product.
+- `primitives/style.css` — the `.pmdk-*` chrome for slices 1–2, scoped under
+  `.pmdk-dashboard` (§16.5). Requires the §16.1 browser floor
+  (`color-mix()`, `:has()`, container queries).
+
+#### `createCombobox( root, options? )` → controller
+
+Attaches searchable-relationship-picker behavior (ARIA 1.2 combobox) to
+existing `.pmdk-combobox` markup. `options.onChange(value, optionEl)` fires on
+committed changes; `options.filter(optionEl, query)` overrides matching.
+Controller: `open()`, `close(restoreSelection=true)`, `setOptions(values,
+selected)` (dependent-field repopulate), `getValue()`, `refresh()`,
+`destroy()`. Behavior contract (DESIGN-SYSTEM "Fields"): opens on
+focus/click/typing, roving `aria-activedescendant` (ArrowUp/Down/Home/End),
+Enter selects, Escape/outside-click dismisses and restores the last valid
+selection, typed exact match (case-insensitive) commits on dismiss.
+
+`buildComboboxMarkup({ name, label, options, selected?, listId?, idleIcon?,
+activeIcon? })` returns the escaped ARIA scaffold string so consumers don't
+hand-write it.
+
+#### `<PMDKDataTable>` props
+
+The Q13 split: **kit ships** sorting, search + filter wiring, pagination
+(client/server), selection + bulk-bar shell, column visibility + drag order,
+toolbar slots, five states, query callbacks, view persistence. **Product
+keeps** column defs, cell renderers, data layer, row actions, facet data,
+bulk-action buttons/confirm.
+
+| Prop | Type / default | Contract |
+|---|---|---|
+| `columns` | `ColumnDef[]` (required) | TanStack v8 defs — product-owned, cell renderers included. `meta.label` names the column manager row; `meta.numeric` right-aligns (`.pmdk-amount`); `meta.filterOnly` hides from manager; `enableHiding:false` ⇒ "Required"; id `action` (or `meta.sticky:'end'`) pins last + sticky |
+| `data` | `Object[]` (required) | Current rows (server mode: just the page) |
+| `getRowId` | `(row) => string` | Stable row ids for selection |
+| `status` | `'ready'│'loading'│'empty'│'error'│'permission'` = `'ready'` | Five production states. Loading keeps toolbar + skeletons; empty/permission hide the toolbar; error keeps it (safe query context). Ready with zero rows renders the inline no-results block |
+| `states` | `{ empty?, error?, permission? }` | Per-state `{ icon?, title?, description?, action? }` — product copy/CTAs |
+| `enableRowSelection` | `bool` = `true` | Kit injects the `select` checkbox column |
+| `bulkActions` | `({ selectedRows, clearSelection }) => node` | Product renders its own buttons + confirm inside the kit bulk bar (alternate thead row with count + clear) |
+| `getRowSelectionLabel` | `(row) => string` | a11y label per row checkbox |
+| `enableSearch` | `bool` = `true` | Global-filter search input |
+| `globalFilterFn` / `getColumnCanGlobalFilter` | TanStack fns | Product search semantics |
+| `toolbarControls` | `node │ ({ table }) => node` | Slot next to search (date control etc.) |
+| `filterBuilder` | `({ table, close }) => node` | Collapsible builder region; kit owns the toggle button, aria wiring + Escape |
+| `activeFilters` | `node │ ({ table }) => node` | Chips row shown when builder is closed |
+| `filterCount` | `number │ ({ table }) => number` = `0` | Badge on the filter toggle |
+| `initialColumnFilters` | `ColumnFiltersState` = `[]` | Initial column filters (uncontrolled mode) |
+| `columnFilters` / `onColumnFiltersChange` | `ColumnFiltersState` / `(next) => void` | CONTROLLED filtering: pass both and the product state is the source of truth — external entry points ("show pending" from a dashboard card) just set that state. Omit `columnFilters` for the uncontrolled fallback |
+| `filtersOpen` / `onFiltersOpenChange` | `bool` / `(next) => void` | Controlled filter-builder visibility (same pattern; omit `filtersOpen` for uncontrolled) |
+| `onRowSelectionChange` | `(rowSelection) => void` | Reports every selection change — user checks AND kit-side clears (the bulk-bar ✕) — so transient product UI (confirm steps) can reset |
+| `primaryAction` | `node` | Toolbar-end slot (e.g. "New record") |
+| `menuItems` | `{ id, label, icon?, hint?, onSelect }[]` | Product rows in the overflow menu, below the built-in Columns manager |
+| `enableColumnManager` | `bool` = `true` | Columns submenu: visibility toggles + dnd-kit drag order + Reset |
+| `defaultSorting` / `defaultColumnVisibility` / `defaultColumnOrder` | TanStack shapes | View defaults (order auto-pins `select` first, end column last) |
+| `pageSizeOptions` | `number[]` = `[25,50,100]` | Rows-per-page choices |
+| `defaultPageSize` | `number` = `25` | Initial page size |
+| `serverMode` | `bool` = `false` | `true` ⇒ manual sort/filter/pagination; product fetches |
+| `totalCount` | `number` | Server total (footer + next-page gating) |
+| `pageIndex` | `number` = `0` | Controlled page (server mode) |
+| `onQueryChange` | `({ sorting, columnFilters, globalFilter, pageIndex, pageSize }) => void` | Server-mode callback: fires once on mount with the (possibly persisted) view, on every query change (non-page changes report `pageIndex: 0`), and on page requests |
+| `persistenceKey` | `string` = `''` | localStorage key (product namespaces + versions it, e.g. `aponto.bookings.table.v1`). Persists sorting, column visibility/order, page size — never selection, filters or page |
+| `initialPreferences` / `onPreferencesChange` | `object` / `({ sorting, columnVisibility, columnOrder, pageSize }) => void` | Pluggable preference store alongside/instead of `persistenceKey` (e.g. WP user-meta). Seed order: defaults < localStorage < `initialPreferences`; the callback fires on every preference change (and once on mount with the seeded view) |
+| `onRowActivate` | `(row, tanstackRow) => void` | Row click / Enter / Space (ignores clicks on controls) |
+| `getRowAriaLabel` | `(row) => string` | Per-row `aria-label` (e.g. "Open booking #212 for Ava") |
+| `renderIcon` | `(name) => node` = `defaultRenderIcon` | Chrome glyphs only (search/sliders/list/check/close/plus/chevrons/moreVertical/csv/import); domain glyphs live in product cell renderers |
+| `renderMobileItem` | `(row) => node` | Narrow-container card list (`.pmdk-mobile-list`, container query ≤620px) |
+| `itemsLabel` | `string` = `'items'` | Footer noun |
+| `labels` | `object` | i18n overrides for every built-in string (see `DEFAULT_LABELS` in source — kit ships English defaults per Tier-2 rules, §5.13 audit) |
+| `className` | `string` | Extra classes on the `.pmdk-data-table` root |
+
+Helpers: `useTablePersistence(key, defaults)` (+ `readTablePrefs` /
+`writeTablePrefs`, storage-failure-safe), `normalizeColumnOrder(preferred,
+allIds, endId)`, `defaultRenderIcon(name)`.
+
+Extraction provenance notes (review round, 2026-07-18):
+
+- `table.css` keeps a few inert copies from the mockup source on purpose —
+  the `.pmdk-table { min-width: 1324px }` literal and the Aponto column-width
+  rules for generic ids (`select`/`action`/`status`/`total`/`id`/`time`/
+  `date`). Under `<PMDKDataTable>` they are overridden by the inline
+  `minWidth` (TanStack `getTotalSize()`) and the `<colgroup>`, so they only
+  matter to manual-markup consumers; kept to stay diffable against the source.
+- `--pmdk-accent-fg` intentionally breaks the `--pmdk-color-*` naming rule —
+  it is the 1:1 promotion of the mockup's `--pd-color-accent-fg` established
+  in the KIT-P2 bridge, value-identical; renaming it would desync the bridge.
+- The mockup's dark-preset per-status pill tuning was NOT ported: the kit's
+  dark preset re-derives the status tints through the tone engine
+  (`--pmdk-color-{tone}-subtle/-border/on-*` recompute against dark seeds).
+
+Legacy note: `EntityListPage` / DataViews (§5.6) stay unchanged for existing
+consumers — `PMDKDataTable` is the DS-tier alternative, not a replacement.
+Backlog (slice 3): a shared headless menu/popover primitive (G4) — chrome
+ships now, open/close/roving behavior stays per-component until the
+inspector/drawer slice needs it too.
+
 ---
 
 ## 5.13 String-surface discipline (locked rule)
@@ -2106,6 +2218,40 @@ Kit **core** stays light-only (WP admin has no native dark mode yet). The opt-in
 the same element that carries `.pmdk-theme-app`. Because the tone engine derives
 every role from a few seeds + weights, the dark preset only re-declares those and
 the rest recomputes. Consumers not on the app theme are unaffected.
+
+### 16.5 Primitives stylesheet (added 0.2, KIT-P3 slices 1–2)
+
+`@pressmaximum/dashboard-kit/primitives/style.css` is the DS component chrome
+extracted from the Aponto plugin-dashboard mockup and neutralised onto the
+`--pmdk-*` token API (`.pd-*`→`.pmdk-*`, `.ap-admin`→`.pmdk-dashboard`, the
+`[data-ap-visual=v2]` tier flattened to default). Opt-in and separate from core
+`style.css` — importing core alone is untouched. All selectors are scoped under
+`.pmdk-dashboard`; the DS look comes from the app theme (§16.1a), the sheet
+itself renders on WP-native defaults too. Requires the §16.1 browser floor.
+
+Class families (source of truth: `src/primitives/*.css`; behavior contract:
+the mockup `DESIGN-SYSTEM.md`):
+
+| Family | Key classes | Notes |
+|---|---|---|
+| Buttons | `.pmdk-button` (+ `primary` / `text` / `danger` / `sm` / `icon-only`), `.pmdk-icon-button` | One filled primary per cluster; never combine two width-owning classes |
+| Compact field kit | `.pmdk-compact-field` (+ `is-filled` / `is-picker`), `.pmdk-compact-label`, `.pmdk-compact-select`, `.pmdk-compact-notes`, `.pmdk-field-grid`, `.pmdk-field-end-icon`, `.pmdk-value-summary`, `.pmdk-editor-section` | Floating label float via `:focus-within` / `:has(:not(:placeholder-shown))`; notes stay top-anchored |
+| Combobox | `.pmdk-combobox` (+ `is-open` / `is-entity` / `opens-up`), `.pmdk-combobox-field`, `.pmdk-combobox-popover`, `.pmdk-combobox-idle-icon` / `-active-icon` | Behavior via `createCombobox` (§5.12) |
+| Money / colour fields | `.pmdk-money-field`, `.pmdk-color-picker-field` | LTR-isolated digits; native `input[type=color]` is the swatch |
+| Table tier | `.pmdk-data-table` (component root, container-query context), `.pmdk-data-list`, `.pmdk-table-wrap`, `.pmdk-table`, `.pmdk-col-select` / `.pmdk-col-action` (sticky), `.pmdk-sort-button`, `.pmdk-cell-value` / `-muted` / `-strong` / `-numeric` / `-id`, `.pmdk-table-checkbox`, `.pmdk-mobile-list`, `.pmdk-table-scroll`, `.pmdk-timezone-label`, `.pmdk-time-cell` | Column widths come from the component's `<colgroup>`; product cells use the helper classes |
+| Toolbar | `.pmdk-toolbar` / `-main` / `-query` / `-actions` / `-filter-controls`, `.pmdk-search`, `.pmdk-toolbar-control` / `-control-group` / `-popover-wrap` / `-popover` / `-export`, `.pmdk-toolbar-filter-button`, `.pmdk-filter-count`, `.pmdk-date-popover` | One 34px control baseline |
+| Filters | `.pmdk-filter-builder` / `-facets`, `.pmdk-filter-facet` (+ `-trigger`), `.pmdk-facet-popover`, `.pmdk-filter-option` (+ `-search` / `-list`), `.pmdk-filter-checkbox`, `.pmdk-filter-chip`, `.pmdk-active-filters`, `.pmdk-clear-filters`, `.pmdk-filter-no-results` | Facet data is product-side |
+| Popovers + column manager | `.pmdk-popover` (+ `-label` / `-separator`), `.pmdk-table-actions-popover` / `-separator`, `.pmdk-table-options-trigger`, `.pmdk-column-manager` / `-trigger` / `-popover` / `-back` / `-list` / `-option` (+ `is-dragging` / `is-required`) / `-drag-handle` / `-option-label` | Shared floating-surface treatment (`pdPopoverIn`) |
+| Bulk bar | `.pmdk-bulk-row`, `.pmdk-bulk-bar-cell`, `.pmdk-bulk-bar`, `.pmdk-bulk-actions`, `.pmdk-bulk-clear` | Alternate thead row at header height; action buttons are product-side |
+| Pagination | `.pmdk-pagination` (+ `-tools` / `-size`), `.pmdk-page-controls` | `Showing x–y of z` + 25/50/100 + 34px prev/next |
+| Status + row actions | `.pmdk-status` (+ status modifier classes), `.pmdk-status-picker` / `-trigger` / `-menu` / `-option`, `.pmdk-row-actions` (+ `is-open` / `opens-up`), `.pmdk-row-action`, `.pmdk-row-action-icon`, `.pmdk-row-action-menu` (+ `is-floating`), `.pmdk-row-action-separator` | Kebabs transparent at rest, neutral fill on hover; status pills quiet tints |
+| Five states | `.pmdk-state-panel`, `.pmdk-state-icon` (+ `is-error`), `.pmdk-state-loading`, `.pmdk-state-skeleton-head` / `-grid`, `.pmdk-skeleton`, `.pmdk-empty`, `.pmdk-inline-empty` | Ready / Loading / Empty / Error / Permission |
+| Foundations | `.pmdk-react-icon` (icon slot), `--pmdk-checkbox-check-image` (check glyph token; override when `--pmdk-color-on-accent` is dark) | `base.css` |
+
+These classes follow the §16.2 lock-scope rule: the FAMILY names above are the
+supported surface for product composition; unlisted subparts may change without
+a major bump. (Slices 3–4 — inspector/resizer/drawer, module card, tabs, toast,
+save-bar — extend this sheet.)
 
 ---
 

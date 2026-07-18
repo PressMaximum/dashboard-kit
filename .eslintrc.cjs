@@ -78,6 +78,26 @@ module.exports = {
 			},
 		},
 		{
+			// The DS compact-field contract (KIT-P3 primitives + their
+			// stories) nests the control inside its <label> — floating-label
+			// anatomy from the Aponto mockup. Nesting IS a valid association;
+			// accept it instead of demanding htmlFor/id pairs, which a
+			// reusable component can't hardcode. depth 3 covers
+			// label > input + icon/label spans. Scoped here so the rest of
+			// the repo keeps the stricter default.
+			files: [
+				'src/primitives/**/*.{js,mjs,jsx}',
+				'src/table/**/*.{js,mjs,jsx}',
+				'stories/**/*.{js,mjs,jsx}',
+			],
+			rules: {
+				'jsx-a11y/label-has-associated-control': [
+					'error',
+					{ assert: 'either', depth: 3 },
+				],
+			},
+		},
+		{
 			files: [ '*.cjs', '.eslintrc.cjs', 'webpack.config.js' ],
 			env: { node: true },
 		},

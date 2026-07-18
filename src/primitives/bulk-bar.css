@@ -1,0 +1,43 @@
+/*
+ * @pressmaximum/dashboard-kit — bulk selection bar (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-bulk-bar {
+  width:100%;height:100%;min-height:38px;display:flex;align-items:center;gap:6px;padding:0;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-bulk-bar[hidden] {
+  display:none
+}
+.pmdk-dashboard .pmdk-bulk-bar>strong {
+  margin-inline-end:4px;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);font-variant-numeric:tabular-nums
+}
+.pmdk-dashboard .pmdk-bulk-actions {
+  display:flex;align-items:center;gap:2px
+}
+.pmdk-dashboard .pmdk-bulk-actions>button {
+  height:30px;padding:0 9px;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium);cursor:pointer
+}
+.pmdk-dashboard .pmdk-bulk-actions>button:hover {
+  background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-bulk-actions>button.is-danger {
+  color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-bulk-clear {
+  width:30px;height:30px;display:grid;place-items:center;margin-inline-start:auto;padding:0;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted);cursor:pointer
+}
+.pmdk-dashboard .pmdk-bulk-clear:hover {
+  background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-bulk-clear svg {
+  width:14px;height:14px
+}
+.pmdk-dashboard .pmdk-bulk-actions>button:hover {
+  background:transparent;color:var(--pmdk-color-text)
+}

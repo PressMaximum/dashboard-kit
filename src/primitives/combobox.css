@@ -1,0 +1,116 @@
+/*
+ * @pressmaximum/dashboard-kit — combobox + choice cards (KIT-P3 slice 1)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-choice-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:10px
+}
+.pmdk-dashboard .pmdk-choice {
+  position:relative;min-width:0;display:block;padding:12px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);cursor:pointer
+}
+.pmdk-dashboard .pmdk-choice:hover {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-choice.is-selected {
+  border-color:var(--pmdk-color-accent-border);background:var(--pmdk-color-accent-subtle)
+}
+.pmdk-dashboard .pmdk-choice input {
+  position:absolute;opacity:0;pointer-events:none
+}
+.pmdk-dashboard .pmdk-choice-head {
+  display:flex;align-items:center;gap:8px
+}
+.pmdk-dashboard .pmdk-choice-dot {
+  width:16px;height:16px;display:grid;place-items:center;border:1px solid var(--pmdk-color-border-strong);border-radius:50%;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-choice.is-selected .pmdk-choice-dot {
+  border:5px solid var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-choice strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-choice p {
+  margin:4px 0 0 24px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-choice {
+  border-color:transparent;border-radius:var(--pmdk-radius-card)
+}
+.pmdk-dashboard .pmdk-choice:hover {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-choice.is-selected {
+  border-color:var(--pmdk-color-accent-border)
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-choice-grid {
+    grid-template-columns:1fr
+  }
+}
+.pmdk-dashboard .pmdk-combobox-field>input {
+  cursor:pointer
+}
+.pmdk-dashboard .pmdk-combobox-field:focus-within>input {
+  cursor:text
+}
+.pmdk-dashboard .pmdk-combobox-field>input {
+  padding-inline-end:36px
+}
+.pmdk-dashboard .pmdk-combobox {
+  position:relative;min-width:0;margin-top:8px
+}
+.pmdk-dashboard .pmdk-combobox-idle-icon {
+  display:flex
+}
+.pmdk-dashboard .pmdk-combobox-active-icon {
+  display:none
+}
+.pmdk-dashboard .pmdk-combobox.is-open .pmdk-combobox-idle-icon {
+  display:none
+}
+.pmdk-dashboard .pmdk-combobox.is-open .pmdk-combobox-active-icon,
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-active-icon {
+  display:flex
+}
+.pmdk-dashboard .pmdk-combobox.is-open .pmdk-field-end-icon {
+  color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-combobox-popover {
+  position:absolute;z-index:30;top:calc(100% + 5px);right:0;left:0;max-height:210px;overflow:auto;padding:5px;border:1px solid color-mix(in srgb,var(--pmdk-color-border) 72%,transparent);border-radius:7px;background:var(--pmdk-color-surface);box-shadow:0 12px 30px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent)
+}
+.pmdk-dashboard .pmdk-combobox.opens-up .pmdk-combobox-popover {
+  top:auto;bottom:calc(100% + 5px)
+}
+.pmdk-dashboard .pmdk-combobox-popover[hidden] {
+  display:none
+}
+.pmdk-dashboard .pmdk-combobox-popover>button {
+  width:100%;min-height:34px;display:flex;align-items:center;padding:6px 9px;border:0;border-radius:5px;background:transparent;color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-caption);text-align:left;cursor:pointer
+}
+.pmdk-dashboard .pmdk-combobox-popover>button:hover,
+.pmdk-dashboard .pmdk-combobox-popover>button:focus-visible {
+  outline:0;background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-combobox-popover>button[aria-selected=true] {
+  background:var(--pmdk-color-surface-subtle);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-combobox-popover>button[aria-selected=true]::after {
+  content:"✓";margin-inline-start:auto;color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-combobox-popover>p {
+  margin:0;padding:12px 9px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);text-align:center
+}
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-popover>button>span {
+  min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left
+}
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-popover strong {
+  overflow:hidden;font-weight:var(--pmdk-font-weight-medium);text-overflow:ellipsis;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-popover small {
+  overflow:hidden;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-micro);font-weight:var(--pmdk-font-weight-regular);text-overflow:ellipsis;white-space:nowrap
+}

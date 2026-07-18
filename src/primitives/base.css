@@ -1,0 +1,80 @@
+/*
+ * @pressmaximum/dashboard-kit — primitives base layer (KIT-P3)
+ *
+ * Shared foundations every primitive slice depends on: the icon-slot wrapper,
+ * the checkbox check-glyph token, the popover reveal keyframe and the skeleton
+ * shimmer. Imported first by `primitives/style.css`.
+ *
+ * Provenance: distilled from the Aponto plugin-dashboard mockup `.pd-*` layer
+ * (`docs/mockups/v4/plugin-dashboard`). All primitives are scoped under the kit
+ * chassis class `.pmdk-dashboard` (the DashboardShell root) and consume the
+ * `--pmdk-*` token API only — never a brand `--ap-*` value. This sheet ships in
+ * the OPT-IN `primitives/style.css` export; core `style.css` (Blocksify /
+ * Customify) is untouched, so a kit bump is zero look-change for them.
+ */
+
+/* --- Icon slot -------------------------------------------------------------
+ * The kit renders chrome glyphs (sort caret, pagination arrows, drag handle,
+ * search, filter, close…) through a consumer-supplied `renderIcon(name)` prop.
+ * Whatever that returns is wrapped in `.pmdk-react-icon` so every glyph shares
+ * one optical center and inherits a 1em box. */
+.pmdk-dashboard .pmdk-react-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 0;
+}
+.pmdk-dashboard .pmdk-react-icon > svg {
+	width: 1em;
+	height: 1em;
+}
+
+/* --- Checkbox check glyph token --------------------------------------------
+ * Selection + filter checkboxes paint this image on the accent fill when
+ * checked (`.pmdk-table-checkbox`, `.pmdk-filter-checkbox`). The default draws
+ * a white tick, matching the WP-native accent (white on-accent). Themes whose
+ * `--pmdk-color-on-accent` is dark (e.g. a bright-blue accent preset) override
+ * this token; the indeterminate dash already reads `--pmdk-color-on-accent`.
+ * DESIGN-SYSTEM: "do not assume the check is always white." */
+.pmdk-dashboard {
+	--pmdk-checkbox-check-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3.5 8.1 2.7 2.7 6.3-6.3' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" );
+}
+
+/* --- Popover reveal --------------------------------------------------------
+ * Shared by every floating surface (toolbar/date/facet/column/table-action
+ * popovers, status menu). VR runs freeze animations, so the end state is the
+ * contract; the keyframe only softens the live open. */
+@keyframes pdPopoverIn {
+	from {
+		opacity: 0;
+		transform: translateY( -3px ) scale( 0.99 );
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* --- Skeleton shimmer ------------------------------------------------------
+ * The Loading state paints skeleton bars instead of empty copy (5-state
+ * contract). One helper class + one keyframe; consumers size the bar. */
+@keyframes pdSkeleton {
+	to {
+		opacity: 0.48;
+	}
+}
+.pmdk-dashboard .pmdk-skeleton {
+	display: block;
+	border-radius: var( --pmdk-radius-control );
+	background: var( --pmdk-color-surface-subtle );
+	animation: pdSkeleton 1.4s ease-in-out infinite alternate;
+}
+.pmdk-dashboard .pmdk-skeleton:nth-child( 2n ) {
+	animation-delay: 0.16s;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.pmdk-dashboard .pmdk-skeleton {
+		animation: none;
+	}
+}

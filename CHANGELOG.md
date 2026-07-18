@@ -10,6 +10,76 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+### 0.2.0-alpha (draft — KIT-P2 + KIT-P3 slices 1–2; slices 3–4 + KIT-P4 land before the 0.2.0 tag)
+
+#### KIT-P2 — DS token API + opt-in app theme
+
+- **DS token API (`--pmdk-*`) + tone-derivation engine.** ~95 new
+  tokens distilled from the Aponto plugin-dashboard DS: 10 `--pmdk-tone-*`
+  weights drive ~30 derived color roles via `color-mix()`; semantic
+  danger/success/warning/info families with `-subtle`/`-border`/`on-*`; type
+  roles, 4px space scale, control/icon geometry, motion, component-tier
+  scalars. Defaults stay WP-native — existing consumers render pixel-identical
+  (proven by the 50-shot VR gate). `error` → `danger` rename with a permanent
+  back-compat alias. SPEC §16.1.
+- **Opt-in app theme** — `@pressmaximum/dashboard-kit/themes/app.css` +
+  `.pmdk-theme-app` scope (16px readable scale, 6px card radius, DS neutrals)
+  with a same-element `data-pmdk-color-scheme="dark"` preset. NOT the default:
+  Blocksify/Customify keep the WP-native look on bump. SPEC §16.1a/§16.4.
+
+#### KIT-P3 slices 1–2 — primitives + shared data table
+
+- **Primitives stylesheet** — new export `primitives/style.css`: the
+  route-neutral `.pmdk-*` component chrome extracted from the
+  mockup `.pd-*` layer (rescoped to `.pmdk-dashboard`, `[data-ap-visual=v2]`
+  tier flattened, every value through `--pmdk-*`). Slice 1: buttons/icon
+  buttons, compact field kit (floating labels), combobox, money + colour
+  fields. Slice 2: data-table tier — table shell, toolbar/search/filters,
+  popover kit + column manager, bulk bar, pagination, status pills + row-action
+  menus, five production states. Browser floor for these surfaces:
+  `color-mix()` + `:has()` + container queries. SPEC §16.5.
+- **Headless primitives entry** — `@pressmaximum/dashboard-kit/primitives`:
+  `createCombobox` (the design-system relationship-picker behavior: always-
+  active option, wrap-around arrows, hover/keyboard active sync, select-on-
+  open, outside pointerdown/focusin dismiss, dependent-field `setOptions`) +
+  `buildComboboxMarkup`. No React required. SPEC §5.12.
+- **`<PMDKDataTable>`** — new export `@pressmaximum/dashboard-kit/table`
+  (founder decision Q13, 2026-07-18): the shared TanStack v8 data table
+  refactored from Aponto's `BookingsTable`. Kit ships sorting, global search +
+  column-filter wiring (controlled or uncontrolled — `columnFilters`/
+  `onColumnFiltersChange`, `filtersOpen`/`onFiltersOpenChange`), client/server
+  pagination, row selection + bulk-bar shell (`onRowSelectionChange`), column
+  visibility + drag re-ordering (dnd-kit), toolbar slots (`toolbarControls`/
+  `filterBuilder`/`activeFilters`/`primaryAction`/`menuItems`), the five page
+  states, server-mode `onQueryChange`, per-row a11y labels
+  (`getRowAriaLabel`), and pluggable view persistence — namespaced
+  localStorage (`persistenceKey`) and/or a product store
+  (`initialPreferences`/`onPreferencesChange`, e.g. WP user-meta). Product
+  keeps column defs, cell renderers, data layer, row actions, facet data and
+  bulk confirm flows. Bundles `@tanstack/react-table` + `@dnd-kit/*` inside
+  this entry only (core untouched). Helpers: `useTablePersistence`,
+  `normalizeColumnOrder`, `defaultRenderIcon`. SPEC §5.12.
+- **VR-on-Storybook gate** — `tests/vr-stories/` (17-shot matrix over the
+  new primitives + table stories, light/theme-app/dark) alongside the KIT-P2
+  mockup-gallery gate in `tests/vr/`. 21 new stories including an
+  Aponto-style consumer example proving the Q13 kit/product split (controlled
+  filters driven by an external "show pending" entry point, product-side bulk
+  confirm + facets); 46 new unit tests (combobox behavior parity, persistence
+  safety, table sort/selection/persistence/server-mode/five-states/controlled
+  filtering/preference + selection callbacks).
+- **Size budgets** for the new artifacts: `primitives/style.css` 15 kB,
+  `primitives` entry 3 kB, `table` entry 45 kB (gzip).
+
+#### Notes
+
+- `EntityListPage`/DataViews stay unchanged (legacy tier for existing
+  consumers); `PMDKDataTable` is the DS-tier alternative, not a replacement.
+- Core `style.css`, core entry and both existing consumers are byte-for-byte
+  unaffected unless the new sub-entries are imported.
+- Backlog (slice 3): a shared headless menu/popover primitive (G4) — the
+  popover chrome ships now; open/close/roving behavior stays per-component
+  until the inspector/drawer slice needs it too.
+
 ## [0.1.1] — 2026-07-18
 
 ### Fixed

@@ -1,0 +1,2223 @@
+/*
+ * @pressmaximum/dashboard-kit — primitives base layer (KIT-P3)
+ *
+ * Shared foundations every primitive slice depends on: the icon-slot wrapper,
+ * the checkbox check-glyph token, the popover reveal keyframe and the skeleton
+ * shimmer. Imported first by `primitives/style.css`.
+ *
+ * Provenance: distilled from the Aponto plugin-dashboard mockup `.pd-*` layer
+ * (`docs/mockups/v4/plugin-dashboard`). All primitives are scoped under the kit
+ * chassis class `.pmdk-dashboard` (the DashboardShell root) and consume the
+ * `--pmdk-*` token API only — never a brand `--ap-*` value. This sheet ships in
+ * the OPT-IN `primitives/style.css` export; core `style.css` (Blocksify /
+ * Customify) is untouched, so a kit bump is zero look-change for them.
+ */
+
+/* --- Icon slot -------------------------------------------------------------
+ * The kit renders chrome glyphs (sort caret, pagination arrows, drag handle,
+ * search, filter, close…) through a consumer-supplied `renderIcon(name)` prop.
+ * Whatever that returns is wrapped in `.pmdk-react-icon` so every glyph shares
+ * one optical center and inherits a 1em box. */
+.pmdk-dashboard .pmdk-react-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 0;
+}
+.pmdk-dashboard .pmdk-react-icon > svg {
+	width: 1em;
+	height: 1em;
+}
+
+/* --- Checkbox check glyph token --------------------------------------------
+ * Selection + filter checkboxes paint this image on the accent fill when
+ * checked (`.pmdk-table-checkbox`, `.pmdk-filter-checkbox`). The default draws
+ * a white tick, matching the WP-native accent (white on-accent). Themes whose
+ * `--pmdk-color-on-accent` is dark (e.g. a bright-blue accent preset) override
+ * this token; the indeterminate dash already reads `--pmdk-color-on-accent`.
+ * DESIGN-SYSTEM: "do not assume the check is always white." */
+.pmdk-dashboard {
+	--pmdk-checkbox-check-image: url( "data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27m3.5 8.1 2.7 2.7 6.3-6.3%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E" );
+}
+
+/* --- Popover reveal --------------------------------------------------------
+ * Shared by every floating surface (toolbar/date/facet/column/table-action
+ * popovers, status menu). VR runs freeze animations, so the end state is the
+ * contract; the keyframe only softens the live open. */
+@keyframes pdPopoverIn {
+	from {
+		opacity: 0;
+		transform: translateY( -3px ) scale( 0.99 );
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* --- Skeleton shimmer ------------------------------------------------------
+ * The Loading state paints skeleton bars instead of empty copy (5-state
+ * contract). One helper class + one keyframe; consumers size the bar. */
+@keyframes pdSkeleton {
+	to {
+		opacity: 0.48;
+	}
+}
+.pmdk-dashboard .pmdk-skeleton {
+	display: block;
+	border-radius: var( --pmdk-radius-control );
+	background: var( --pmdk-color-surface-subtle );
+	animation: pdSkeleton 1.4s ease-in-out infinite alternate;
+}
+.pmdk-dashboard .pmdk-skeleton:nth-child( 2n ) {
+	animation-delay: 0.16s;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.pmdk-dashboard .pmdk-skeleton {
+		animation: none;
+	}
+}
+
+/*
+ * @pressmaximum/dashboard-kit — buttons + icon buttons (KIT-P3 slice 1)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-icon-button {
+  width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-icon-button:hover {
+  background:var(--pmdk-color-row-hover);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-button {
+  min-width:var(--pmdk-size-control-md);height:var(--pmdk-size-control-md);display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-button:hover {
+  border-color:var(--pmdk-color-border-strong);background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-button.primary {
+  border-color:var(--pmdk-color-accent);background:var(--pmdk-color-accent);color:var(--pmdk-color-on-accent)
+}
+.pmdk-dashboard .pmdk-button.danger {
+  border-color:var(--pmdk-color-danger-border);color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-button.text {
+  border-color:transparent;background:transparent;color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-button.sm {
+  height:var(--pmdk-size-control-sm);padding-inline:10px
+}
+.pmdk-dashboard .pmdk-button.icon-only {
+  width:var(--pmdk-size-control-md);padding:0
+}
+.pmdk-dashboard .pmdk-button:disabled {
+  opacity:.46;cursor:not-allowed
+}
+.pmdk-dashboard .pmdk-button svg {
+  width:var(--pmdk-size-icon-md);height:var(--pmdk-size-icon-md)
+}
+.pmdk-dashboard .pmdk-button.text {
+  color:var(--pmdk-accent-fg)
+}
+.pmdk-dashboard .pmdk-button:not(.primary):not(.text) {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-button.primary {
+  box-shadow:0 1px 2px color-mix(in srgb,var(--pmdk-color-accent) 20%,transparent)
+}
+.pmdk-dashboard .pmdk-button:not(.primary):not(.text):not(.danger) {
+  border-color:var(--pmdk-control-border-default);background:var(--pmdk-color-surface);box-shadow:none
+}
+.pmdk-dashboard .pmdk-button:not(.primary):not(.text):not(.danger):hover:not(:disabled) {
+  border-color:var(--pmdk-control-border-hover);background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-button:focus-visible {
+  outline:0;border-color:var(--pmdk-control-border-active);box-shadow:none
+}
+.pmdk-dashboard .pmdk-button.primary {
+  border-color:var(--pmdk-color-accent);background:var(--pmdk-color-accent);color:var(--pmdk-color-on-accent);box-shadow:none
+}
+.pmdk-dashboard .pmdk-button.primary:hover:not(:disabled) {
+  border-color:color-mix(in srgb,var(--pmdk-color-accent) 88%,var(--pmdk-color-text));background:color-mix(in srgb,var(--pmdk-color-accent) 88%,var(--pmdk-color-text));color:var(--pmdk-color-on-accent)
+}
+.pmdk-dashboard .pmdk-button.text:hover:not(:disabled) {
+  border-color:transparent;background:transparent;color:color-mix(in srgb,var(--pmdk-color-accent) 78%,var(--pmdk-color-text))
+}
+.pmdk-dashboard .pmdk-button.danger {
+  border-color:var(--pmdk-color-danger-border);background:var(--pmdk-color-surface);color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-button.danger:hover:not(:disabled) {
+  border-color:var(--pmdk-color-danger);background:var(--pmdk-color-surface);color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-button {
+  min-width:var(--pmdk-size-control-sm);height:var(--pmdk-size-control-sm);padding-inline:10px
+}
+.pmdk-dashboard .pmdk-button.sm {
+  height:var(--pmdk-size-control-sm);padding-inline:9px
+}
+
+/*
+ * @pressmaximum/dashboard-kit — compact field kit (KIT-P3 slice 1)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-field-control input,
+.pmdk-dashboard .pmdk-field-control select {
+  width:100%;height:var(--pmdk-size-control-md);padding:0 10px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-field-control input,
+.pmdk-dashboard .pmdk-field-control select {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-editor-section-body {
+  display:flex;flex-direction:column;gap:15px;padding:16px
+}
+.pmdk-dashboard .pmdk-editor-section-body.pmdk-form-grid {
+  display:grid
+}
+.pmdk-dashboard .pmdk-form-field {
+  display:flex;flex-direction:column;gap:6px
+}
+.pmdk-dashboard .pmdk-form-field>span {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-form-field>input,
+.pmdk-dashboard .pmdk-form-field>select,
+.pmdk-dashboard .pmdk-form-field>textarea {
+  width:100%;min-height:var(--pmdk-size-control-md);padding:0 11px;border:1px solid var(--pmdk-control-border-default);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);outline:0;box-shadow:none
+}
+.pmdk-dashboard .pmdk-form-field>textarea {
+  padding-block:9px;resize:vertical
+}
+.pmdk-dashboard .pmdk-form-field>input:focus,
+.pmdk-dashboard .pmdk-form-field>select:focus,
+.pmdk-dashboard .pmdk-form-field>textarea:focus {
+  border-color:var(--pmdk-color-accent);box-shadow:none
+}
+.pmdk-dashboard .pmdk-form-field>small {
+  color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-form-field>small button {
+  padding:0;border:0;background:transparent;color:var(--pmdk-accent-fg)
+}
+.pmdk-dashboard .pmdk-form-grid {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
+}
+@container (max-width:700px) {
+  .pmdk-dashboard .pmdk-form-grid {
+    grid-template-columns:1fr
+  }
+}
+.pmdk-dashboard .pmdk-editor-section {
+  padding:14px 0 0
+}
+.pmdk-dashboard .pmdk-editor-section:first-child {
+  padding-top:0
+}
+.pmdk-dashboard .pmdk-editor-section+.pmdk-editor-section {
+  margin-top:12px;border-top:1px solid color-mix(in srgb,var(--pmdk-color-border) 72%,transparent)
+}
+.pmdk-dashboard .pmdk-editor-section-head {
+  position:sticky;z-index:4;top:0;min-height:28px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 4px;padding:2px 0;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-editor-section-head h3 {
+  margin:0;font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-semibold);line-height:1.35
+}
+.pmdk-dashboard .pmdk-field-grid {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:8px
+}
+.pmdk-dashboard .pmdk-field-grid.is-narrow-trailing {
+  grid-template-columns:minmax(0,1fr) 82px;margin-top:0
+}
+.pmdk-dashboard .pmdk-compact-field {
+  position:relative;min-width:0;display:block;cursor:pointer
+}
+.pmdk-dashboard .pmdk-editor-section>.pmdk-compact-field+.pmdk-compact-field {
+  margin-top:8px
+}
+.pmdk-dashboard .pmdk-compact-field>input,
+.pmdk-dashboard .pmdk-compact-field>select,
+.pmdk-dashboard .pmdk-compact-field>textarea {
+  width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--pmdk-control-border-default,var(--pmdk-color-border));border-radius:6px;background:var(--pmdk-color-surface);color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-field-value);font-weight:var(--pmdk-font-weight-regular);line-height:21px;outline:0
+}
+.pmdk-dashboard .pmdk-compact-field>input,
+.pmdk-dashboard .pmdk-compact-field>select {
+  height:var(--pmdk-size-field-compact);padding:26px var(--pmdk-space-3) 7px
+}
+.pmdk-dashboard .pmdk-compact-field>select {
+  padding-inline-end:32px
+}
+.pmdk-dashboard .pmdk-compact-select>select {
+  padding-inline-end:40px;-webkit-appearance:none;appearance:none;background-image:none
+}
+.pmdk-dashboard .pmdk-compact-field>textarea {
+  min-height:var(--pmdk-size-field-compact-notes);padding:31px var(--pmdk-space-3) 8px;line-height:1.4;resize:vertical
+}
+.pmdk-dashboard .pmdk-compact-label {
+  position:absolute;z-index:1;top:50%;inset-inline-start:var(--pmdk-space-3);max-width:calc(100% - var(--pmdk-space-6));overflow:hidden;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-field-value);font-weight:var(--pmdk-font-weight-regular);line-height:var(--pmdk-line-height-compact);pointer-events:none;text-overflow:ellipsis;white-space:nowrap;transform:translateY(-50%);transition:top 140ms ease,font-size 140ms ease,transform 140ms ease,color 140ms ease
+}
+.pmdk-dashboard .pmdk-compact-field:focus-within>.pmdk-compact-label,
+.pmdk-dashboard .pmdk-compact-field.is-filled>.pmdk-compact-label,
+.pmdk-dashboard .pmdk-compact-field:has(input:not(:placeholder-shown))>.pmdk-compact-label,
+.pmdk-dashboard .pmdk-compact-field:has(textarea:not(:placeholder-shown))>.pmdk-compact-label {
+  top:7px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-field-label);transform:none
+}
+.pmdk-dashboard .pmdk-compact-field:focus-within>.pmdk-compact-label {
+  color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-compact-field:focus-within>input,
+.pmdk-dashboard .pmdk-compact-field:focus-within>select,
+.pmdk-dashboard .pmdk-compact-field:focus-within>textarea {
+  border-color:var(--pmdk-color-accent);box-shadow:none
+}
+.pmdk-dashboard .pmdk-compact-field>input::placeholder,
+.pmdk-dashboard .pmdk-compact-field>textarea::placeholder {
+  color:transparent
+}
+.pmdk-dashboard .pmdk-compact-field>input,
+.pmdk-dashboard .pmdk-compact-field>textarea {
+  cursor:text
+}
+.pmdk-dashboard .pmdk-compact-field>select,
+.pmdk-dashboard .pmdk-compact-field>input[type=date],
+.pmdk-dashboard .pmdk-compact-field>input[type=time],
+.pmdk-dashboard .pmdk-compact-field.is-picker>input {
+  cursor:pointer
+}
+.pmdk-dashboard .pmdk-compact-field.is-picker>input {
+  padding-inline-end:36px
+}
+.pmdk-dashboard .pmdk-field-grid .pmdk-combobox,
+.pmdk-dashboard .pmdk-editor-section-head+.pmdk-combobox {
+  margin-top:0
+}
+.pmdk-dashboard .pmdk-field-end-icon {
+  position:absolute;inset-inline-end:var(--pmdk-space-3);top:50%;width:15px;height:15px;color:var(--pmdk-color-text-soft);pointer-events:none;transform:translateY(-50%)
+}
+.pmdk-dashboard .pmdk-field-end-icon>span {
+  width:15px;height:15px;align-items:center;justify-content:center
+}
+.pmdk-dashboard .pmdk-field-end-icon svg {
+  width:15px;height:15px
+}
+.pmdk-dashboard .pmdk-compact-select:focus-within>.pmdk-field-end-icon {
+  color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-compact-notes>textarea {
+  height:var(--pmdk-size-field-compact-notes);min-height:var(--pmdk-size-field-compact-notes);padding:31px var(--pmdk-space-3) 8px;line-height:21px
+}
+.pmdk-dashboard .pmdk-compact-notes>.pmdk-compact-label {
+  top:11px;transform:none
+}
+.pmdk-dashboard .pmdk-compact-notes:focus-within>.pmdk-compact-label,
+.pmdk-dashboard .pmdk-compact-notes.is-filled>.pmdk-compact-label,
+.pmdk-dashboard .pmdk-compact-notes:has(textarea:not(:placeholder-shown))>.pmdk-compact-label {
+  top:8px
+}
+.pmdk-dashboard .pmdk-value-summary {
+  margin:8px 0 0;padding:7px 10px;border-radius:7px;background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-value-summary>div {
+  display:flex;align-items:center;justify-content:space-between;gap:16px;padding:4px 0;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-value-summary dt,
+.pmdk-dashboard .pmdk-value-summary dd {
+  margin:0
+}
+.pmdk-dashboard .pmdk-value-summary dd {
+  color:var(--pmdk-color-text);font-variant-numeric:tabular-nums
+}
+.pmdk-dashboard .pmdk-value-summary>div.is-total {
+  margin-top:3px;padding-top:7px;border-top:1px solid color-mix(in srgb,var(--pmdk-color-border) 75%,transparent);color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-editor-section>.pmdk-editor-readonly:last-child {
+  border-bottom:0
+}
+@container bookings-page (max-width:520px) {
+  .pmdk-dashboard .pmdk-editor-section {
+    padding-top:12px
+  }
+  .pmdk-dashboard .pmdk-editor-section+.pmdk-editor-section {
+    margin-top:12px
+  }
+}
+
+/*
+ * @pressmaximum/dashboard-kit — combobox + choice cards (KIT-P3 slice 1)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-choice-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:10px
+}
+.pmdk-dashboard .pmdk-choice {
+  position:relative;min-width:0;display:block;padding:12px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);cursor:pointer
+}
+.pmdk-dashboard .pmdk-choice:hover {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-choice.is-selected {
+  border-color:var(--pmdk-color-accent-border);background:var(--pmdk-color-accent-subtle)
+}
+.pmdk-dashboard .pmdk-choice input {
+  position:absolute;opacity:0;pointer-events:none
+}
+.pmdk-dashboard .pmdk-choice-head {
+  display:flex;align-items:center;gap:8px
+}
+.pmdk-dashboard .pmdk-choice-dot {
+  width:16px;height:16px;display:grid;place-items:center;border:1px solid var(--pmdk-color-border-strong);border-radius:50%;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-choice.is-selected .pmdk-choice-dot {
+  border:5px solid var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-choice strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-choice p {
+  margin:4px 0 0 24px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-choice {
+  border-color:transparent;border-radius:var(--pmdk-radius-card)
+}
+.pmdk-dashboard .pmdk-choice:hover {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-choice.is-selected {
+  border-color:var(--pmdk-color-accent-border)
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-choice-grid {
+    grid-template-columns:1fr
+  }
+}
+.pmdk-dashboard .pmdk-combobox-field>input {
+  cursor:pointer
+}
+.pmdk-dashboard .pmdk-combobox-field:focus-within>input {
+  cursor:text
+}
+.pmdk-dashboard .pmdk-combobox-field>input {
+  padding-inline-end:36px
+}
+.pmdk-dashboard .pmdk-combobox {
+  position:relative;min-width:0;margin-top:8px
+}
+.pmdk-dashboard .pmdk-combobox-idle-icon {
+  display:flex
+}
+.pmdk-dashboard .pmdk-combobox-active-icon {
+  display:none
+}
+.pmdk-dashboard .pmdk-combobox.is-open .pmdk-combobox-idle-icon {
+  display:none
+}
+.pmdk-dashboard .pmdk-combobox.is-open .pmdk-combobox-active-icon,
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-active-icon {
+  display:flex
+}
+.pmdk-dashboard .pmdk-combobox.is-open .pmdk-field-end-icon {
+  color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-combobox-popover {
+  position:absolute;z-index:30;top:calc(100% + 5px);right:0;left:0;max-height:210px;overflow:auto;padding:5px;border:1px solid color-mix(in srgb,var(--pmdk-color-border) 72%,transparent);border-radius:7px;background:var(--pmdk-color-surface);box-shadow:0 12px 30px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent)
+}
+.pmdk-dashboard .pmdk-combobox.opens-up .pmdk-combobox-popover {
+  top:auto;bottom:calc(100% + 5px)
+}
+.pmdk-dashboard .pmdk-combobox-popover[hidden] {
+  display:none
+}
+.pmdk-dashboard .pmdk-combobox-popover>button {
+  width:100%;min-height:34px;display:flex;align-items:center;padding:6px 9px;border:0;border-radius:5px;background:transparent;color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-caption);text-align:left;cursor:pointer
+}
+.pmdk-dashboard .pmdk-combobox-popover>button:hover,
+.pmdk-dashboard .pmdk-combobox-popover>button:focus-visible {
+  outline:0;background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-combobox-popover>button[aria-selected=true] {
+  background:var(--pmdk-color-surface-subtle);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-combobox-popover>button[aria-selected=true]::after {
+  content:"✓";margin-inline-start:auto;color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-combobox-popover>p {
+  margin:0;padding:12px 9px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);text-align:center
+}
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-popover>button>span {
+  min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left
+}
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-popover strong {
+  overflow:hidden;font-weight:var(--pmdk-font-weight-medium);text-overflow:ellipsis;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-combobox.is-entity .pmdk-combobox-popover small {
+  overflow:hidden;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-micro);font-weight:var(--pmdk-font-weight-regular);text-overflow:ellipsis;white-space:nowrap
+}
+
+/*
+ * @pressmaximum/dashboard-kit — money + colour picker fields (KIT-P3 slice 1)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-money-field {
+  direction:ltr
+}
+.pmdk-dashboard .pmdk-money-field>input {
+  padding-inline-start:25px
+}
+.pmdk-dashboard .pmdk-money-field>.pmdk-compact-label {
+  inset-inline-start:25px
+}
+.pmdk-dashboard .pmdk-color-picker-field {
+  position:relative;min-width:0
+}
+.pmdk-dashboard .pmdk-color-picker-field>.pmdk-compact-field>input {
+  padding-inline-end:48px;text-transform:uppercase
+}
+.pmdk-dashboard .pmdk-color-picker-field>input[type=color] {
+  position:absolute;z-index:2;top:50%;inset-inline-end:9px;width:26px;height:26px;margin:0;padding:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--pmdk-color-text) 18%,transparent);border-radius:5px;background:transparent;cursor:pointer;transform:translateY(-50%)
+}
+.pmdk-dashboard .pmdk-color-picker-field>input[type=color]::-webkit-color-swatch-wrapper {
+  padding:0
+}
+.pmdk-dashboard .pmdk-color-picker-field>input[type=color]::-webkit-color-swatch {
+  border:0
+}
+.pmdk-dashboard .pmdk-color-picker-field>input[type=color]::-moz-color-swatch {
+  border:0
+}
+.pmdk-dashboard .pmdk-color-picker-field>input[type=color]:focus-visible {
+  outline:2px solid var(--pmdk-color-accent);outline-offset:2px
+}
+
+/*
+ * @pressmaximum/dashboard-kit — data table tier (KIT-P3 slice 2)
+ *
+ * The route-neutral table chrome refactored from the Aponto BookingsTable
+ * mockup: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard`, `[data-ap-visual=v2]`
+ * flattened to default, brand values via `--pmdk-*`. Column WIDTHS come from the
+ * component's <colgroup> (TanStack getSize()) — the kit only styles the two
+ * structural columns (select / action) and common geometry; clearly-domain
+ * Aponto column ids (customer/email/service/location/staff/order) were dropped.
+ * Consumers add cell classes (`.pmdk-cell-strong`, `.pmdk-cell-numeric`,
+ * `.pmdk-cell-muted`) from their cell renderers. Powers <PMDKDataTable>.
+ */
+
+/* Numeric cell helper — isolate digits LTR + tabular figures (money, time, ids). */
+.pmdk-dashboard .pmdk-mono,
+.pmdk-dashboard .pmdk-time,
+.pmdk-dashboard .pmdk-amount,
+.pmdk-dashboard .pmdk-cell-numeric,
+.pmdk-dashboard .pmdk-cell-id {
+	direction: ltr;
+	unicode-bidi: isolate;
+	font-variant-numeric: tabular-nums;
+}
+.pmdk-dashboard .pmdk-cell-numeric {
+	text-align: end;
+}
+/* Emphasis + secondary tiers for compound cells (a primary value + one meta line). */
+.pmdk-dashboard .pmdk-cell-strong {
+	font-weight: var( --pmdk-font-weight-semibold );
+}
+/* A status pill's dropdown must not be clipped by the cell box (uses :has(),
+   in the kit browser floor). Replaces the mockup's `[data-column=status]` rule
+   so it works whatever the consumer names the status column. */
+.pmdk-dashboard .pmdk-table td:has( .pmdk-status-picker ) {
+	overflow: visible;
+}
+
+/* Component root (<PMDKDataTable>): establish the container-query context so the
+   table tier's `@container` rules (mobile-list switch, toolbar reflow) respond to
+   the table's OWN width rather than a page frame, and carry the dense
+   `.pmdk-data-list` chrome by default. */
+.pmdk-dashboard .pmdk-data-table {
+	container-type: inline-size;
+}
+
+.pmdk-dashboard .pmdk-table-checkbox {
+  width:18px;height:18px;min-width:18px;margin:0;flex:0 0 auto;accent-color:var(--pmdk-color-accent);cursor:pointer
+}
+.pmdk-dashboard .pmdk-table-checkbox:disabled {
+  cursor:not-allowed
+}
+.pmdk-dashboard .pmdk-table-checkbox:focus-visible {
+  outline:2px solid var(--pmdk-color-accent-soft);outline-offset:2px
+}
+.pmdk-dashboard .pmdk-filter-checkbox {
+  width:17px;height:17px;display:grid;place-items:center;border:1px solid var(--pmdk-color-border-strong);border-radius:4px;background:var(--pmdk-color-surface);color:transparent
+}
+.pmdk-dashboard .pmdk-filter-checkbox svg {
+  width:11px;height:11px
+}
+.pmdk-dashboard .pmdk-table-wrap {
+  position:relative;overflow:auto;scrollbar-color:var(--pmdk-color-border-strong) transparent;scrollbar-width:thin
+}
+.pmdk-dashboard .pmdk-table {
+  width:100%;min-width:1324px;border-collapse:separate;border-spacing:0;table-layout:fixed
+}
+.pmdk-dashboard .pmdk-table th {
+  height:40px;padding:0 10px;border-bottom:1px solid var(--pmdk-color-border);background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);text-align:start
+}
+.pmdk-dashboard .pmdk-table th[data-column=select],
+.pmdk-dashboard .pmdk-table td[data-column=select] {
+  width:44px;text-align:center
+}
+.pmdk-dashboard .pmdk-table th[data-column=time],
+.pmdk-dashboard .pmdk-table td[data-column=time] {
+  width:78px
+}
+.pmdk-dashboard .pmdk-table th[data-column=date],
+.pmdk-dashboard .pmdk-table td[data-column=date] {
+  width:100px
+}
+.pmdk-dashboard .pmdk-table th[data-column=status],
+.pmdk-dashboard .pmdk-table td[data-column=status] {
+  width:150px
+}
+.pmdk-dashboard .pmdk-table th[data-column=total],
+.pmdk-dashboard .pmdk-table td[data-column=total] {
+  width:75px;text-align:end
+}
+.pmdk-dashboard .pmdk-table th[data-column=action],
+.pmdk-dashboard .pmdk-table td[data-column=action] {
+  width:82px
+}
+.pmdk-dashboard .pmdk-table td {
+  height:60px;padding:8px 10px;border-bottom:1px solid var(--pmdk-color-border);background:var(--pmdk-color-surface);vertical-align:middle
+}
+.pmdk-dashboard .pmdk-table tbody tr {
+  cursor:pointer
+}
+.pmdk-dashboard .pmdk-table tbody tr:hover td {
+  background:var(--pmdk-color-row-hover)
+}
+.pmdk-dashboard .pmdk-table tbody tr.is-selected td {
+  background:color-mix(in srgb,var(--pmdk-color-accent) 5%,var(--pmdk-color-surface))
+}
+.pmdk-dashboard .pmdk-table tbody tr:focus-visible {
+  outline:2px solid var(--pmdk-color-accent);outline-offset:-2px
+}
+.pmdk-dashboard .pmdk-table tbody tr:last-child td {
+  border-bottom:0
+}
+.pmdk-dashboard .pmdk-col-select {
+  position:sticky;inset-inline-start:0;z-index:3
+}
+.pmdk-dashboard .pmdk-col-action {
+  position:sticky;inset-inline-end:0;z-index:3;box-shadow:-1px 0 0 var(--pmdk-color-border)
+}
+.pmdk-dashboard[dir=rtl] .pmdk-col-action {
+  box-shadow:1px 0 0 var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-table thead .pmdk-col-select,
+.pmdk-dashboard .pmdk-table thead .pmdk-col-action {
+  z-index:4
+}
+.pmdk-dashboard .pmdk-sort-button {
+  max-width:100%;height:32px;display:inline-flex;align-items:center;gap:5px;padding:0;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;cursor:pointer
+}
+.pmdk-dashboard .pmdk-sort-button:hover {
+  color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-sort-button svg {
+  width:11px;height:11px;opacity:.28;transition:opacity var(--pmdk-motion-standard),transform var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-sort-button:hover svg,
+.pmdk-dashboard .pmdk-sort-button.is-active svg {
+  opacity:.9
+}
+.pmdk-dashboard .pmdk-sort-button.is-asc svg {
+  transform:rotate(180deg)
+}
+.pmdk-dashboard .pmdk-cell-value {
+  display:block;overflow:hidden;text-overflow:ellipsis;color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-regular);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-cell-value.pmdk-cell-muted {
+  color:var(--pmdk-color-text-muted);font-weight:var(--pmdk-font-weight-regular)
+}
+.pmdk-dashboard .pmdk-time-cell,
+.pmdk-dashboard .pmdk-table td[data-column=date] {
+  direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums
+}
+.pmdk-dashboard .pmdk-mobile-list {
+  display:none
+}
+.pmdk-dashboard .pmdk-table th {
+  height:36px;padding:0 12px;border-bottom-color:var(--pmdk-color-border);background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);letter-spacing:.01em
+}
+.pmdk-dashboard .pmdk-table th[data-column=select] {
+  width:44px
+}
+.pmdk-dashboard .pmdk-table td {
+  height:62px;padding:8px 12px;border-bottom-color:color-mix(in srgb,var(--pmdk-color-border) 62%,transparent)
+}
+.pmdk-dashboard .pmdk-table .pmdk-secondary {
+  margin-top:3px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-table .pmdk-amount .pmdk-cell-value {
+  font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-table tbody tr:hover {
+  background:color-mix(in srgb,var(--pmdk-color-surface-muted) 44%,var(--pmdk-color-surface))
+}
+.pmdk-dashboard .pmdk-table .pmdk-row-action {
+  opacity:1;transition:border-color var(--pmdk-motion-standard),background var(--pmdk-motion-standard),color var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-table th[data-column=status] {
+  width:150px
+}
+.pmdk-dashboard .pmdk-table td[data-column=status] {
+  overflow:visible
+}
+/* Narrow-container switch: swap the table for the card list ONLY when the
+   consumer actually rendered one (`renderMobileItem`) — otherwise the table
+   must stay, a hidden table with no fallback is a blank page. `:has()` is in
+   the primitives browser floor (SPEC §16.1). */
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-data-table:has(.pmdk-mobile-list) .pmdk-table-wrap {
+    display:none
+  }
+  .pmdk-dashboard .pmdk-mobile-list {
+    display:block
+  }
+}
+.pmdk-dashboard .pmdk-table-controls-slot {
+  display:flex
+}
+.pmdk-dashboard .pmdk-table-actions-popover {
+  position:absolute;z-index:60;top:calc(100% + 8px);right:0;overflow:hidden;border:1px solid var(--pmdk-color-border);border-radius:6px;background:var(--pmdk-color-surface);box-shadow:0 14px 34px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent);animation:pdPopoverIn 140ms cubic-bezier(.2,.7,.3,1)
+}
+.pmdk-dashboard .pmdk-table-actions-popover {
+  width:264px;padding:6px
+}
+.pmdk-dashboard .pmdk-table-actions-popover>button {
+  width:100%;min-height:48px;display:grid;grid-template-columns:20px minmax(0,1fr) 12px;gap:10px;align-items:center;padding:7px 9px;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted);font:inherit;text-align:left
+}
+.pmdk-dashboard .pmdk-table-actions-popover>button:hover {
+  background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-table-actions-popover>button:focus-visible {
+  outline:2px solid var(--pmdk-color-accent);outline-offset:-2px;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-table-actions-popover>button>.pmdk-react-icon {
+  font-size:17px
+}
+.pmdk-dashboard .pmdk-table-actions-popover>button>.pmdk-react-icon:last-child {
+  font-size:var(--pmdk-font-size-micro)
+}
+.pmdk-dashboard .pmdk-table-actions-popover>button>span:nth-child(2) {
+  min-width:0
+}
+.pmdk-dashboard .pmdk-table-actions-popover strong,
+.pmdk-dashboard .pmdk-table-actions-popover small {
+  display:block
+}
+.pmdk-dashboard .pmdk-table-actions-popover strong {
+  color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-table-actions-popover small {
+  margin-top:2px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);line-height:1.25
+}
+.pmdk-dashboard .pmdk-table-actions-separator {
+  height:1px;margin:5px 9px;background:var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-table th {
+  background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-table th {
+  height:44px;padding-inline:14px;border-bottom-color:var(--pmdk-data-border-medium);color:var(--pmdk-color-text-muted);font-size:11.5px
+}
+.pmdk-dashboard .pmdk-table td {
+  height:68px;padding:10px 14px;border-bottom-color:var(--pmdk-data-border-soft)
+}
+.pmdk-dashboard .pmdk-table th[data-column=time],
+.pmdk-dashboard .pmdk-table td[data-column=time] {
+  width:100px
+}
+.pmdk-dashboard .pmdk-table th[data-column=status],
+.pmdk-dashboard .pmdk-table td[data-column=status] {
+  width:160px
+}
+.pmdk-dashboard .pmdk-table-actions-popover {
+  border:0;border-radius:8px;background:var(--pmdk-color-surface);box-shadow:0 8px 24px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent),0 0 0 1px color-mix(in srgb,var(--pmdk-color-inverse-surface) 5%,transparent)
+}
+.pmdk-dashboard .pmdk-table th[data-column=id],
+.pmdk-dashboard .pmdk-table td[data-column=id] {
+  width:72px
+}
+.pmdk-dashboard .pmdk-table td[data-column=id] .pmdk-cell-id {
+  overflow:visible;text-overflow:clip;color:var(--pmdk-color-text-soft);font-family:inherit;font-weight:var(--pmdk-font-weight-regular);font-variant-numeric:tabular-nums
+}
+.pmdk-dashboard .pmdk-table-scroll {
+  max-width:100%;overflow:auto
+}
+.pmdk-dashboard .pmdk-timezone-label {
+  display:flex;align-items:center;gap:6px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-timezone-label svg {
+  width:15px;height:15px
+}
+.pmdk-dashboard .pmdk-table th[data-column=time],
+.pmdk-dashboard .pmdk-table td[data-column=time] {
+  width:116px
+}
+.pmdk-dashboard .pmdk-time-cell {
+  min-width:0;display:flex;align-items:flex-start;flex-direction:column;gap:3px
+}
+.pmdk-dashboard .pmdk-time-cell>small {
+  max-width:100%;overflow:hidden;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-badge);line-height:1.2;text-overflow:ellipsis;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-table th[data-column=select],
+.pmdk-dashboard .pmdk-table td[data-column=select] {
+  padding-inline:0!important;vertical-align:middle;text-align:center
+}
+.pmdk-dashboard .pmdk-table tbody tr.is-inspected td {
+  background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-table tbody tr.is-inspected td:first-child {
+  box-shadow:inset 2px 0 0 var(--pmdk-color-accent)
+}
+.pmdk-dashboard[dir=rtl] .pmdk-table tbody tr.is-inspected td:first-child {
+  box-shadow:inset -2px 0 0 var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-table-checkbox {
+  -webkit-appearance:none;appearance:none;width:16px;height:16px;min-width:16px;display:block;margin:auto;border:1px solid color-mix(in srgb,var(--pmdk-color-text) 42%,transparent);border-radius:5px;background-color:var(--pmdk-color-surface);background-position:center;background-repeat:no-repeat;background-size:11px 11px;opacity:1;box-shadow:none;transition:border-color var(--pmdk-motion-standard),background-color var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-table-checkbox:hover {
+  border-color:color-mix(in srgb,var(--pmdk-color-text) 66%,transparent)
+}
+.pmdk-dashboard .pmdk-table-checkbox:checked {
+  border-color:var(--pmdk-color-accent);background-color:var(--pmdk-color-accent);background-image:var(--pmdk-checkbox-check-image)
+}
+.pmdk-dashboard .pmdk-table-checkbox:indeterminate {
+  border-color:var(--pmdk-color-accent);background-color:var(--pmdk-color-accent);background-image:linear-gradient(var(--pmdk-color-on-accent),var(--pmdk-color-on-accent));background-position:center;background-size:8px 2px
+}
+.pmdk-dashboard .pmdk-table-checkbox:focus-visible {
+  outline:2px solid var(--pmdk-color-accent-soft);outline-offset:2px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-options-trigger {
+  width:34px;min-width:34px;height:34px;min-height:34px;box-sizing:border-box;flex:0 0 34px;padding:0;border-color:transparent;background:transparent;color:var(--pmdk-color-text);opacity:1
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-options-trigger:hover,
+.pmdk-dashboard .pmdk-data-list .pmdk-table-options-trigger[aria-expanded=true] {
+  border-color:transparent;background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-options-trigger:focus-visible {
+  outline:2px solid var(--pmdk-color-accent);outline-offset:2px;border-color:transparent;background:transparent
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-options-trigger>.pmdk-react-icon>svg,
+.pmdk-dashboard .pmdk-data-list .pmdk-table-options-trigger>.pmdk-icon-slot>svg {
+  width:20px;height:20px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-actions-popover {
+  width:224px;padding:5px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-actions-popover>button {
+  min-height:38px;grid-template-columns:18px minmax(0,1fr) 12px;gap:8px;padding:6px 8px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-actions-popover strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-regular)
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-actions-separator {
+  margin:4px 7px;background:color-mix(in srgb,var(--pmdk-color-border) 70%,transparent)
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-popover {
+  width:280px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-popover>header {
+  min-height:46px;padding:8px 10px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-popover>header strong {
+  font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-list {
+  padding:3px 6px 6px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-option,
+.pmdk-dashboard .pmdk-data-list .pmdk-column-option>label {
+  min-height:36px;height:36px
+}
+.pmdk-dashboard .pmdk-table-options-trigger>.pmdk-icon-slot>svg,
+.pmdk-dashboard .pmdk-table-options-trigger>.pmdk-react-icon>svg {
+  width:20px;height:20px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-manager {
+  width:34px;height:34px;flex:0 0 34px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-trigger {
+  width:34px;min-width:34px;height:34px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-column-manager>.pmdk-table-options-trigger {
+  padding:0;padding-inline:0
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table-wrap {
+  border:0
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table th {
+  height:38px;padding:0 9px;border-bottom:0;background:var(--pmdk-color-surface);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium);letter-spacing:0
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table td {
+  height:56px;padding:7px 9px;border-bottom-color:var(--pmdk-color-border);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-regular)
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table th[data-column=select],
+.pmdk-dashboard .pmdk-data-list .pmdk-table td[data-column=select] {
+  width:36px
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table tbody tr:last-child td {
+  border-bottom:0
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-col-action,
+.pmdk-dashboard[dir=rtl] .pmdk-data-list .pmdk-col-action {
+  box-shadow:none
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table .pmdk-bulk-row>th {
+  height:38px;border-bottom:0;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-data-list .pmdk-table .pmdk-bulk-bar-cell {
+  padding:0 10px
+}
+
+/*
+ * @pressmaximum/dashboard-kit — toolbar + search + date popover (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-toolbar {
+  position:relative;padding:12px
+}
+.pmdk-dashboard .pmdk-toolbar-main {
+  display:flex;align-items:center;gap:8px
+}
+.pmdk-dashboard .pmdk-toolbar-query {
+  min-width:0;display:flex;align-items:center;gap:8px;flex:1
+}
+.pmdk-dashboard .pmdk-toolbar-actions {
+  min-width:0;display:flex;align-items:center;justify-content:flex-end;margin-left:auto
+}
+.pmdk-dashboard .pmdk-search {
+  position:relative;width:360px;min-width:260px
+}
+.pmdk-dashboard .pmdk-search svg {
+  position:absolute;top:50%;left:10px;width:16px;height:16px;color:var(--pmdk-color-text-soft);transform:translateY(-50%);pointer-events:none
+}
+.pmdk-dashboard .pmdk-search input {
+  height:var(--pmdk-size-control-md);border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-search input {
+  width:100%;padding:0 11px 0 34px
+}
+.pmdk-dashboard .pmdk-search input::placeholder {
+  color:var(--pmdk-color-text-soft)
+}
+.pmdk-dashboard .pmdk-toolbar-filter-controls {
+  display:flex;align-items:center;gap:8px
+}
+.pmdk-dashboard .pmdk-toolbar-control-group {
+  height:38px;display:flex;align-items:stretch;border:1px solid var(--pmdk-color-border);border-radius:4px;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-toolbar-popover-wrap {
+  position:relative;display:flex
+}
+.pmdk-dashboard .pmdk-toolbar-popover-wrap+.pmdk-toolbar-popover-wrap {
+  border-left:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-toolbar-control {
+  min-width:138px;height:36px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 11px;border:0;border-radius:3px;background:transparent;color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);white-space:nowrap;cursor:pointer
+}
+.pmdk-dashboard .pmdk-toolbar-popover-wrap:last-child .pmdk-toolbar-control {
+  min-width:102px
+}
+.pmdk-dashboard .pmdk-toolbar-control:hover,
+.pmdk-dashboard .pmdk-toolbar-control[aria-expanded=true] {
+  background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-control svg {
+  width:15px;height:15px
+}
+.pmdk-dashboard .pmdk-toolbar-control>svg:last-child {
+  width:12px;height:12px;color:var(--pmdk-color-text-soft)
+}
+.pmdk-dashboard .pmdk-toolbar-filter-button {
+  position:relative;width:auto;min-width:38px
+}
+.pmdk-dashboard .pmdk-toolbar-filter-button>svg:last-of-type {
+  width:17px;height:17px;color:currentColor
+}
+.pmdk-dashboard .pmdk-toolbar-filter-button .pmdk-filter-count {
+  position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 4px;border:2px solid var(--pmdk-color-surface);background:var(--pmdk-color-accent);color:var(--pmdk-color-on-accent);font-size:var(--pmdk-font-size-badge)
+}
+.pmdk-dashboard .pmdk-toolbar-popover {
+  position:absolute;z-index:55;top:calc(100% + 8px);right:0;padding:6px;border:1px solid var(--pmdk-color-border);border-radius:6px;background:var(--pmdk-color-surface);box-shadow:0 14px 34px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent);animation:pdPopoverIn 140ms cubic-bezier(.2,.7,.3,1)
+}
+.pmdk-dashboard .pmdk-date-popover {
+  width:246px
+}
+.pmdk-dashboard .pmdk-toolbar-popover-label {
+  margin:0;padding:8px 9px 6px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);letter-spacing:.05em;text-transform:uppercase
+}
+.pmdk-dashboard .pmdk-date-popover>button {
+  width:100%;min-height:46px;display:grid;grid-template-columns:minmax(0,1fr) 18px;align-items:center;gap:10px;padding:7px 9px;border:0;border-radius:4px;background:transparent;color:var(--pmdk-color-text);font:inherit;text-align:left;cursor:pointer
+}
+.pmdk-dashboard .pmdk-date-popover>button:hover,
+.pmdk-dashboard .pmdk-date-popover>button:focus-visible {
+  outline:0;background:var(--pmdk-color-row-hover)
+}
+.pmdk-dashboard .pmdk-date-popover>button[aria-checked=true] {
+  background:var(--pmdk-color-surface-muted)
+}
+.pmdk-dashboard .pmdk-date-popover strong,
+.pmdk-dashboard .pmdk-date-popover small {
+  display:block
+}
+.pmdk-dashboard .pmdk-date-popover strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-date-popover small {
+  margin-top:2px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-date-popover>button>svg,
+.pmdk-dashboard .pmdk-toolbar-menu-check svg {
+  width:15px;height:15px
+}
+.pmdk-dashboard .pmdk-toolbar-menu-check {
+  display:grid;place-items:center;color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-toolbar-popover-separator {
+  height:1px;margin:5px 4px;background:var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-toolbar-control-group>.pmdk-toolbar-control {
+  border-left:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-toolbar-control-group>:first-child {
+  border-left:0
+}
+.pmdk-dashboard .pmdk-toolbar-export {
+  min-width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;border:1px solid var(--pmdk-color-border-strong);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);cursor:pointer
+}
+.pmdk-dashboard .pmdk-toolbar-export:hover {
+  border-color:var(--pmdk-color-border-strong);background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-export svg {
+  width:17px;height:17px
+}
+.pmdk-dashboard .pmdk-toolbar-action-label {
+  line-height:1;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-search input {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-toolbar {
+  padding:10px 12px;border-bottom:0
+}
+.pmdk-dashboard .pmdk-toolbar .pmdk-search input,
+.pmdk-dashboard .pmdk-toolbar-control-group {
+  border-color:var(--pmdk-color-border)
+}
+@container (max-width:820px) {
+  .pmdk-dashboard .pmdk-toolbar-main {
+    align-items:stretch;flex-direction:column
+  }
+  .pmdk-dashboard .pmdk-toolbar-query {
+    width:100%
+  }
+  .pmdk-dashboard .pmdk-search {
+    width:100%;min-width:0
+  }
+  .pmdk-dashboard .pmdk-toolbar-actions {
+    justify-content:flex-end
+  }
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-toolbar-query {
+    align-items:stretch;flex-direction:column
+  }
+  .pmdk-dashboard .pmdk-toolbar-control-group {
+    width:100%
+  }
+  .pmdk-dashboard .pmdk-toolbar-popover-wrap:first-child {
+    flex:1
+  }
+  .pmdk-dashboard .pmdk-toolbar-popover-wrap:first-child .pmdk-toolbar-control {
+    width:100%
+  }
+  .pmdk-dashboard .pmdk-date-popover {
+    right:auto;left:0
+  }
+}
+.pmdk-dashboard .pmdk-toolbar-actions {
+  gap:6px
+}
+.pmdk-dashboard .pmdk-toolbar-export[aria-expanded=true] {
+  border-color:var(--pmdk-color-border-strong);background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-control>.pmdk-react-icon:last-child svg {
+  width:11px;height:11px
+}
+.pmdk-dashboard .pmdk-toolbar-control>.pmdk-react-icon:first-child svg {
+  width:15px;height:15px
+}
+.pmdk-dashboard .pmdk-toolbar .pmdk-search input,
+.pmdk-dashboard .pmdk-toolbar-control-group,
+.pmdk-dashboard .pmdk-toolbar-export {
+  border-color:var(--pmdk-color-border-strong)
+}
+.pmdk-dashboard .pmdk-toolbar .pmdk-search input:hover,
+.pmdk-dashboard .pmdk-toolbar-control-group:hover,
+.pmdk-dashboard .pmdk-toolbar-export:hover {
+  border-color:color-mix(in srgb,var(--pmdk-color-text) 28%,var(--pmdk-color-surface))
+}
+.pmdk-dashboard .pmdk-toolbar .pmdk-search input:focus {
+  outline:0;border-color:var(--pmdk-color-accent);box-shadow:0 0 0 2px var(--pmdk-color-accent-soft)
+}
+.pmdk-dashboard .pmdk-toolbar-export {
+  gap:8px;padding:0 10px 0 5px;background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-export>.pmdk-react-icon {
+  width:28px;height:28px;flex:0 0 28px;border-radius:5px;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted);transition:background var(--pmdk-motion-standard),color var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-toolbar-export>.pmdk-react-icon>svg {
+  width:20px;height:20px
+}
+.pmdk-dashboard .pmdk-toolbar-export:hover>.pmdk-react-icon,
+.pmdk-dashboard .pmdk-toolbar-export[aria-expanded=true]>.pmdk-react-icon {
+  background:var(--pmdk-color-accent-soft);color:var(--pmdk-accent-fg,var(--pmdk-color-accent))
+}
+.pmdk-dashboard .pmdk-search svg {
+  width:17px;height:17px;color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-toolbar {
+  padding:14px
+}
+.pmdk-dashboard .pmdk-toolbar-main {
+  gap:10px
+}
+.pmdk-dashboard .pmdk-toolbar-query {
+  gap:10px
+}
+.pmdk-dashboard .pmdk-toolbar-filter-controls {
+  gap:10px
+}
+.pmdk-dashboard .pmdk-toolbar .pmdk-search input {
+  height:42px;padding-left:38px;color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-search svg {
+  left:12px
+}
+.pmdk-dashboard .pmdk-search input::placeholder {
+  color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-toolbar-control-group {
+  height:42px
+}
+.pmdk-dashboard .pmdk-toolbar-control {
+  height:40px;padding-inline:13px
+}
+.pmdk-dashboard .pmdk-toolbar-export {
+  height:42px;padding-right:12px
+}
+.pmdk-dashboard .pmdk-toolbar-export>.pmdk-react-icon {
+  width:30px;height:30px;flex-basis:30px
+}
+.pmdk-dashboard .pmdk-toolbar-export>.pmdk-react-icon {
+  width:20px;height:20px;flex-basis:20px;background:transparent;color:currentColor
+}
+.pmdk-dashboard .pmdk-toolbar-export>.pmdk-react-icon>svg {
+  width:20px;height:20px
+}
+.pmdk-dashboard .pmdk-toolbar-export:hover>.pmdk-react-icon,
+.pmdk-dashboard .pmdk-toolbar-export[aria-expanded=true]>.pmdk-react-icon {
+  background:transparent;color:currentColor
+}
+.pmdk-dashboard .pmdk-toolbar-filter-button:hover {
+  border-color:var(--pmdk-data-border-strong,var(--pmdk-color-border-strong));background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-filter-button[aria-expanded=true],
+.pmdk-dashboard .pmdk-toolbar-filter-button:focus-visible {
+  outline:0;border-color:var(--pmdk-color-accent);background:var(--pmdk-color-surface);color:var(--pmdk-accent-fg,var(--pmdk-color-accent));box-shadow:none
+}
+.pmdk-dashboard .pmdk-search>.pmdk-react-icon {
+  position:absolute;z-index:1;top:50%;left:12px;width:18px;height:18px;display:grid;place-items:center;color:var(--pmdk-color-text-muted);line-height:0;transform:translateY(-50%);pointer-events:none
+}
+.pmdk-dashboard .pmdk-search>.pmdk-react-icon>svg {
+  position:static;width:17px;height:17px;display:block;transform:none
+}
+.pmdk-dashboard .pmdk-toolbar-control:hover {
+  background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-control[aria-expanded=true] {
+  background:var(--pmdk-color-surface);color:var(--pmdk-accent-fg,var(--pmdk-color-accent))
+}
+.pmdk-dashboard .pmdk-toolbar-control-group:has(.pmdk-toolbar-control[aria-expanded=true]) {
+  border-color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-toolbar-export:hover {
+  border-color:var(--pmdk-data-border-strong,var(--pmdk-color-border-strong));background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-export[aria-expanded=true] {
+  border-color:var(--pmdk-color-accent);background:var(--pmdk-color-surface);color:var(--pmdk-accent-fg,var(--pmdk-color-accent));box-shadow:none
+}
+.pmdk-dashboard .pmdk-toolbar .pmdk-search input:focus {
+  outline:0;border-color:var(--pmdk-color-accent);box-shadow:none
+}
+.pmdk-dashboard .pmdk-toolbar-actions {
+  height:42px;align-items:center
+}
+.pmdk-dashboard .pmdk-toolbar-actions>.pmdk-column-manager,
+.pmdk-dashboard .pmdk-toolbar-actions>.pmdk-export-trigger {
+  box-sizing:border-box;flex:0 0 42px;align-self:center;margin:0
+}
+.pmdk-dashboard .pmdk-toolbar-popover {
+  border:0;border-radius:8px;background:var(--pmdk-color-surface);box-shadow:0 8px 24px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent),0 0 0 1px color-mix(in srgb,var(--pmdk-color-inverse-surface) 5%,transparent)
+}
+.pmdk-dashboard .pmdk-toolbar-popover {
+  padding:8px
+}
+.pmdk-dashboard .pmdk-toolbar-popover-label {
+  padding:10px 10px 8px
+}
+.pmdk-dashboard .pmdk-date-popover>button {
+  padding:9px 10px
+}
+.pmdk-dashboard .pmdk-toolbar-filter-button .pmdk-filter-count {
+  top:-8px;right:-8px;min-width:20px;height:20px;padding:0 5px;border-width:2px;font-size:var(--pmdk-font-size-micro);line-height:16px
+}
+.pmdk-dashboard .pmdk-toolbar-control-group,
+.pmdk-dashboard .pmdk-toolbar-export {
+  border-color:var(--pmdk-control-border-default);background:var(--pmdk-color-surface);box-shadow:none
+}
+.pmdk-dashboard .pmdk-toolbar-control-group:hover,
+.pmdk-dashboard .pmdk-toolbar-export:hover {
+  border-color:var(--pmdk-control-border-hover);background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-toolbar-export[aria-expanded=true],
+.pmdk-dashboard .pmdk-toolbar-control-group:has(.pmdk-toolbar-control[aria-expanded=true]) {
+  border-color:var(--pmdk-control-border-active);background:var(--pmdk-color-surface);color:var(--pmdk-accent-fg,var(--pmdk-color-accent));box-shadow:none
+}
+.pmdk-dashboard .pmdk-toolbar-export:focus-visible,
+.pmdk-dashboard .pmdk-toolbar-control-group:focus-within {
+  outline:0;border-color:var(--pmdk-control-border-active);box-shadow:none
+}
+.pmdk-dashboard .pmdk-toolbar-date-control .pmdk-toolbar-control {
+  min-width:226px;justify-content:flex-start
+}
+.pmdk-dashboard .pmdk-date-range-value {
+  min-width:0;display:block;flex:1;color:var(--pmdk-color-text);text-align:left
+}
+.pmdk-dashboard .pmdk-date-range-full {
+  direction:ltr;unicode-bidi:isolate;display:flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums
+}
+.pmdk-dashboard .pmdk-date-range-arrow {
+  width:14px;height:14px;display:grid;place-items:center;flex:0 0 14px;color:var(--pmdk-color-text-soft)
+}
+.pmdk-dashboard .pmdk-date-range-arrow .pmdk-react-icon,
+.pmdk-dashboard .pmdk-date-range-arrow svg {
+  width:13px;height:13px
+}
+.pmdk-dashboard .pmdk-date-range-compact {
+  direction:ltr;unicode-bidi:isolate;display:none;font-variant-numeric:tabular-nums
+}
+@container (max-width:820px) {
+  .pmdk-dashboard .pmdk-toolbar-date-control .pmdk-toolbar-control {
+    min-width:150px
+  }
+  .pmdk-dashboard .pmdk-date-range-full {
+    display:none
+  }
+  .pmdk-dashboard .pmdk-date-range-compact {
+    display:block
+  }
+}
+.pmdk-dashboard .pmdk-search-field {
+  width:min(380px,100%);height:var(--pmdk-size-control-md);display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid var(--pmdk-control-border-default);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-search-field:focus-within {
+  border-color:var(--pmdk-color-accent);color:var(--pmdk-color-text);box-shadow:none
+}
+.pmdk-dashboard .pmdk-search-field svg {
+  width:18px;height:18px;flex:0 0 auto
+}
+.pmdk-dashboard .pmdk-search-field input {
+  min-width:0;flex:1;height:100%;padding:0;border:0;background:transparent;outline:0;box-shadow:none
+}
+.pmdk-dashboard .pmdk-toolbar-export {
+  min-width:var(--pmdk-size-control-sm);height:var(--pmdk-size-control-sm);gap:6px;padding-inline:9px
+}
+.pmdk-dashboard .pmdk-toolbar-export>svg {
+  width:var(--pmdk-size-icon-sm);height:var(--pmdk-size-icon-sm)
+}
+.pmdk-dashboard .pmdk-toolbar {
+  padding:12px 14px
+}
+.pmdk-dashboard .pmdk-toolbar .pmdk-search input {
+  height:var(--pmdk-size-control-md)
+}
+.pmdk-dashboard .pmdk-toolbar-control-group {
+  height:var(--pmdk-size-control-sm)
+}
+.pmdk-dashboard .pmdk-toolbar-control {
+  height:calc(var(--pmdk-size-control-sm) - 2px);gap:7px;padding-inline:10px
+}
+.pmdk-dashboard .pmdk-toolbar-control svg {
+  width:var(--pmdk-size-icon-sm);height:var(--pmdk-size-icon-sm)
+}
+.pmdk-dashboard .pmdk-toolbar-control>svg:last-child {
+  width:12px;height:12px
+}
+.pmdk-dashboard :where(.pmdk-search-field,.pmdk-select-field) {
+  height:34px;border-color:var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-search-field {
+  padding-inline:10px
+}
+.pmdk-dashboard .pmdk-search-field svg {
+  width:16px;height:16px
+}
+.pmdk-dashboard .pmdk-toolbar-select {
+  height:34px;min-width:154px;justify-content:flex-start;gap:7px;padding:0 8px;border:1px solid var(--pmdk-control-border-default);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);font-weight:var(--pmdk-font-weight-regular)
+}
+.pmdk-dashboard .pmdk-toolbar-select:hover,
+.pmdk-dashboard .pmdk-toolbar-select:focus-within {
+  border-color:var(--pmdk-control-border-hover);background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-toolbar-select:focus-within {
+  border-color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-toolbar-select>span {
+  color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-regular)
+}
+.pmdk-dashboard .pmdk-toolbar-select>select {
+  min-width:0;height:100%;flex:1;padding:0 24px 0 0;border:0;background-color:transparent;color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-regular);outline:0;cursor:pointer
+}
+
+/*
+ * @pressmaximum/dashboard-kit — filters + facets (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-filter-count {
+  min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px;border-radius:var(--pmdk-radius-pill);background:var(--pmdk-color-accent-soft);color:var(--pmdk-accent-fg,var(--pmdk-color-accent));font-size:var(--pmdk-font-size-micro);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-filter-popover {
+  width:390px;padding:0
+}
+.pmdk-dashboard .pmdk-filter-popover-head {
+  height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-filter-popover-head>strong {
+  font-size:var(--pmdk-font-size-item);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-filter-popover-head>button {
+  border:0;background:transparent;color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium);cursor:pointer
+}
+.pmdk-dashboard .pmdk-filter-popover-head>button:hover {
+  color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-filter-popover>footer {
+  min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;border-top:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-filter-popover>footer>span {
+  color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-active-filters {
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-top:10px
+}
+.pmdk-dashboard .pmdk-filter-chip {
+  max-width:240px;height:28px;display:flex;align-items:center;gap:5px;padding:0 7px 0 8px;border:0;border-radius:var(--pmdk-radius-pill);background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);cursor:pointer
+}
+.pmdk-dashboard .pmdk-filter-chip:hover {
+  background:var(--pmdk-color-row-hover);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-filter-chip>span {
+  color:var(--pmdk-color-text-soft)
+}
+.pmdk-dashboard .pmdk-filter-chip>strong {
+  min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:var(--pmdk-font-weight-medium);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-filter-chip svg {
+  width:12px;height:12px;flex:0 0 auto
+}
+.pmdk-dashboard .pmdk-clear-filters {
+  height:28px;padding:0 5px;border:0;background:transparent;color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium);cursor:pointer
+}
+.pmdk-dashboard .pmdk-clear-filters:hover {
+  color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-filter-builder {
+  min-height:46px;display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--pmdk-color-border) 72%,transparent)
+}
+.pmdk-dashboard .pmdk-filter-builder>.pmdk-clear-filters {
+  margin-left:auto
+}
+.pmdk-dashboard .pmdk-filter-builder-label {
+  flex:0 0 auto;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-filter-facets {
+  min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap
+}
+.pmdk-dashboard .pmdk-filter-facet {
+  position:relative
+}
+.pmdk-dashboard .pmdk-filter-facet+.pmdk-filter-facet {
+  border-left:0
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger {
+  max-width:230px;height:34px;display:flex;align-items:center;gap:6px;padding:0 9px;border:1px solid var(--pmdk-color-border);border-radius:4px;background:var(--pmdk-color-surface);color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium);cursor:pointer
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger:hover,
+.pmdk-dashboard .pmdk-filter-facet-trigger[aria-expanded=true] {
+  border-color:var(--pmdk-color-border-strong);background:var(--pmdk-color-row-hover);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger.is-active {
+  border-color:var(--pmdk-color-accent-border);background:var(--pmdk-color-accent-soft);color:var(--pmdk-accent-fg)
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger>strong {
+  min-width:0;max-width:128px;overflow:hidden;text-overflow:ellipsis;font-weight:var(--pmdk-font-weight-semibold);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger>svg {
+  width:11px;height:11px;flex:0 0 auto;color:currentColor;opacity:.72
+}
+.pmdk-dashboard .pmdk-facet-popover {
+  right:auto;left:0;width:320px;padding:0
+}
+.pmdk-dashboard .pmdk-filter-facet:nth-last-child(-n+2) .pmdk-facet-popover {
+  right:0;left:auto
+}
+.pmdk-dashboard .pmdk-filter-popover-head>span {
+  min-width:0
+}
+.pmdk-dashboard .pmdk-filter-popover-head>span>strong,
+.pmdk-dashboard .pmdk-filter-popover-head>span>small {
+  display:block
+}
+.pmdk-dashboard .pmdk-filter-popover-head>span>strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-filter-popover-head>span>small {
+  margin-top:2px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-filter-option-search {
+  position:relative;display:block;margin:10px
+}
+.pmdk-dashboard .pmdk-filter-option-search>svg {
+  position:absolute;top:50%;left:10px;width:15px;height:15px;color:var(--pmdk-color-text-soft);transform:translateY(-50%);pointer-events:none
+}
+.pmdk-dashboard .pmdk-filter-option-search>input {
+  width:100%;height:36px;padding:0 10px 0 32px;border:1px solid var(--pmdk-color-border);border-radius:4px;background:var(--pmdk-color-surface);color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-filter-option-search>input:focus {
+  border-color:var(--pmdk-color-accent);outline:2px solid var(--pmdk-color-accent-soft)
+}
+.pmdk-dashboard .pmdk-filter-option-list {
+  max-height:246px;overflow-y:auto;padding:0 6px 8px
+}
+.pmdk-dashboard .pmdk-filter-option {
+  min-height:38px;display:grid;grid-template-columns:18px minmax(0,1fr);gap:9px;align-items:center;padding:0 8px;border-radius:4px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);cursor:pointer
+}
+.pmdk-dashboard .pmdk-filter-option:hover {
+  background:var(--pmdk-color-row-hover);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-filter-option>input {
+  position:absolute;width:1px;height:1px;overflow:hidden;opacity:0
+}
+.pmdk-dashboard .pmdk-filter-option>input:checked+.pmdk-filter-checkbox {
+  border-color:var(--pmdk-color-accent);background:var(--pmdk-color-accent);color:var(--pmdk-color-on-accent)
+}
+.pmdk-dashboard .pmdk-filter-option>input:focus-visible+.pmdk-filter-checkbox {
+  outline:2px solid var(--pmdk-color-accent-soft);outline-offset:2px
+}
+.pmdk-dashboard .pmdk-filter-no-results {
+  margin:0;padding:24px 12px;text-align:center;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-filter-count {
+  color:var(--pmdk-accent-fg)
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-filter-popover {
+    width:min(390px,calc(100cqw - 52px))
+  }
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-filter-builder {
+    align-items:flex-start;flex-direction:column;gap:7px
+  }
+  .pmdk-dashboard .pmdk-filter-builder>.pmdk-clear-filters {
+    margin-left:0
+  }
+  .pmdk-dashboard .pmdk-filter-facets {
+    width:100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:3px;scrollbar-width:none
+  }
+  .pmdk-dashboard .pmdk-filter-facets::-webkit-scrollbar {
+    display:none
+  }
+  .pmdk-dashboard .pmdk-filter-facet {
+    flex:0 0 auto
+  }
+  .pmdk-dashboard .pmdk-facet-popover {
+    right:auto!important;left:0!important;width:min(320px,calc(100cqw - 40px))
+  }
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger>.pmdk-react-icon:last-child svg {
+  width:11px;height:11px
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger>.pmdk-react-icon:last-child {
+  flex:0 0 auto;color:currentColor;opacity:.72
+}
+.pmdk-dashboard .pmdk-facet-popover .pmdk-filter-option-list {
+  max-height:min(246px,22vh)
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger {
+  border-color:var(--pmdk-data-border-medium,var(--pmdk-color-border-strong));background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger:hover {
+  border-color:var(--pmdk-data-border-strong,var(--pmdk-color-border-strong));background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger.is-active {
+  border-color:var(--pmdk-color-accent-border);background:var(--pmdk-color-surface);color:var(--pmdk-accent-fg,var(--pmdk-color-accent))
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger[aria-expanded=true],
+.pmdk-dashboard .pmdk-filter-facet-trigger:focus-visible {
+  outline:0;border-color:var(--pmdk-color-accent);background:var(--pmdk-color-surface);color:var(--pmdk-color-text);box-shadow:none
+}
+.pmdk-dashboard .pmdk-filter-builder {
+  min-height:36px;gap:10px;margin-top:16px;padding:0 0 8px;border-top:0
+}
+.pmdk-dashboard .pmdk-filter-builder>.pmdk-clear-filters {
+  margin-left:0
+}
+.pmdk-dashboard .pmdk-facet-popover {
+  border:0;box-shadow:0 12px 30px color-mix(in srgb,var(--pmdk-color-inverse-surface) 11%,transparent)
+}
+.pmdk-dashboard .pmdk-facet-popover .pmdk-filter-popover-head {
+  height:auto;min-height:44px;padding:11px 12px 7px;border-bottom:0
+}
+.pmdk-dashboard .pmdk-facet-popover .pmdk-filter-popover-head>strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-facet-popover .pmdk-filter-popover-head>button {
+  height:24px;padding:0 2px
+}
+.pmdk-dashboard .pmdk-filter-option-search {
+  margin:3px 12px 8px
+}
+.pmdk-dashboard .pmdk-filter-option-search>.pmdk-react-icon {
+  position:absolute;z-index:1;top:50%;left:11px;width:16px;height:16px;display:grid;place-items:center;color:var(--pmdk-color-text-muted);line-height:0;transform:translateY(-50%);pointer-events:none
+}
+.pmdk-dashboard .pmdk-filter-option-search>.pmdk-react-icon>svg {
+  position:static;width:15px;height:15px;display:block;transform:none
+}
+.pmdk-dashboard .pmdk-filter-option-search>input {
+  border:0;background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-filter-option-search>input:focus {
+  border:0;outline:1px solid var(--pmdk-color-accent);box-shadow:none
+}
+.pmdk-dashboard .pmdk-facet-popover .pmdk-filter-option-list {
+  padding:0 6px 4px
+}
+.pmdk-dashboard .pmdk-facet-popover>footer {
+  min-height:48px;padding:6px 10px 10px;border-top:0
+}
+.pmdk-dashboard .pmdk-facet-popover {
+  width:320px;padding:0
+}
+.pmdk-dashboard .pmdk-facet-popover .pmdk-filter-popover-head {
+  min-height:56px;padding:15px 16px 10px
+}
+.pmdk-dashboard .pmdk-filter-option-search {
+  margin:4px 16px 12px
+}
+.pmdk-dashboard .pmdk-facet-popover .pmdk-filter-option-list {
+  padding:0 10px 8px
+}
+.pmdk-dashboard .pmdk-facet-popover>footer {
+  min-height:52px;padding:8px 14px 14px
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger {
+  border-color:var(--pmdk-control-border-default);background:var(--pmdk-color-surface);box-shadow:none
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger:hover {
+  border-color:var(--pmdk-control-border-hover);background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger[aria-expanded=true],
+.pmdk-dashboard .pmdk-filter-facet-trigger.is-active {
+  border-color:var(--pmdk-control-border-active);background:var(--pmdk-color-surface);color:var(--pmdk-accent-fg,var(--pmdk-color-accent));box-shadow:none
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger:focus-visible {
+  outline:0;border-color:var(--pmdk-control-border-active);box-shadow:none
+}
+.pmdk-dashboard .pmdk-filter-facet .pmdk-facet-popover,
+.pmdk-dashboard .pmdk-filter-facet:nth-last-child(-n+2) .pmdk-facet-popover {
+  right:auto;left:0;max-width:min(320px,calc(100cqw - 28px))
+}
+.pmdk-dashboard .pmdk-filter-chip {
+  height:var(--pmdk-size-control-sm);display:inline-flex;align-items:center;gap:7px;padding:0 10px;border:1px solid var(--pmdk-control-border-default);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-filter-chip:hover {
+  border-color:var(--pmdk-control-border-hover)
+}
+.pmdk-dashboard .pmdk-filter-chip svg {
+  width:13px;height:13px
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger {
+  white-space:nowrap
+}
+.pmdk-dashboard .pmdk-filter-facet-trigger>span:first-child {
+  flex:0 0 auto;white-space:nowrap
+}
+
+/*
+ * @pressmaximum/dashboard-kit — popover kit + column manager (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-popover {
+  position:absolute;z-index:80;top:50px;right:0;width:236px;padding:7px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);box-shadow:0 8px 24px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent);animation:pdPopoverIn 150ms cubic-bezier(.2,.7,.3,1)
+}
+.pmdk-dashboard .pmdk-popover-label {
+  margin:0;padding:7px 9px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);letter-spacing:.05em;text-transform:uppercase
+}
+.pmdk-dashboard .pmdk-popover a,
+.pmdk-dashboard .pmdk-popover button {
+  width:100%;min-height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 9px;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta);text-align:left;text-decoration:none
+}
+.pmdk-dashboard .pmdk-popover a:hover,
+.pmdk-dashboard .pmdk-popover button:hover {
+  background:var(--pmdk-color-row-hover)
+}
+.pmdk-dashboard .pmdk-popover a span {
+  color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-popover-separator {
+  height:1px;margin:6px 4px;background:var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-column-manager {
+  position:relative;display:flex
+}
+.pmdk-dashboard .pmdk-column-popover {
+  position:absolute;z-index:60;top:calc(100% + 8px);right:0;overflow:hidden;border:1px solid var(--pmdk-color-border);border-radius:6px;background:var(--pmdk-color-surface);box-shadow:0 14px 34px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent);animation:pdPopoverIn 140ms cubic-bezier(.2,.7,.3,1)
+}
+.pmdk-dashboard .pmdk-column-popover {
+  width:306px
+}
+.pmdk-dashboard .pmdk-column-popover>header {
+  min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-column-popover>header>span {
+  min-width:0;flex:1
+}
+.pmdk-dashboard .pmdk-column-popover>header strong,
+.pmdk-dashboard .pmdk-column-popover>header small {
+  display:block
+}
+.pmdk-dashboard .pmdk-column-popover>header strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-column-popover>header small {
+  margin-top:2px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-column-popover>header>button {
+  height:30px;padding:0 7px;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium)
+}
+.pmdk-dashboard .pmdk-column-popover>header>.pmdk-column-back {
+  width:30px;flex:0 0 30px;display:grid;place-items:center;padding:0
+}
+.pmdk-dashboard .pmdk-column-popover>header>.pmdk-column-back svg {
+  width:13px;height:13px
+}
+.pmdk-dashboard .pmdk-column-popover>header>button:hover {
+  background:var(--pmdk-color-row-hover);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-column-list {
+  max-height:410px;overflow-y:auto;padding:6px
+}
+.pmdk-dashboard .pmdk-column-option {
+  min-height:40px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;border-radius:4px
+}
+.pmdk-dashboard .pmdk-column-option:hover {
+  background:var(--pmdk-color-row-hover)
+}
+.pmdk-dashboard .pmdk-column-option>label {
+  min-width:0;height:40px;display:grid;grid-template-columns:17px minmax(0,1fr);gap:9px;align-items:center;padding:0 8px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);cursor:pointer
+}
+.pmdk-dashboard .pmdk-column-option>label>input {
+  position:absolute;width:1px;height:1px;overflow:hidden;opacity:0
+}
+.pmdk-dashboard .pmdk-column-option>label>input:checked+.pmdk-filter-checkbox {
+  border-color:var(--pmdk-color-accent);background:var(--pmdk-color-accent);color:var(--pmdk-color-on-accent)
+}
+.pmdk-dashboard .pmdk-column-option>label>input:focus-visible+.pmdk-filter-checkbox {
+  outline:2px solid var(--pmdk-color-accent-soft);outline-offset:2px
+}
+.pmdk-dashboard .pmdk-column-option>label>span:last-child {
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-column-option {
+  position:relative;z-index:0;grid-template-columns:30px minmax(0,1fr);gap:0;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-column-option.is-dragging {
+  z-index:2;box-shadow:0 8px 22px color-mix(in srgb,var(--pmdk-color-inverse-surface) 13%,transparent);opacity:.94
+}
+.pmdk-dashboard .pmdk-column-drag-handle {
+  width:30px;height:34px;display:grid;place-items:center;padding:0;border:0;border-radius:4px;background:transparent;color:var(--pmdk-color-text-soft);cursor:grab;touch-action:none
+}
+.pmdk-dashboard .pmdk-column-drag-handle:active {
+  cursor:grabbing
+}
+.pmdk-dashboard .pmdk-column-drag-handle:hover,
+.pmdk-dashboard .pmdk-column-drag-handle:focus-visible {
+  outline:0;background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-column-drag-handle svg {
+  width:14px;height:14px
+}
+.pmdk-dashboard .pmdk-column-option>label {
+  padding-left:2px
+}
+.pmdk-dashboard .pmdk-column-trigger {
+  width:42px;min-width:42px;height:42px;display:grid;place-items:center;padding:0;gap:0;line-height:0
+}
+.pmdk-dashboard .pmdk-column-manager {
+  width:42px;height:42px;align-items:center;justify-content:center
+}
+.pmdk-dashboard .pmdk-column-trigger>.pmdk-react-icon {
+  width:20px;height:20px;display:grid;place-items:center;margin:0
+}
+.pmdk-dashboard .pmdk-column-trigger {
+  box-sizing:border-box;width:42px;min-width:42px;height:42px;display:inline-grid;place-items:center;padding:0;vertical-align:middle
+}
+.pmdk-dashboard .pmdk-column-trigger>.pmdk-react-icon {
+  position:static;width:20px;height:20px;display:grid;place-items:center;line-height:0;transform:none
+}
+.pmdk-dashboard .pmdk-column-trigger>.pmdk-react-icon>svg {
+  position:static;width:19px;height:19px;display:block;transform:none
+}
+.pmdk-dashboard .pmdk-column-popover {
+  border:0;border-radius:8px;background:var(--pmdk-color-surface);box-shadow:0 8px 24px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent),0 0 0 1px color-mix(in srgb,var(--pmdk-color-inverse-surface) 5%,transparent)
+}
+.pmdk-dashboard .pmdk-column-popover {
+  width:320px
+}
+.pmdk-dashboard .pmdk-column-popover>header {
+  min-height:68px;padding:15px 16px 12px;border-bottom:0
+}
+.pmdk-dashboard .pmdk-column-popover>header>button:hover {
+  background:transparent;color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-column-popover>header>.pmdk-column-back {
+  background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-column-popover>header>.pmdk-column-back:hover {
+  background:var(--pmdk-color-row-hover);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-column-list {
+  padding:6px 10px 10px
+}
+.pmdk-dashboard .pmdk-column-option.is-required .pmdk-filter-checkbox {
+  border-color:var(--pmdk-control-border-default);background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-soft)
+}
+.pmdk-dashboard .pmdk-column-option.is-required>label {
+  cursor:default
+}
+.pmdk-dashboard .pmdk-column-option-label {
+  min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;overflow:hidden
+}
+.pmdk-dashboard .pmdk-column-option-label>span {
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-column-option-label>small {
+  flex:0 0 auto;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-micro);font-weight:var(--pmdk-font-weight-medium)
+}
+@media(prefers-reduced-motion:reduce) {
+  .pmdk-dashboard .pmdk-popover {
+    animation:none;transition:none
+  }
+}
+.pmdk-dashboard .pmdk-column-manager>.pmdk-table-actions-popover,
+.pmdk-dashboard .pmdk-column-manager>.pmdk-column-popover {
+  right:auto;inset-inline-end:0
+}
+.pmdk-dashboard .pmdk-table-options-trigger>.pmdk-icon-slot>svg,
+.pmdk-dashboard .pmdk-table-options-trigger>.pmdk-react-icon>svg {
+  width:20px;height:20px
+}
+
+/*
+ * @pressmaximum/dashboard-kit — bulk selection bar (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-bulk-bar {
+  width:100%;height:100%;min-height:38px;display:flex;align-items:center;gap:6px;padding:0;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-bulk-bar[hidden] {
+  display:none
+}
+.pmdk-dashboard .pmdk-bulk-bar>strong {
+  margin-inline-end:4px;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);font-variant-numeric:tabular-nums
+}
+.pmdk-dashboard .pmdk-bulk-actions {
+  display:flex;align-items:center;gap:2px
+}
+.pmdk-dashboard .pmdk-bulk-actions>button {
+  height:30px;padding:0 9px;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium);cursor:pointer
+}
+.pmdk-dashboard .pmdk-bulk-actions>button:hover {
+  background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-bulk-actions>button.is-danger {
+  color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-bulk-clear {
+  width:30px;height:30px;display:grid;place-items:center;margin-inline-start:auto;padding:0;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted);cursor:pointer
+}
+.pmdk-dashboard .pmdk-bulk-clear:hover {
+  background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-bulk-clear svg {
+  width:14px;height:14px
+}
+.pmdk-dashboard .pmdk-bulk-actions>button:hover {
+  background:transparent;color:var(--pmdk-color-text)
+}
+
+/*
+ * @pressmaximum/dashboard-kit — pagination footer (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-pagination {
+  min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;border-top:1px solid var(--pmdk-color-border);color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-page-controls {
+  display:flex;align-items:center;gap:4px
+}
+.pmdk-dashboard .pmdk-page-controls button {
+  width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-page-controls button:disabled {
+  opacity:.45;cursor:not-allowed
+}
+.pmdk-dashboard .pmdk-pagination {
+  min-height:46px;padding:6px 10px;border-top-color:color-mix(in srgb,var(--pmdk-color-border) 72%,transparent)
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-pagination {
+    align-items:flex-start;flex-direction:column
+  }
+}
+.pmdk-dashboard .pmdk-pagination {
+  min-height:52px;padding:8px 14px;border-top-color:var(--pmdk-data-border-medium)
+}
+.pmdk-dashboard .pmdk-page-controls button:hover:not(:disabled) {
+  border-color:var(--pmdk-data-border-strong,var(--pmdk-color-border-strong));background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-page-controls button {
+  border-color:var(--pmdk-control-border-default);background:var(--pmdk-color-surface);box-shadow:none
+}
+.pmdk-dashboard .pmdk-page-controls button:hover:not(:disabled) {
+  border-color:var(--pmdk-control-border-hover);background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-pagination-tools {
+  display:flex;align-items:center;gap:14px;margin-inline-start:auto
+}
+.pmdk-dashboard .pmdk-pagination-size {
+  display:flex;align-items:center;gap:7px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-pagination-size select {
+  height:32px;min-width:70px;padding:0 28px 0 9px;border:1px solid var(--pmdk-control-border-default);border-radius:var(--pmdk-radius-control);background-color:var(--pmdk-color-surface);color:var(--pmdk-color-text);font:inherit;cursor:pointer
+}
+.pmdk-dashboard .pmdk-pagination .pmdk-page-controls button {
+  box-sizing:border-box;border-color:transparent;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted)
+}
+@container (max-width:460px) {
+  .pmdk-dashboard .pmdk-pagination-tools {
+    width:100%;justify-content:space-between;margin-inline-start:0
+  }
+}
+
+/*
+ * @pressmaximum/dashboard-kit — status pill + row action menu (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-row-action {
+  min-width:62px;height:32px;display:inline-flex;align-items:center;justify-content:center;gap:5px;margin-inline-start:auto;padding:0 8px;border:1px solid var(--pmdk-color-border-strong);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);cursor:pointer
+}
+.pmdk-dashboard .pmdk-row-action:hover {
+  border-color:var(--pmdk-color-accent-border,var(--pmdk-color-accent));background:var(--pmdk-color-accent-soft);color:var(--pmdk-accent-fg,var(--pmdk-color-accent))
+}
+.pmdk-dashboard .pmdk-row-action svg {
+  width:11px;height:11px
+}
+.pmdk-dashboard .pmdk-row-actions {
+  position:relative;display:flex;justify-content:center
+}
+.pmdk-dashboard .pmdk-row-action-menu {
+  position:absolute;z-index:18;top:calc(100% + 5px);right:0;width:196px;padding:6px;border:0;border-radius:8px;background:var(--pmdk-color-surface);box-shadow:0 8px 24px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent),0 0 0 1px color-mix(in srgb,var(--pmdk-color-inverse-surface) 5%,transparent)
+}
+.pmdk-dashboard .pmdk-row-action-menu.is-floating {
+  position:fixed;z-index:120;right:auto;bottom:auto
+}
+.pmdk-dashboard[dir=rtl] .pmdk-row-action-menu {
+  right:auto;left:0
+}
+.pmdk-dashboard .pmdk-row-actions.opens-up .pmdk-row-action-menu {
+  top:auto;bottom:calc(100% + 5px)
+}
+.pmdk-dashboard .pmdk-row-action-menu>button {
+  width:100%;min-height:36px;display:flex;align-items:center;gap:9px;padding:0 9px;border:0;border-radius:6px;background:transparent;color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-regular);text-align:start;cursor:pointer
+}
+.pmdk-dashboard .pmdk-row-action-menu>button:hover,
+.pmdk-dashboard .pmdk-row-action-menu>button:focus-visible {
+  outline:0;background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-row-action-menu>button.is-danger {
+  color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-row-action-menu>button:disabled {
+  opacity:.42;cursor:not-allowed
+}
+.pmdk-dashboard .pmdk-row-action-menu>button>.pmdk-react-icon,
+.pmdk-dashboard .pmdk-row-action-menu>button svg {
+  width:16px;height:16px;flex:0 0 16px
+}
+.pmdk-dashboard .pmdk-row-action-separator {
+  height:1px;margin:5px 7px;background:var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-status {
+  --pmdk-status-tone:var(--pmdk-color-info);--pmdk-status-fill:7%;--pmdk-status-stroke:20%;height:24px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;border:1px solid color-mix(in srgb,var(--pmdk-status-tone) var(--pmdk-status-stroke),var(--pmdk-color-border));border-radius:6px;background:color-mix(in srgb,var(--pmdk-status-tone) var(--pmdk-status-fill),var(--pmdk-color-surface));color:color-mix(in srgb,var(--pmdk-status-tone) 76%,var(--pmdk-color-text));font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-medium);line-height:1;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-status svg {
+  width:13px;height:13px;flex:0 0 auto
+}
+.pmdk-dashboard .pmdk-status.confirmed {
+  --pmdk-status-tone:var(--pmdk-color-success)
+}
+.pmdk-dashboard .pmdk-status.pending {
+  --pmdk-status-tone:var(--pmdk-color-warning)
+}
+.pmdk-dashboard .pmdk-status.completed {
+  --pmdk-status-tone:var(--pmdk-color-info)
+}
+.pmdk-dashboard .pmdk-status.cancelled {
+  --pmdk-status-tone:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-status-picker {
+  position:relative;display:inline-block;vertical-align:middle
+}
+.pmdk-dashboard .pmdk-status-picker.is-open {
+  z-index:35
+}
+.pmdk-dashboard .pmdk-status-trigger {
+  width:132px;height:30px;display:grid;grid-template-columns:16px minmax(0,1fr) 12px;align-items:center;gap:7px;padding:0 9px;text-align:left;cursor:pointer
+}
+.pmdk-dashboard .pmdk-status-trigger .pmdk-status-icon {
+  width:16px;height:16px;display:grid;place-items:center
+}
+.pmdk-dashboard .pmdk-status-trigger .pmdk-status-icon svg {
+  width:15px;height:15px
+}
+.pmdk-dashboard .pmdk-status-trigger>.pmdk-status-label {
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-status-trigger>svg:last-child {
+  width:12px;height:12px;transition:transform var(--pmdk-motion-duration-fast) var(--pmdk-motion-ease-standard)
+}
+.pmdk-dashboard .pmdk-status-trigger[aria-expanded=true]>svg:last-child {
+  transform:rotate(180deg)
+}
+.pmdk-dashboard .pmdk-status-menu {
+  position:absolute;top:calc(100% + 5px);left:0;width:176px;padding:5px;border:1px solid var(--pmdk-color-border);border-radius:6px;background:var(--pmdk-color-surface);box-shadow:0 12px 28px color-mix(in srgb,var(--pmdk-color-text) 10%,transparent)
+}
+.pmdk-dashboard .pmdk-status-picker.opens-up .pmdk-status-menu {
+  top:auto;bottom:calc(100% + 5px)
+}
+.pmdk-dashboard .pmdk-status-option {
+  --pmdk-option-tone:var(--pmdk-color-info);width:100%;height:38px;display:grid;grid-template-columns:18px minmax(0,1fr) 14px;align-items:center;gap:8px;padding:0 9px;border:0;border-radius:4px;background:transparent;color:var(--pmdk-color-text);font:inherit;font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);text-align:left;cursor:pointer
+}
+.pmdk-dashboard .pmdk-status-option:hover,
+.pmdk-dashboard .pmdk-status-option:focus-visible {
+  outline:0;background:var(--pmdk-color-row-hover)
+}
+.pmdk-dashboard .pmdk-status-option-icon,
+.pmdk-dashboard .pmdk-status-option-check {
+  display:grid;place-items:center
+}
+.pmdk-dashboard .pmdk-status-option-icon {
+  color:var(--pmdk-option-tone)
+}
+.pmdk-dashboard .pmdk-status-option-check {
+  color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-status-option svg {
+  width:15px;height:15px
+}
+.pmdk-dashboard .pmdk-status-option.confirmed {
+  --pmdk-option-tone:var(--pmdk-color-success)
+}
+.pmdk-dashboard .pmdk-status-option.pending {
+  --pmdk-option-tone:var(--pmdk-color-warning)
+}
+.pmdk-dashboard .pmdk-status-option.completed {
+  --pmdk-option-tone:var(--pmdk-color-info)
+}
+.pmdk-dashboard .pmdk-status-option.cancelled {
+  --pmdk-option-tone:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-status {
+  --pmdk-status-fill:9%;--pmdk-status-stroke:22%;height:28px;padding:0 8px;border:1px solid color-mix(in srgb,var(--pmdk-status-tone) var(--pmdk-status-stroke),var(--pmdk-color-border));border-radius:4px;background:color-mix(in srgb,var(--pmdk-status-tone) var(--pmdk-status-fill),var(--pmdk-color-surface));color:color-mix(in srgb,var(--pmdk-status-tone) 82%,var(--pmdk-color-text));font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-status-trigger:hover,
+.pmdk-dashboard .pmdk-status-trigger[aria-expanded=true] {
+  --pmdk-status-fill:14%;--pmdk-status-stroke:38%
+}
+.pmdk-dashboard .pmdk-status:not(.pmdk-status-trigger):not(.is-custom-label) {
+  width:108px;justify-content:center
+}
+.pmdk-dashboard .pmdk-status-trigger {
+  width:132px;height:30px;display:grid;padding:0 9px
+}
+.pmdk-dashboard .pmdk-status svg {
+  width:14px;height:14px
+}
+.pmdk-dashboard .pmdk-status-trigger>.pmdk-react-icon:last-child svg {
+  width:12px;height:12px;transition:transform var(--pmdk-motion-duration-fast) var(--pmdk-motion-ease-standard)
+}
+.pmdk-dashboard .pmdk-status-trigger[aria-expanded=true]>.pmdk-react-icon:last-child svg {
+  transform:rotate(180deg)
+}
+.pmdk-dashboard .pmdk-status {
+  --pmdk-status-fill:8%;--pmdk-status-stroke:0%;border-color:transparent;box-shadow:none
+}
+.pmdk-dashboard .pmdk-status-trigger:hover,
+.pmdk-dashboard .pmdk-status-trigger[aria-expanded=true] {
+  --pmdk-status-fill:12%;--pmdk-status-stroke:0%;border-color:transparent
+}
+.pmdk-dashboard .pmdk-row-action:hover {
+  border-color:var(--pmdk-data-border-strong,var(--pmdk-color-border-strong));background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-status-menu {
+  border:0;border-radius:8px;background:var(--pmdk-color-surface);box-shadow:0 8px 24px color-mix(in srgb,var(--pmdk-color-inverse-surface) 12%,transparent),0 0 0 1px color-mix(in srgb,var(--pmdk-color-inverse-surface) 5%,transparent)
+}
+.pmdk-dashboard .pmdk-status-menu {
+  width:180px;padding:8px
+}
+.pmdk-dashboard .pmdk-status-option:hover,
+.pmdk-dashboard .pmdk-status-option:focus-visible {
+  background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-row-action {
+  border-color:var(--pmdk-control-border-default);background:var(--pmdk-color-surface);box-shadow:none
+}
+.pmdk-dashboard .pmdk-row-action:hover {
+  border-color:var(--pmdk-control-border-hover);background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-row-action:focus-visible {
+  outline:0;border-color:var(--pmdk-control-border-active);box-shadow:none
+}
+.pmdk-dashboard .pmdk-row-action {
+  height:var(--pmdk-size-control-sm)
+}
+/* Kebab/options triggers are transparent at rest and get a neutral fill only
+   on hover/open (DESIGN-SYSTEM: tables). Explicit classes, not :where() —
+   the mockup's flattened v2 tier relied on extra scope specificity to beat
+   the labelled `.pmdk-row-action` base; here source order does that job. */
+.pmdk-dashboard .pmdk-row-action-icon,
+.pmdk-dashboard .pmdk-table-options-trigger {
+  width:34px;min-width:34px;height:34px;min-height:34px;padding:0;border-color:transparent;background:transparent;color:var(--pmdk-color-text);opacity:1
+}
+.pmdk-dashboard .pmdk-row-action-icon:hover,
+.pmdk-dashboard .pmdk-table-options-trigger:hover,
+.pmdk-dashboard .pmdk-row-action-icon[aria-expanded=true],
+.pmdk-dashboard .pmdk-table-options-trigger[aria-expanded=true] {
+  border-color:transparent;background:var(--pmdk-color-surface-muted)
+}
+.pmdk-dashboard .pmdk-row-action-icon>svg,
+.pmdk-dashboard .pmdk-row-action-icon>.pmdk-react-icon>svg,
+.pmdk-dashboard .pmdk-table-options-trigger>svg {
+  width:20px;height:20px
+}
+
+/*
+ * @pressmaximum/dashboard-kit — five production states + empty (KIT-P3 slice 2)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-inline-empty,
+.pmdk-dashboard .pmdk-state-panel {
+  min-height:320px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:40px;text-align:center
+}
+.pmdk-dashboard .pmdk-inline-empty>span,
+.pmdk-dashboard .pmdk-state-icon {
+  width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-inline-empty svg,
+.pmdk-dashboard .pmdk-state-icon svg {
+  width:25px;height:25px
+}
+.pmdk-dashboard .pmdk-state-icon.is-error {
+  background:var(--pmdk-color-danger-subtle);color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-inline-empty h2,
+.pmdk-dashboard .pmdk-state-panel h2 {
+  margin:15px 0 0;font-size:var(--pmdk-font-size-subheading)
+}
+.pmdk-dashboard .pmdk-inline-empty p,
+.pmdk-dashboard .pmdk-state-panel p {
+  max-width:480px;margin:6px 0 16px;color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-state-loading {
+  align-items:stretch;text-align:start
+}
+.pmdk-dashboard .pmdk-state-skeleton-head {
+  display:flex;justify-content:space-between;margin-bottom:20px
+}
+.pmdk-dashboard .pmdk-state-skeleton-head i {
+  width:180px;height:40px;border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-state-skeleton-head i:last-child {
+  width:260px
+}
+.pmdk-dashboard .pmdk-state-skeleton-grid {
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1
+}
+/* Sizing only — the shimmer animation comes from `.pmdk-skeleton` (base.css),
+   which every grid span carries. Re-declaring it here would out-specificity
+   base.css's prefers-reduced-motion override. */
+.pmdk-dashboard .pmdk-state-skeleton-grid span {
+  min-height:72px;border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface-subtle)
+}
+@container (max-width:460px) {
+  .pmdk-dashboard .pmdk-state-panel {
+    min-height:300px;padding:28px 18px
+  }
+  .pmdk-dashboard .pmdk-state-skeleton-grid {
+    grid-template-columns:1fr
+  }
+  .pmdk-dashboard .pmdk-state-skeleton-grid span:nth-child(n+5) {
+    display:none
+  }
+}
+
+.pmdk-dashboard .pmdk-empty {
+  display:grid;place-items:center;min-height:260px;padding:40px;text-align:center
+}
+.pmdk-dashboard .pmdk-empty svg {
+  width:28px;height:28px;color:var(--pmdk-color-text-soft)
+}
+.pmdk-dashboard .pmdk-empty h2,
+.pmdk-dashboard .pmdk-empty p {
+  margin:0
+}
+.pmdk-dashboard .pmdk-empty h2 {
+  margin-top:12px;font-size:var(--pmdk-font-size-body)
+}
+.pmdk-dashboard .pmdk-empty p {
+  margin-top:4px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-empty {
+  min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:44px 24px;text-align:center
+}
+.pmdk-dashboard .pmdk-empty>.pmdk-react-icon {
+  width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted);line-height:0
+}
+.pmdk-dashboard .pmdk-empty>.pmdk-react-icon>svg {
+  width:28px;height:28px;display:block
+}
+.pmdk-dashboard .pmdk-empty h2 {
+  margin-top:16px
+}
+.pmdk-dashboard .pmdk-empty p {
+  margin-top:6px
+}
+
+/*
+ * @pressmaximum/dashboard-kit — primitives stylesheet (KIT-P3, slices 1 + 2)
+ *
+ * Public export:  @pressmaximum/dashboard-kit/primitives/style.css
+ * Chassis class:  .pmdk-dashboard  (the DashboardShell root)
+ *
+ * The route-neutral component layer distilled from the Aponto plugin-dashboard
+ * mockup `.pd-*` design system and neutralised onto the kit `--pmdk-*` token
+ * API. It is a SEPARATE export from core `style.css`, so consumers that only
+ * import core (Blocksify, Customify) get zero look-change on a version bump —
+ * only Aponto / PressListing opt into these primitives.
+ *
+ * Browser floor for this sheet: `:has()` + container queries + `color-mix()`
+ * (compact-field label float, status-cell overflow, dense list layout). OK for
+ * wp-admin 2026 — recorded in README/SPEC §16.
+ *
+ * Slice 1 (fields & controls): buttons, compact field kit, combobox, money +
+ * colour fields. Slice 2 (data table tier): table shell, toolbar/search/filters,
+ * popover kit + column manager, bulk bar, pagination, status/row-action menus,
+ * five production states.
+ *
+ * Import order is the cascade contract: base foundations, then slice 1, then the
+ * slice 2 data-table tier (later slices only add specificity, never fight it).
+ */
+
+/* --- base foundations ----------------------------------------------------- */
+
+/* --- slice 1: fields & controls ------------------------------------------- */
+
+/* --- slice 2: data table tier --------------------------------------------- */
+
+
+/*# sourceMappingURL=style.css.map*/

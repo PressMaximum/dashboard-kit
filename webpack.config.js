@@ -90,11 +90,31 @@ export default ( env, argv ) => {
 				__dirname,
 				'src/editor-helpers/index.mjs'
 			),
+			// KIT-P3 headless behavior modules (combobox, tablist nav). No CSS
+			// import here on purpose — the primitive CSS ships in the separate
+			// `primitives/style` entry below, so this stays a pure-JS chunk and
+			// its MiniCssExtract name can never collide with `primitives/style.css`.
+			'primitives/index': path.resolve(
+				__dirname,
+				'src/primitives/index.mjs'
+			),
+			// KIT-P3 data-table component (<PMDKDataTable>). Bundles
+			// @tanstack/react-table + @dnd-kit/* (NOT externalized) so consumers
+			// import `@pressmaximum/dashboard-kit/table` with zero extra install;
+			// react/react-dom/@wordpress/* stay external. Opt-in + separate from
+			// core, so Blocksify/Customify never pull this weight.
+			'table/index': path.resolve( __dirname, 'src/table/index.mjs' ),
 			// Opt-in app theme — pure-CSS entry. Emits `build/themes/app.css`
 			// only; the JS stub webpack generates for a CSS entry is dropped
 			// by RemoveCssEntryJsStubPlugin below (no JS export path exists
 			// for the theme — consumers import the .css directly).
 			'themes/app': path.resolve( __dirname, 'src/themes/app.css' ),
+			// Opt-in primitives stylesheet — pure-CSS entry (slices 1 + 2).
+			// Emits `build/primitives/style.css`; JS stub dropped below.
+			'primitives/style': path.resolve(
+				__dirname,
+				'src/primitives/style.css'
+			),
 		},
 		output: {
 			path: path.resolve( __dirname, 'build' ),
@@ -174,11 +194,19 @@ export default ( env, argv ) => {
 					if ( chunk.name === 'themes/app' ) {
 						return 'themes/app.css';
 					}
+					// The primitives sheet ships as a named file too, matching
+					// its self-describing export `primitives/style.css`.
+					if ( chunk.name === 'primitives/style' ) {
+						return 'primitives/style.css';
+					}
 					const dir = chunk.name.replace( /\/index$/, '' );
 					return `${ dir }/style.css`;
 				},
 			} ),
-			new RemoveCssEntryJsStubPlugin( [ 'themes/app.mjs' ] ),
+			new RemoveCssEntryJsStubPlugin( [
+				'themes/app.mjs',
+				'primitives/style.mjs',
+			] ),
 		],
 		optimization: {
 			minimize: isProd,

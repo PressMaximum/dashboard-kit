@@ -1,0 +1,43 @@
+/*
+ * @pressmaximum/dashboard-kit — primitives stylesheet (KIT-P3, slices 1 + 2)
+ *
+ * Public export:  @pressmaximum/dashboard-kit/primitives/style.css
+ * Chassis class:  .pmdk-dashboard  (the DashboardShell root)
+ *
+ * The route-neutral component layer distilled from the Aponto plugin-dashboard
+ * mockup `.pd-*` design system and neutralised onto the kit `--pmdk-*` token
+ * API. It is a SEPARATE export from core `style.css`, so consumers that only
+ * import core (Blocksify, Customify) get zero look-change on a version bump —
+ * only Aponto / PressListing opt into these primitives.
+ *
+ * Browser floor for this sheet: `:has()` + container queries + `color-mix()`
+ * (compact-field label float, status-cell overflow, dense list layout). OK for
+ * wp-admin 2026 — recorded in README/SPEC §16.
+ *
+ * Slice 1 (fields & controls): buttons, compact field kit, combobox, money +
+ * colour fields. Slice 2 (data table tier): table shell, toolbar/search/filters,
+ * popover kit + column manager, bulk bar, pagination, status/row-action menus,
+ * five production states.
+ *
+ * Import order is the cascade contract: base foundations, then slice 1, then the
+ * slice 2 data-table tier (later slices only add specificity, never fight it).
+ */
+
+/* --- base foundations ----------------------------------------------------- */
+@import './base.css';
+
+/* --- slice 1: fields & controls ------------------------------------------- */
+@import './buttons.css';
+@import './fields.css';
+@import './combobox.css';
+@import './money-field.css';
+
+/* --- slice 2: data table tier --------------------------------------------- */
+@import './table.css';
+@import './toolbar.css';
+@import './filters.css';
+@import './column-manager.css';
+@import './bulk-bar.css';
+@import './pagination.css';
+@import './status.css';
+@import './states.css';
