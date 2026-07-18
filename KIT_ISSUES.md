@@ -30,8 +30,7 @@ consumer commit messages + workaround code comments can reference it.
 
 | Issue | Symptom | Root cause | Consumer workaround | Proper kit fix | Target | Discovered |
 |---|---|---|---|---|---|---|
-
-_(none — the K-012/K-013/K-014/K-015/K-017 sweep closed in KIT-P4, below)_
+| `K-019` table-prebuilt-inlines-prod-jsx-runtime | Consuming the prebuilt `build/table/index.mjs` under a DEV React (WP `SCRIPT_DEBUG`) fires "unique key" warnings on every kit static-children array (false positives — source markup is correct, `renderSlot` auto-keys shipped in 0.2.0), and duplicates `@tanstack/react-table` + `dnd-kit` if the consumer also bundles them. | The table entry's build inlines a **production** `react/jsx-runtime` (`t.jsx=t.jsxs=u`) instead of externalizing it — prod `jsx()` emits static children without the dev-runtime's `jsxs` static marker, so a dev React validates them as dynamic arrays. | Aponto B4b: webpack alias `@pressmaximum/dashboard-kit/table$` → the tag's `src/table/index.mjs` + a scoped babel rule — JSX recompiles through the external dev-aware `react-jsx-runtime` (auto-added to `admin.asset.php`) and the inlined dep copies dedupe (admin.js 151.7→124.5 KB gz). | Externalize `react/jsx-runtime` (and consider `@tanstack/react-table`/`@dnd-kit/*` as externals-with-fallback) in the `table` entry build; consumers then drop the alias. | `0.2.1` | Aponto B4b, 2026-07-18 |
 
 ## Closed issues
 
