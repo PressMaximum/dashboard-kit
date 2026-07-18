@@ -1,0 +1,91 @@
+/*
+ * KIT-P4 gate evidence bridge (TEST ASSET — not shipped, not a consumer
+ * file).
+ *
+ * Purpose: render the Aponto mockup gallery + bookings route THROUGH the
+ * kit's `.pmdk-theme-app` values, as founder-gate evidence that the
+ * packaged theme carries the DS look. The capture harness injects, in
+ * order: build/style.css (token API + tone engine), build/themes/app.css
+ * (theme seeds/weights/component rules), then this sheet — and stamps
+ * `pmdk-theme-app` (+ `data-pmdk-color-scheme`) on the mockup's token
+ * scope element (`<body class="ap-token-scope">`).
+ *
+ * This sheet re-points the mockup's CONSUMED `--ap-*` seeds at the
+ * kit-theme `--pmdk-*` values. The mockup's own token sheet declares
+ * everything inside `:where(...)` (zero specificity), so these
+ * single-class declarations take over seed authority; every derived
+ * `--ap-*` role then recomputes from the kit-driven seeds on the same
+ * element. Values with no kit equivalent (layout widths, step motion,
+ * v2 shadows, checkbox glyph, legacy aliases) deliberately stay with the
+ * mockup — the same stays-in-bridge catalogue as the KIT-P2 consumer
+ * bridge.
+ *
+ * The accent seed mirrors the CONSUMER-BRIDGE responsibility (the theme
+ * deliberately ships no brand accent): pinned to the reviewed "deep"
+ * preset #3366FF, on-accent white.
+ */
+
+.ap-token-scope {
+	/* Consumer-bridge accent seed (no .pmdk-dashboard root on this page). */
+	--pmdk-color-accent: #3366ff;
+
+	/* Seeds → kit theme. */
+	--ap-color-accent: var( --pmdk-color-accent );
+	--ap-color-on-accent: var( --pmdk-color-on-accent );
+	--ap-color-surface: var( --pmdk-color-surface );
+	--ap-color-canvas: var( --pmdk-color-canvas );
+	--ap-color-text: var( --pmdk-color-text );
+	--ap-color-danger: var( --pmdk-color-danger );
+	--ap-color-success: var( --pmdk-color-success );
+	--ap-color-warning: var( --pmdk-color-warning );
+	--ap-color-info: var( --pmdk-color-info );
+	--ap-color-inverse-surface: var( --pmdk-color-inverse-surface );
+	--ap-color-on-inverse: var( --pmdk-color-on-inverse );
+
+	/* Tone weights → kit theme (drive every derived --ap-* role). */
+	--ap-tone-text-muted: var( --pmdk-tone-text-muted );
+	--ap-tone-text-soft: var( --pmdk-tone-text-soft );
+	--ap-tone-surface-subtle: var( --pmdk-tone-surface-subtle );
+	--ap-tone-surface-muted: var( --pmdk-tone-surface-muted );
+	--ap-tone-avatar-surface: var( --pmdk-tone-avatar-surface );
+	--ap-tone-border: var( --pmdk-tone-border );
+	--ap-tone-border-strong: var( --pmdk-tone-border-strong );
+	--ap-tone-accent-subtle: var( --pmdk-tone-accent-subtle );
+	--ap-tone-accent-soft: var( --pmdk-tone-accent-soft );
+	--ap-tone-accent-border: var( --pmdk-tone-accent-border );
+
+	/* Type roles → kit theme scale. */
+	--ap-font-size-badge: var( --pmdk-font-size-badge );
+	--ap-font-size-micro: var( --pmdk-font-size-micro );
+	--ap-font-size-caption: var( --pmdk-font-size-caption );
+	--ap-font-size-meta: var( --pmdk-font-size-meta );
+	--ap-font-size-body: var( --pmdk-font-size-base );
+	--ap-font-size-item: var( --pmdk-font-size-item );
+	--ap-font-size-control: var( --pmdk-font-size-control );
+	--ap-font-size-subheading: var( --pmdk-font-size-subheading );
+	--ap-font-size-heading: var( --pmdk-font-size-heading );
+	--ap-font-size-field-label: var( --pmdk-font-size-field-label );
+	--ap-font-size-field-value: var( --pmdk-font-size-field-value );
+	--ap-font-weight-regular: var( --pmdk-font-weight-regular );
+	--ap-font-weight-medium: var( --pmdk-font-weight-medium );
+	--ap-font-weight-semibold: var( --pmdk-font-weight-semibold );
+	--ap-line-height-body: var( --pmdk-line-height-body );
+	--ap-line-height-compact: var( --pmdk-line-height-compact );
+	--ap-line-height-title: var( --pmdk-line-height-title );
+	--ap-letter-spacing-title: var( --pmdk-letter-spacing-title );
+
+	/* Shape + control geometry → kit theme. */
+	--ap-radius-control: var( --pmdk-radius-control );
+	--ap-radius-surface: var( --pmdk-radius-card );
+	--ap-radius-pill: var( --pmdk-radius-pill );
+	--ap-size-control-sm: var( --pmdk-size-control-sm );
+	--ap-size-control-md: var( --pmdk-size-control-md );
+	--ap-size-control-lg: var( --pmdk-size-control-lg );
+	--ap-size-field-compact: var( --pmdk-size-field-compact );
+	--ap-size-field-relationship: var( --pmdk-size-field-relationship );
+	--ap-size-field-compact-notes: var( --pmdk-size-field-compact-notes );
+	--ap-size-hit-target: var( --pmdk-size-hit-target );
+	--ap-size-icon-sm: var( --pmdk-size-icon-sm );
+	--ap-size-icon-md: var( --pmdk-size-icon-md );
+	--ap-size-icon-lg: var( --pmdk-size-icon-lg );
+}
