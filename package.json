@@ -1,6 +1,6 @@
 {
   "name": "@pressmaximum/dashboard-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reusable WordPress admin dashboard SPA infrastructure: hash router, tab strip, settings form, welcome onboarding, list views, fullscreen editor handoff. Distilled from Blocksify Free.",
   "license": "GPL-2.0-or-later",
   "author": "PressMaximum",

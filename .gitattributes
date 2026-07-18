@@ -1,8 +1,10 @@
-# export-ignore: excluded from `git archive` output and Composer dist
-# downloads (Packagist / `composer install --prefer-dist`).
-#
-# Composer consumers only need `includes/` (PSR-4 autoload) + composer.json +
-# LICENSE. Everything below is npm-side or dev-only.
+# export-ignore: excluded from `git archive` output — which feeds BOTH
+# Composer dist downloads AND npm `github:` tarballs (codeload). The archive
+# must therefore stay npm-complete: package.json + everything the package.json
+# `files` list ships (build/, src/, CHANGELOG.md) MUST NOT be ignored here —
+# ignoring package.json breaks `npm install github:…` with a "tarball seems to
+# be corrupted" error and forces a git-over-ssh fallback (needs an SSH key).
+# Only dev-/tooling-only paths belong below.
 
 /.editorconfig     export-ignore
 /.eslintrc.cjs     export-ignore
@@ -11,15 +13,11 @@
 /.gitignore        export-ignore
 /.prettierrc.cjs   export-ignore
 /.storybook        export-ignore
-/CHANGELOG.md      export-ignore
 /KIT_ISSUES.md     export-ignore
-/build             export-ignore
 /docs              export-ignore
-/package.json      export-ignore
 /package-lock.json export-ignore
 /packages          export-ignore
 /phpunit.xml.dist  export-ignore
-/src               export-ignore
 /stories           export-ignore
 /tests             export-ignore
 /tsconfig.json     export-ignore
