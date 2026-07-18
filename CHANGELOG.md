@@ -10,6 +10,19 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-07-18
+
+### Fixed
+
+- **`git archive` output is npm-complete again.** `.gitattributes` no longer
+  `export-ignore`s `package.json`, `build/`, `src/`, and `CHANGELOG.md` — the
+  same archive feeds Composer dists AND npm `github:` tarballs (codeload), and
+  stripping `package.json` made `npm install github:PressMaximum/dashboard-kit`
+  fail with *"tarball data … seems to be corrupted"*, silently falling back to
+  a git-over-ssh clone (which requires an SSH key — broken on CI runners).
+  The repo is public as of 2026-07-18, so both ecosystems now install
+  anonymously.
+
 ## [0.1.0] — 2026-06-04
 
 ### Changed
