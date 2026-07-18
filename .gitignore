@@ -48,4 +48,5 @@ _ref/
 .eslintcache
 .stylelintcache
 .vitest-cache/
+.phpunit.result.cache
 _ref/

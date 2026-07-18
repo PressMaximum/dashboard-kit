@@ -86,6 +86,10 @@
 	--pmdk-hero-bg: #ffffff;
 	--pmdk-hero-radius: var( --pmdk-radius-card, 8px );
 	--pmdk-hero-title-size: 28px;
+	/* K-012: border surface for consumers whose Welcome column wraps the
+	   checklist in a bordered Card and wants the Hero to match. Default
+	   keeps the K-003 flat-on-tinted-chassis look. */
+	--pmdk-hero-border: 0;
 
 	/* Compare table -------------------------------------------------- */
 	--pmdk-compare-head-bg: #fff;
@@ -295,7 +299,13 @@ body.wp-admin,
 		var( --pmdk-color-accent ) var( --pmdk-tone-accent-border ),
 		var( --pmdk-color-border )
 	);
-	/* Readable foreground for accent-tinted-on-surface text (mockup `--pd-color-accent-fg`). */
-	--pmdk-accent-fg: color-mix( in srgb, var( --pmdk-color-accent ) 62%, var( --pmdk-color-text ) );
+	/* Readable foreground for accent-tinted-on-surface text (mockup
+	   `--pd-color-accent-fg`). 78% is the v2/founder-final weight
+	   (plugin-dashboard.css line ~104, `[data-ap-visual=v2] .ap-admin`);
+	   the 62% first shipped in KIT-P3 was the dead base-tier declaration
+	   the v2 flatten should have replaced — corrected in KIT-P4 before
+	   the 0.2.0 tag (no shipped consumer imports the primitives tier
+	   yet, so this is an extraction-drift fix, not a break). */
+	--pmdk-accent-fg: color-mix( in srgb, var( --pmdk-color-accent ) 78%, var( --pmdk-color-text ) );
 	--pmdk-control-border-active: var( --pmdk-color-accent );
 }

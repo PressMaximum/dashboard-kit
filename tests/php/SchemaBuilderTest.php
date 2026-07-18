@@ -207,6 +207,79 @@ final class SchemaBuilderTest extends TestCase {
 		$this->assertSame( 'hello evil()', $out['g']['t'] );
 	}
 
+	/* ---------------- sanitize() + $current (partial-body reset fix) --- */
+
+	public function test_sanitize_absent_fields_fall_back_to_current_before_defaults(): void {
+		$builder = SchemaBuilder::create()
+			->panel( 'a', 'A' )
+			->booleanField( 'flag', 'Flag', false )
+			->textField( 'note', 'Note', 'default-note' )
+			->endPanel()
+			->panel( 'b', 'B' )
+			->numberField( 'n', 'N', 5, array( 'min' => 0, 'max' => 10 ) );
+
+		$current = array(
+			'a' => array(
+				'flag' => true,
+				'note' => 'saved-note',
+			),
+			'b' => array( 'n' => 9 ),
+		);
+
+		// Partial body touches only a.note — every absent field keeps its
+		// CURRENT value instead of resetting to the field default (the
+		// pre-fix behavior wiped a.flag → false and b.n → 5).
+		$out = $builder->sanitize(
+			array( 'a' => array( 'note' => 'edited' ) ),
+			$current
+		);
+		$this->assertSame( true, $out['a']['flag'] );
+		$this->assertSame( 'edited', $out['a']['note'] );
+		$this->assertSame( 9.0, $out['b']['n'] );
+	}
+
+	public function test_sanitize_invalid_current_value_still_falls_back_to_default(): void {
+		$builder = SchemaBuilder::create()
+			->panel( 'g', 'Group' )
+			->selectField(
+				'mode',
+				'Mode',
+				'a',
+				array(
+					'a' => 'A',
+					'b' => 'B',
+				)
+			);
+
+		// A legacy-invalid stored value goes through the same coercion as
+		// incoming data — it cannot smuggle itself past the enum whitelist.
+		$out = $builder->sanitize(
+			array(),
+			array( 'g' => array( 'mode' => 'evil' ) )
+		);
+		$this->assertSame( 'a', $out['g']['mode'] );
+	}
+
+	public function test_sanitize_without_current_keeps_reset_to_defaults_behavior(): void {
+		$builder = SchemaBuilder::create()
+			->panel( 'g', 'Group' )
+			->booleanField( 'flag', 'Flag', true )
+			->textField( 'note', 'Note', 'default-note' );
+
+		// No $current (the explicit reset path): absent fields resolve to
+		// the declared defaults, exactly as before the K-fix.
+		$out = $builder->sanitize( array() );
+		$this->assertSame(
+			array(
+				'g' => array(
+					'flag' => true,
+					'note' => 'default-note',
+				),
+			),
+			$out
+		);
+	}
+
 	/* ---------------- defensive errors ---------------- */
 
 	public function test_field_outside_a_panel_throws(): void {

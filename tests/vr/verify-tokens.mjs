@@ -72,8 +72,9 @@ const EXPECTED = {
 	'--pmdk-color-accent-subtle': 'var(--ap-color-accent-subtle)',
 	'--pmdk-color-accent-soft': 'var(--ap-color-accent-soft)',
 	'--pmdk-color-accent-border': 'var(--ap-color-accent-border)',
+	// 62→78 v2-final (KIT-P4 drift fix, matches tokens.css).
 	'--pmdk-accent-fg':
-		'color-mix(insrgb,var(--ap-color-accent)62%,var(--ap-color-text))',
+		'color-mix(insrgb,var(--ap-color-accent)78%,var(--ap-color-text))',
 	'--pmdk-control-border-active': 'var(--ap-color-accent)',
 	'--pmdk-color-danger': 'var(--ap-color-danger)',
 	'--pmdk-color-danger-subtle': 'var(--ap-color-danger-subtle)',

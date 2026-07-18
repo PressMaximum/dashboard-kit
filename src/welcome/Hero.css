@@ -27,7 +27,12 @@
 	padding: var( --pmdk-hero-padding, 48px );
 	margin: 0 0 24px;
 	background: var( --pmdk-hero-bg, #ffffff );
-	border: 0;
+	/* Tokenised border surface (KIT_ISSUES K-012): flat-on-tinted-chassis
+	   default stays `0`; consumers wanting a hairline to match surrounding
+	   cards set `--pmdk-hero-border: 1px solid …` instead of overriding the
+	   class (symmetric with the K-007 tokenisation of the rest of this
+	   block). */
+	border: var( --pmdk-hero-border, 0 );
 	border-radius: var( --pmdk-hero-radius, 8px );
 }
 

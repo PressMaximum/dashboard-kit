@@ -678,6 +678,13 @@ Not a kit component — too consumer-specific in shape. Documented here as a **r
     statusSaving?: string,
   }}
 />
+// Chrome tiers (KIT-P4 unification): this is the kit's ONE save bar. The
+// markup carries the locked `.pmdk-save-bar`/`__status` classes (WP-native
+// default chrome from core style.css) AND the primitives chrome class
+// `.pmdk-save-actions` on the action cluster. Consumers importing
+// `@pressmaximum/dashboard-kit/primitives/style.css` get the DS sticky
+// chrome applied to this same component — no second save bar, no fork.
+// See §16.5 "Save bar".
 
 createSettingsStore({
   storeName: string,                        // e.g. 'customify/settings'
@@ -788,7 +795,12 @@ type ChecklistItem = {
 
 The `manualCompleted` prop is the kit's hook into the consumer's
 onboarding store — keeps the kit unaware of which store name the
-consumer registered. Typical wiring:
+consumer registered. **Completion resolution (contract, honored since
+KIT-P4): an item renders complete when `manualCompleted` is true OR the
+auto-detect `check()` passes.** The session cache holds only the
+`check()` answer, so store flips reflect instantly in both directions,
+and a completed item shows the check mark (not the spinner) while a
+background re-check runs. Typical wiring:
 
 ```js
 const completedIds = useSelect((s) => s(ONBOARDING_STORE).getCompleted());
@@ -1132,6 +1144,16 @@ add_action('rest_api_init', fn() => (new Customify_Settings_Controller())->regis
 
 Kit class handles: GET (merge saved over defaults), POST (sanitize against schema + save + return final), `{}` POST (reset to defaults). Consumer provides schema + option name + capability.
 
+**Partial-body semantics (fixed KIT-P4):** a NON-empty POST body is deep-merged
+over the currently-persisted shape before sanitizing, so fields the request
+doesn't mention keep their saved values — a partial POST (WP-CLI script, a Pro
+panel saving only its own section) no longer silently resets sibling fields to
+defaults. The empty-body (`{}`) reset contract is unchanged. For direct
+callers, `SchemaBuilder::sanitize( $incoming, $current = null )` accepts the
+optional currently-saved shape as the absent-key fallback (before defaults);
+omitting `$current` keeps the legacy absent-means-default behavior that the
+explicit reset path relies on.
+
 **Request/response shapes** (kit's contract — consumer's overrides must match):
 
 ```
@@ -1371,7 +1393,11 @@ Extraction provenance notes (review round, 2026-07-18):
   matter to manual-markup consumers; kept to stay diffable against the source.
 - `--pmdk-accent-fg` intentionally breaks the `--pmdk-color-*` naming rule —
   it is the 1:1 promotion of the mockup's `--pd-color-accent-fg` established
-  in the KIT-P2 bridge, value-identical; renaming it would desync the bridge.
+  in the KIT-P2 bridge; renaming it would desync the bridge. Its weight is
+  **78%** accent since KIT-P4 — the v2/founder-final declaration
+  (`[data-ap-visual=v2] .ap-admin`); the 62% first shipped in KIT-P3 was the
+  dead base-tier value the v2 flatten should have replaced (corrected before
+  the 0.2.0 tag; no shipped consumer imported the primitives tier).
 - The mockup's dark-preset per-status pill tuning was NOT ported: the kit's
   dark preset re-derives the status tints through the tone engine
   (`--pmdk-color-{tone}-subtle/-border/on-*` recompute against dark seeds).
@@ -1869,6 +1895,26 @@ import { EntityListPage } from '@pressmaximum/dashboard-kit/datasets';
 
 Same `mountDashboard` shape as Customify Theme; just more tabs and uses `EntityListPage` for any CPT lists Blocksify Free might add later (currently none — the only CPT lists are Pro-side).
 
+**Card-wrapped Checklist — flush heading override (K-013).** The blessed
+Welcome composition wraps the kit's `<Checklist>` in `@wordpress/components`
+`<Card><CardHeader/>…</Card>` (K-002). `@wordpress/components` paints Emotion
+`:first-of-type`/`:last-of-type` border-radius on ALL FOUR corners of
+`CardHeader` — the heading detaches from the checklist rows as a rounded chip,
+and a naive `.consumer-scope .components-card-header` override (0,2,0) loses to
+Emotion's (0,2,1). Ship this chained-class override in the consumer stylesheet
+(specificity (0,3,0) wins):
+
+```css
+.your-scope .components-card-header.components-card__header {
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+```
+
+A pre-composed `<ChecklistCard>` wrapper was considered and rejected — it
+contradicts K-002's "kit owns no chrome" stance; this snippet is the canonical
+recipe.
+
 ### 10.3 Blocksify Pro extends Blocksify Free
 
 ```js
@@ -2176,7 +2222,10 @@ adding these tokens changes nothing for existing consumers. Authoritative list:
   `--pmdk-motion-ease-standard`.
 - **Component-tier** — `--pmdk-accent-fg`, `--pmdk-control-border-{default,hover,
   active}`, `--pmdk-data-border-{strong,medium,soft}`, `--pmdk-content-gutter`,
-  `--pmdk-inspector-width`.
+  `--pmdk-inspector-width`. Component-level tokens from the K-007 tier also
+  include `--pmdk-hero-border` (default `0`; added in KIT-P4 for K-012 so a
+  consumer matches the Hero to surrounding bordered cards with one token
+  instead of a class override).
 
 `--pmdk-color-error` is now a permanent alias of the canonical `--pmdk-color-danger`
 (non-breaking rename). Each product binds its brand to this API through a thin
@@ -2206,8 +2255,39 @@ import '@pressmaximum/dashboard-kit/themes/app.css';
 <div class="pmdk-dashboard pmdk-theme-app" data-pmdk-color-scheme="dark">…</div>
 ```
 
-The theme only moves seeds + tone weights + type + radius; every derived role
-recomputes through the engine. Apply `.pmdk-theme-app` on (or above) the dashboard
+The theme moves seeds + tone weights + type + radius — every derived role
+recomputes through the engine — **and (since 0.2.0 / KIT-P4) carries the
+component-level rules that put the CORE components in the founder look**:
+
+- **DashboardShell** — canvas content plane (`--pmdk-dashboard-bg` re-seeded
+  to the canvas token), 64px surface header, DS base voice (16px/1.45 text
+  color on the chassis — required for the dark preset), 28px gutter
+  (`--pmdk-header-gutter` follows `--pmdk-content-gutter`), wide-mode main
+  padding `24px gutter 40px`. Dark lifts `.pmdk-dashboard__brand-icon` to the
+  text seed.
+- **TabStrip** — the mockup nav-button language: 15px medium muted labels,
+  hover to full text color, active = accent + semibold + 2px underline inset
+  10px (`::after`, overlapping the header divider).
+- **HelpPanel** — 44px square icon-button trigger (row-hover wash), popover at
+  the 6px card radius, caption-soft heading, 15px menu rows with the neutral
+  row-hover (accent stays a selected-state voice).
+- **ListPageHeader** — 24px medium −0.02em title, caption description;
+  `.page-title-action` renders as the DS **primary filled** button at the 40px
+  page tier (route-wide create action per the DS button table).
+- **EditorPageHeader** — 20px medium title, caption back link, pill status chip
+  on `surface-muted`.
+- **SubNav** — flat settings rail (no card chrome): 40px items at the control
+  radius, row-hover, active = `accent-subtle` wash + `--pmdk-accent-fg` text,
+  weight stays medium (DS marks selection with color, not boldness).
+- **SchemaForm** — `space-5` stack; `components-base-control` labels/help lift
+  to the field-label / caption roles.
+- **SaveBar** — status line at the 15px meta role. The full DS sticky chrome
+  is NOT theme-gated — it ships with `primitives/style.css` (see §16.5;
+  importing that sheet is the chrome opt-in, the theme class only retones).
+
+Every rule is scoped under `.pmdk-theme-app` and out-specifies the core sheets
+by one class — non-opt-in consumers keep the WP-native default byte-for-byte.
+Apply `.pmdk-theme-app` on (or above) the dashboard
 root, and set `data-pmdk-color-scheme="dark"` on that same element for the dark
 preset. Brand accent is deliberately not set by the theme — it stays with the
 consumer bridge / WP admin scheme, so one theme serves multiple brands.
@@ -2219,7 +2299,9 @@ consumer bridge / WP admin scheme, so one theme serves multiple brands.
 > no seed and will not resolve there — always keep a `body.wp-admin` or
 > `.pmdk-dashboard` element in the themed subtree.
 
-Detailed values are finalized over KIT-P3/P4.
+Values finalized in KIT-P4 (0.2.0). Founder-gate evidence:
+`tests/vr/gate-p4/` (Blocksify default zero-diff + the Aponto mockup rendered
+through the theme) and the `Core/ThemeAppCore` stories.
 
 ### 16.2 Class targeting (stable, semver-locked)
 
@@ -2288,6 +2370,12 @@ Recommended: bind kit accent to consumer's WP admin theme color so dashboards in
 
 Kit's defaults already do this; consumer only needs to override if branding diverges from WP scheme.
 
+> **Composition pitfall (K-013):** when kit components are wrapped in
+> `@wordpress/components` `<Card>`/`<CardHeader>`, Emotion's
+> `:first-/:last-of-type` radius rules can visually detach the header chip;
+> defeat them with the chained-class override documented in §10.2 — a plain
+> single-class override loses on specificity.
+
 ### 16.4 Dark mode
 
 Kit **core** stays light-only (WP admin has no native dark mode yet). The opt-in
@@ -2329,7 +2417,7 @@ the mockup `DESIGN-SYSTEM.md`):
 | Avatar (slice 4) | `.pmdk-avatar` (+ `is-large`) | One uppercase letter, one shared quiet tint — no per-record colour cycling |
 | Tabs (slice 4) | `.pmdk-section-tabs` | Peer views within a route; underline active, optional count badge span; behavior via `createTablist` |
 | Toast (slice 4) | `.pmdk-toast` (+ `show`) | Transient confirmation anchored to the workspace corner |
-| Save bar (slice 4) | `.pmdk-save-bar`, `.pmdk-save-actions` | DS chrome for the SAME class the core SaveBar component emits — re-skins it for primitives-importing consumers only. KIT-P4 unifies component + chrome (collision map: REPLACES); until then core `src/settings/SaveBar` stays untouched |
+| Save bar (slice 4, unified KIT-P4) | `.pmdk-save-bar`, `.pmdk-save-actions` | DS chrome for the SAME markup the core `<SaveBar>` component emits — since KIT-P4 the component carries `.pmdk-save-actions` on its action cluster and this sheet targets both markup dialects (`p` + `.pmdk-save-bar__status`; mockup `.pmdk-button` + the component's `.components-flex`/`.components-button` in the ≤620px stacked query). ONE component, two opt-in tiers: core-only consumers get the WP-native chrome from `src/settings/SaveBar.css`; importing `primitives/style.css` re-skins the same component with the DS sticky chrome |
 | Foundations | `.pmdk-react-icon` (icon slot), `--pmdk-checkbox-check-image` (check glyph token; override when `--pmdk-color-on-accent` is dark) | `base.css` |
 
 These classes follow the §16.2 lock-scope rule: the FAMILY names above are the

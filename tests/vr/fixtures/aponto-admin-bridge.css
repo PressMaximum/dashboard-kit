@@ -48,8 +48,11 @@
 	--pmdk-color-accent-subtle: var( --ap-color-accent-subtle );
 	--pmdk-color-accent-soft: var( --ap-color-accent-soft );
 	--pmdk-color-accent-border: var( --ap-color-accent-border );
-	/* mockup `--pd-color-accent-fg` — readable accent-on-surface text. */
-	--pmdk-accent-fg: color-mix( in srgb, var( --ap-color-accent ) 62%, var( --ap-color-text ) );
+	/* mockup `--pd-color-accent-fg` — readable accent-on-surface text.
+	   62→78 v2-final (KIT-P4 tokens.css drift fix); aponto live bridge
+	   still carries 62 — syncs at the B4b merge round, so
+	   check-bridge-sync FAILS against live until both sides land. */
+	--pmdk-accent-fg: color-mix( in srgb, var( --ap-color-accent ) 78%, var( --ap-color-text ) );
 	--pmdk-control-border-active: var( --ap-color-accent );
 
 	/* === Semantic families ======================================== */

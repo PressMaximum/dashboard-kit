@@ -94,6 +94,8 @@ export { default as ReleaseBlock } from './changelog/ReleaseBlock.jsx';
 export { default as CategoryBadge } from './changelog/CategoryBadge.jsx';
 
 /* ------------------------------------------------------------------------
- * Version stamp — flipped via release tooling once 0.1.0 ships.
+ * Version stamp — until the P9 release tooling exists, kept in sync with
+ * package.json + PHP Bootstrap::VERSION by hand at release prep (0.2.0:
+ * synced in KIT-P4 — closes the "runtime reads 0.0.0" caveat).
  * ------------------------------------------------------------------------ */
-export const __KIT_VERSION__ = '0.0.0';
+export const __KIT_VERSION__ = '0.2.0';

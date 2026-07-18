@@ -8,9 +8,100 @@ Pre-1.0 caveat: breaking changes are allowed in minor versions
 (see [docs/SPEC.md §12](docs/SPEC.md)). The 1.0 milestone locks the
 public API per the deprecation cycle in §12.2.
 
-## [Unreleased]
+## [0.2.0] — 2026-07-18 (tag pending founder gate)
 
-### 0.2.0-alpha (draft — KIT-P2 + KIT-P3 slices 1–4; KIT-P4 lands before the 0.2.0 tag)
+KIT-P2 (DS token API + opt-in app theme) + KIT-P3 slices 1–4 (primitives,
+data table, inspector tier, feedback & shell chrome, module card) +
+KIT-P4 (core components under the app theme, save-bar unification, issue
+sweep). The REVISED C contract holds: kit defaults stay WP-native and the
+0.1.x consumer surface renders pixel-identical on bump — proven by the
+real-consumer Blocksify gate (5 dashboard routes before/after, 0 diff px)
+plus the 53-shot Storybook VR matrix and the 50-shot mockup gate
+(`tests/vr/gate-p4/README.md`).
+
+#### KIT-P4 — core components wear the app theme (opt-in) + issue sweep
+
+- **Theme-app rules for the core components.** `themes/app.css` grows
+  component-level rules for DashboardShell (canvas plane, 64px surface
+  header, DS base voice), TabStrip (nav-button language: 15px medium
+  muted, hover to full text, active accent + inset 2px underline),
+  HelpPanel (44px icon-button trigger, DS menu rows), ListPageHeader
+  (24px medium −0.02em title, caption description, primary-filled
+  `.page-title-action` at the 40px page tier), EditorPageHeader, SubNav
+  (flat settings-rail: row-hover, accent-subtle active — no card
+  chrome), SchemaForm chrome (space-5 stack, field-label/help roles) and
+  the SaveBar status line. Every rule is scoped under `.pmdk-theme-app`
+  (one class above the core sheets), so non-opt-in consumers keep the
+  WP-native default byte-for-byte; values flow through the token engine
+  and retone in the same-element dark preset. The dark preset also lifts
+  the brand icon to the text seed (the core slate literal would sink).
+- **Save-bar unification (the slice-4 collision, resolved).** The core
+  `<SaveBar>` is THE one save bar: its markup now carries the primitives
+  chrome class (`.pmdk-save-actions`) alongside the locked
+  `.pmdk-save-bar`/`__status` surface, and `primitives/save-bar.css`
+  targets both markup dialects (`p` + `__status`, mockup buttons + the
+  component's `components-flex`/`components-button` internals in the
+  stacked container query). Core-only consumers see the unchanged
+  WP-native chrome (the primitives class is unstyled there — Blocksify
+  gate zero-diff); importing `primitives/style.css` re-skins the same
+  component with the DS sticky chrome. Stories:
+  `SaveBarUnifiedComponent`(+`Dark`).
+- **`--pmdk-accent-fg` corrected 62% → 78%** (extraction-drift fix): the
+  v2/founder-final weight is 78 (`plugin-dashboard.css`
+  `[data-ap-visual=v2] .ap-admin`); the 62% first shipped in KIT-P3 was
+  the dead base-tier declaration. No shipped consumer imports the
+  primitives tier yet (0.2.0 untagged), and default core surfaces never
+  consume the token — VR: 2 dark theme-app shots moved by 50px/45px,
+  re-baselined.
+- **KIT_ISSUES sweep — five open rows closed:**
+  - `K-012` hero-border-token-gap: new `--pmdk-hero-border: 0` token +
+    `Hero.css` `border: var(--pmdk-hero-border, 0)` (computed default
+    unchanged; consumers replace the class-override workaround with a
+    1-line token).
+  - `K-013` card-heading-flush-recipe: the chained-class override
+    documented in SPEC §10 (Card + CardHeader + Checklist recipe) +
+    §16.3 note.
+  - `K-014` compare-cta-wraps-button: `.pmdk-compare__cta-text` moves to
+    `flex: 1 1 0; min-width: 0` so long CTA copy wraps inside its column
+    instead of dropping the button below the text. Short copy renders
+    identically (Blocksify/story shots zero-diff).
+  - `K-015` snackbar-not-centered: the kit now centers
+    `.components-snackbar-list__notice-container` itself; Blocksify's
+    identical consumer rule becomes redundant (computed unchanged) and
+    can be dropped on bump.
+  - `K-017` list-empty-hides-filter-toolbar: fix had shipped in
+    `628ab78` (active filter/search keeps `<DataViews>` + its toolbar
+    mounted on zero matches); row now closed with 3 regression tests.
+- **Legacy bug fixes (with tests):**
+  - `<ChecklistItem>` finally HONORS `item.manualCompleted` — the
+    documented consumer-store contract was in the effect deps but never
+    in the rendered value, so store-driven completions (e.g. Blocksify's
+    Welcome checklist) never displayed as complete unless their
+    `check()` also passed. Completion is now `manualCompleted ||
+    check()` with the session cache holding only the auto-check answer
+    (flag flips reflect instantly in both directions), and a completed
+    item shows the check mark — not the spinner — while a background
+    re-check runs. 6 new tests.
+  - `SchemaBuilder::sanitize()` partial-body reset:
+    `SettingsControllerBase::writeMerged()` deep-merges a NON-empty body
+    over the persisted shape before sanitizing, so fields a partial POST
+    doesn't mention keep their saved values instead of silently
+    resetting to defaults (the kit's own JS store was unaffected — it
+    posts the full shape — but scripts/Pro-panel partial POSTs wiped
+    sibling panels). The documented `{}` ⇒ reset-to-defaults contract is
+    preserved, and `sanitize()` gains an optional `$current` fallback
+    parameter for direct callers. 5 new PHPUnit cases.
+- **VR/story infrastructure:** the Storybook matrix grows 32 → 53 shots
+  — 12 default-scope core-component locks captured from the PRE-P4 tree
+  (all zero-diff through KIT-P4), 7 `Core/ThemeAppCore` new-look stories
+  (shell default/theme/dark, settings composition, editor header) and
+  the 2 unified-save-bar shots. New `tests/vr/gate-p4/` evidence pack:
+  Blocksify before/after (5 routes, 0 diff px) + 26 theme-app shots of
+  the Aponto mockup rendered through the kit theme
+  (`capture-theme-app.mjs` + `evidence-bridge.css`).
+- Size: core entry 10.37 kB, core `style.css` 4.19 kB, `themes/app.css`
+  1.45 kB (budget 2), primitives `style.css` 13.18 kB (budget 15) gzip —
+  all budgets unchanged and green. JS tests 236, PHP 51.
 
 #### KIT-P2 — DS token API + opt-in app theme
 

@@ -8,17 +8,26 @@
  * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
  */
 
-/* COLLISION NOTE (KIT-P4 unification pending): the kit CORE also ships a
-   `.pmdk-save-bar` component (src/settings/SaveBar + core style.css). This
-   sheet re-skins that class with the DS chrome for primitives-importing
-   consumers ONLY — Blocksify/Customify (core-only) are untouched. KIT-P4
-   merges the two into one SaveBar (collision map: REPLACES); until then do
-   not restyle src/settings/SaveBar or its CSS. */
+/* UNIFIED (KIT-P4): one `.pmdk-save-bar` chrome, two markup dialects.
+   The core `<SaveBar>` component (src/settings/SaveBar) now emits the
+   primitives chrome classes alongside its locked `.pmdk-save-bar` +
+   `__status` surface — the action cluster carries `.pmdk-save-actions`,
+   and the selectors below target the component's `__status` span next to
+   the mockup-dialect `p`. Resolution of the slice-4 collision note:
+   - core-only consumers (Blocksify, Customify): this sheet is not
+     imported; the core SaveBar.css default look is untouched.
+   - primitives-importing consumers (PressListing, Aponto): these rules
+     re-skin the SAME markup the core component emits — no fork, no
+     second component. `<SaveBar>` under `primitives/style.css` IS the
+     DS save bar.
+   Chrome opt-in = importing `primitives/style.css`; `.pmdk-theme-app`
+   only retones the tokens this chrome consumes. */
 
 .pmdk-dashboard .pmdk-save-bar {
   position:sticky;z-index:10;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border:1px solid var(--pmdk-color-accent-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);box-shadow:0 -4px 16px color-mix(in srgb,var(--pmdk-color-inverse-surface) 8%,transparent)
 }
-.pmdk-dashboard .pmdk-save-bar p {
+.pmdk-dashboard .pmdk-save-bar p,
+.pmdk-dashboard .pmdk-save-bar__status {
   margin:0;font-size:var(--pmdk-font-size-meta)
 }
 .pmdk-dashboard .pmdk-save-actions {
@@ -28,7 +37,14 @@
   .pmdk-dashboard .pmdk-save-bar {
     align-items:stretch;flex-direction:column
   }
-  .pmdk-dashboard .pmdk-save-actions .pmdk-button {
-    flex:1
+  /* Component dialect: the core SaveBar nests one full-width
+     `@wordpress/components` Flex — stack it the same way the mockup
+     stacks its direct children. */
+  .pmdk-dashboard .pmdk-save-bar > .components-flex {
+    flex-direction:column;align-items:stretch;gap:12px
+  }
+  .pmdk-dashboard .pmdk-save-actions .pmdk-button,
+  .pmdk-dashboard .pmdk-save-actions .components-button {
+    flex:1;justify-content:center
   }
 }

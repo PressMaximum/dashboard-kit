@@ -30,9 +30,11 @@ final class Bootstrap {
 	/**
 	 * Current kit version. Bumped by release tooling (`npm version` script
 	 * rewrites both package.json + this constant in one pass — lands with
-	 * P9).
+	 * P9). Until that tooling exists, keep this + `__KIT_VERSION__`
+	 * (src/index.mjs) in sync with package.json by hand at release prep
+	 * (0.2.0: synced in KIT-P4 — closes the "runtime reads 0.0.0" caveat).
 	 */
-	public const VERSION = '0.0.0';
+	public const VERSION = '0.2.0';
 
 	/**
 	 * Bootstrap is purely a namespace anchor — never instantiate.

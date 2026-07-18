@@ -50,6 +50,34 @@ export const STORY_IDS = [
 	'primitives-feedbackshell--toast',
 	'primitives-feedbackshell--save-bar',
 	'primitives-feedbackshell--save-bar-theme-app-dark',
+	// KIT-P4 — default-look lock on the CORE components being rethemed.
+	// Baselines for these were captured from the PRE-P4 tree (f5839a8): the
+	// theme-app work is scoped `.pmdk-theme-app` rules, so every one of these
+	// default-scope shots must stay zero-diff through KIT-P4 (REVISED C).
+	'core-tabstrip--default',
+	'core-helppanel--default',
+	'settings-savebar--clean',
+	'settings-savebar--dirty',
+	'settings-schemaform--schema-driven',
+	'layouts-subnav--settings-panels',
+	'layouts-listpageheader--with-actions',
+	'layouts-listpageheader--with-description',
+	'layouts-editorpageheader--with-status-and-actions',
+	'welcome-hero--with-everything',
+	'welcome-checklist--default',
+	'compare-comparetable--with-footer-cta',
+	// KIT-P4 — the NEW look: core components under `.pmdk-theme-app`
+	// (light + dark) plus one unthemed shell reference, and the unified
+	// SaveBar component under the primitives chrome.
+	'core-themeappcore--shell-default',
+	'core-themeappcore--shell-theme-app',
+	'core-themeappcore--shell-theme-app-dark',
+	'core-themeappcore--settings-theme-app',
+	'core-themeappcore--settings-theme-app-dark',
+	'core-themeappcore--editor-header-theme-app',
+	'core-themeappcore--editor-header-theme-app-dark',
+	'primitives-feedbackshell--save-bar-unified-component',
+	'primitives-feedbackshell--save-bar-unified-component-dark',
 ];
 
 export const VIEWPORT = { width: 1280, height: 900 };

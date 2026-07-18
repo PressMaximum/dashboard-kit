@@ -80,10 +80,22 @@ export default function ChecklistItem( { item, labels: callerLabels } ) {
 	const cached = CHECK_CACHE.get( id );
 	const hasCached = cached !== undefined;
 
-	const [ completed, setCompleted ] = useState(
+	// Auto-detect result only — `manualCompleted` is OR-ed in below at
+	// render time rather than folded into this state/cache, so flipping
+	// the consumer's store flag reflects instantly in both directions and
+	// a manual completion can never poison the cached `check()` answer.
+	const [ autoCompleted, setAutoCompleted ] = useState(
 		hasCached ? cached : false,
 	);
 	const [ checking, setChecking ] = useState( ! hasCached );
+
+	// The item is complete when the consumer's onboarding store says so OR
+	// the auto-detect check passes. Earlier revisions only re-RAN the check
+	// when `manualCompleted` flipped but never used the flag in the
+	// completion value, so store-driven completions (the documented
+	// `manualCompleted` contract — see the docstring wiring example) never
+	// rendered as complete unless their `check()` also happened to pass.
+	const completed = Boolean( manualCompleted ) || autoCompleted;
 
 	useEffect( () => {
 		let cancelled = false;
@@ -96,7 +108,7 @@ export default function ChecklistItem( { item, labels: callerLabels } ) {
 					}
 					const boolValue = Boolean( value );
 					CHECK_CACHE.set( id, boolValue );
-					setCompleted( boolValue );
+					setAutoCompleted( boolValue );
 					setChecking( false );
 				} )
 				.catch( () => {
@@ -121,20 +133,23 @@ export default function ChecklistItem( { item, labels: callerLabels } ) {
 		( completed ? ' is-complete' : '' ) +
 		( checking ? ' is-checking' : '' );
 
+	// Completed wins over checking: a manually-completed (or cached-
+	// complete) item reads as done even while a background re-check is in
+	// flight — the spinner is only meaningful when the answer is unknown.
 	let statusLabel = labels.pending;
-	if ( checking ) {
-		statusLabel = labels.checking;
-	} else if ( completed ) {
+	if ( completed ) {
 		statusLabel = labels.completed;
+	} else if ( checking ) {
+		statusLabel = labels.checking;
 	}
 
 	let statusIndicator = (
 		<span className="pmdk-checklist__bullet" />
 	);
-	if ( checking ) {
-		statusIndicator = <Spinner />;
-	} else if ( completed ) {
+	if ( completed ) {
 		statusIndicator = <Icon icon={ checkIcon } />;
+	} else if ( checking ) {
+		statusIndicator = <Spinner />;
 	}
 
 	return (

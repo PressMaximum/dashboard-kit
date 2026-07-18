@@ -22,7 +22,7 @@ export { createOnboardingStore } from "./welcome/createOnboardingStore.js";
 export { default as CompareTable } from "./compare/CompareTable.jsx";
 export { default as ReleaseBlock } from "./changelog/ReleaseBlock.jsx";
 export { default as CategoryBadge } from "./changelog/CategoryBadge.jsx";
-export const __KIT_VERSION__: "0.0.0";
+export const __KIT_VERSION__: "0.2.0";
 export { readBoot, BootProvider, BootContext, useBoot } from "./core/BootDataLoader";
 export { readHash, navigate, useHash, useRoute, matchRoute, activeTabId, useNavigate, NavigationGuardProvider, NavigationGuardContext } from "./core/HashRouter";
 export { useDirtyState, isAnyDirty, confirmDiscardAny } from "./settings/useDirtyState.js";

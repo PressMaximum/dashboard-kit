@@ -64,6 +64,55 @@ final class FixtureSettingsController extends SettingsControllerBase {
 	}
 }
 
+/**
+ * Second fixture — sanitize delegates to a real SchemaBuilder, mirroring
+ * the documented consumer wiring. Used by the partial-body / reset tests.
+ */
+final class SchemaBackedSettingsController extends SettingsControllerBase {
+
+	protected function getNamespace(): string {
+		return 'fixture/v1';
+	}
+
+	protected function getRestBase(): string {
+		return 'schema-settings';
+	}
+
+	protected function getCapability(): string {
+		return 'manage_options';
+	}
+
+	protected function getOptionName(): string {
+		return 'fixture_schema_settings';
+	}
+
+	private function builder(): \PressMaximum\DashboardKit\Schema\SchemaBuilder {
+		return \PressMaximum\DashboardKit\Schema\SchemaBuilder::create()
+			->panel( 'performance', 'Performance' )
+			->booleanField( 'cache', 'Cache', true )
+			->numberField( 'ttl', 'TTL', 60, array( 'min' => 0, 'max' => 3600 ) )
+			->endPanel()
+			->panel( 'version', 'Version' )
+			->selectField(
+				'channel',
+				'Channel',
+				'stable',
+				array(
+					'stable' => 'Stable',
+					'beta'   => 'Beta',
+				)
+			);
+	}
+
+	protected function getDefaults(): array {
+		return $this->builder()->buildDefaults();
+	}
+
+	protected function sanitizeIncoming( array $incoming ): array {
+		return $this->builder()->sanitize( $incoming );
+	}
+}
+
 final class SettingsControllerBaseTest extends TestCase {
 
 	protected function setUp(): void {
@@ -157,5 +206,68 @@ final class SettingsControllerBaseTest extends TestCase {
 
 		$GLOBALS['pmdk_test_state']['current_user_can'] = true;
 		$this->assertTrue( ( new FixtureSettingsController() )->permission_check() );
+	}
+
+	/* ------------- partial-body reset fix (SchemaBuilder-backed) ------- */
+
+	public function test_update_item_partial_body_preserves_saved_fields(): void {
+		// Saved state diverges from every default on purpose.
+		$GLOBALS['pmdk_test_state']['options']['fixture_schema_settings'] = array(
+			'performance' => array(
+				'cache' => false,
+				'ttl'   => 600,
+			),
+			'version'     => array( 'channel' => 'beta' ),
+		);
+
+		// Partial POST touches only performance.ttl.
+		$req = new \WP_REST_Request();
+		$req->set_json_params(
+			array( 'performance' => array( 'ttl' => 120 ) )
+		);
+
+		$response = ( new SchemaBackedSettingsController() )->update_item( $req );
+
+		// Pre-fix: cache reset to true (default) and channel reset to
+		// 'stable' (default). Post-fix: both keep their SAVED values.
+		$this->assertSame( false, $response['performance']['cache'] );
+		$this->assertSame( 120.0, $response['performance']['ttl'] );
+		$this->assertSame( 'beta', $response['version']['channel'] );
+		$this->assertSame(
+			$response,
+			$GLOBALS['pmdk_test_state']['options']['fixture_schema_settings']
+		);
+	}
+
+	public function test_update_item_empty_body_still_resets_to_defaults(): void {
+		$GLOBALS['pmdk_test_state']['options']['fixture_schema_settings'] = array(
+			'performance' => array(
+				'cache' => false,
+				'ttl'   => 600,
+			),
+			'version'     => array( 'channel' => 'beta' ),
+		);
+
+		// Empty body = the documented reset contract; the merge-over-saved
+		// step must NOT resurrect saved values here.
+		$req = new \WP_REST_Request();
+		$req->set_json_params( array() );
+
+		$response = ( new SchemaBackedSettingsController() )->update_item( $req );
+
+		$this->assertSame(
+			array(
+				'performance' => array(
+					'cache' => true,
+					'ttl'   => 60.0,
+				),
+				'version'     => array( 'channel' => 'stable' ),
+			),
+			$response
+		);
+		$this->assertSame(
+			$response,
+			$GLOBALS['pmdk_test_state']['options']['fixture_schema_settings']
+		);
 	}
 }

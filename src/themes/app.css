@@ -74,6 +74,14 @@
 	   literals #e0e0e0 / #50575e for non-themed consumers). */
 	--pmdk-color-border: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-border ), var( --pmdk-color-surface ) );
 	--pmdk-color-text-muted: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-text-muted ), var( --pmdk-color-surface ) );
+
+	/* Chassis re-seeds (KIT-P4): the dashboard plane is the DS canvas
+	   (white in light, #111318 in dark) instead of WP's #ececec tint, and
+	   the shell/main gutter follows the DS content gutter. Declared here
+	   so the dark preset's canvas flip re-derives them on the same
+	   element. */
+	--pmdk-dashboard-bg: var( --pmdk-color-canvas );
+	--pmdk-header-gutter: var( --pmdk-content-gutter );
 }
 
 /*
@@ -97,4 +105,321 @@
 	--pmdk-tone-border-strong: 20%;
 	--pmdk-tone-accent-subtle: 18%;
 	--pmdk-tone-accent-soft: 24%;
+}
+
+/* =====================================================================
+ * KIT-P4 — component-level theme rules.
+ *
+ * The kit's CORE components (DashboardShell, TabStrip, HelpPanel, page
+ * headers, SubNav, SchemaForm, SaveBar) restyled to the founder look
+ * distilled from the Aponto plugin-dashboard mockup shell (`.pd-shell-*`,
+ * `.pd-nav-*`, `.pd-page-header`, `.pd-settings-*`; DESIGN-SYSTEM.md
+ * "Application shell and navigation").
+ *
+ * Mechanism: every rule is scoped under `.pmdk-theme-app`, which always
+ * out-specifies the core component sheets by one class — the WP-native
+ * default renders byte-identical for consumers that don't opt in
+ * (REVISED C). Values route through the token API so the same rules
+ * serve the light and dark presets; the only literals here are DS
+ * geometry (64px shell height, 44px nav targets, 2px underline) that the
+ * mockup also hardcodes.
+ * ===================================================================== */
+
+/* --- DashboardShell chassis ------------------------------------------ */
+
+/* Chassis base voice (mockup `.ap-admin { background: canvas; color:
+   text }`): the DS text seed + readable base scale apply at the root so
+   every descendant — page titles included — inherits correctly in both
+   schemes. Core ships no color on `.pmdk-dashboard` (wp-admin's body
+   color covers the default), so the dark preset NEEDS this. */
+.pmdk-theme-app .pmdk-dashboard {
+	color: var( --pmdk-color-text );
+	font-size: var( --pmdk-font-size-body );
+	line-height: var( --pmdk-line-height-body );
+}
+
+/* Shell header: 64px band on the surface plane (mockup .pd-shell-header).
+   Background + border-bottom already flow from tokens and retone. */
+.pmdk-theme-app .pmdk-dashboard__header {
+	min-height: 64px;
+}
+
+.pmdk-theme-app .pmdk-dashboard__brand {
+	padding: 10px 0;
+	font-size: var( --pmdk-font-size-body );
+}
+
+/* The core brand mark pins a light-mode slate literal (#1f2937) for
+   brand stability across WP admin schemes; on the dark preset's surface
+   that would vanish — follow the text seed instead. */
+.pmdk-theme-app[ data-pmdk-color-scheme='dark' ] .pmdk-dashboard__brand-icon {
+	color: var( --pmdk-color-text );
+}
+
+/* Version anchor: DS metadata voice (text-soft, micro). */
+.pmdk-theme-app .pmdk-dashboard__version {
+	color: var( --pmdk-color-text-soft );
+	font-size: var( --pmdk-font-size-micro );
+}
+
+.pmdk-theme-app .pmdk-dashboard__version:hover,
+.pmdk-theme-app .pmdk-dashboard__version:focus-visible {
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+}
+
+/* Main plane paddings: wide mode is the mockup's operational plane
+   (.pd-main: 24px / gutter / 40px). Narrow keeps the kit's reading-column
+   rhythm — the mockup has no equivalent surface — but picks up the DS
+   28px gutter via the re-seeded --pmdk-header-gutter. */
+.pmdk-theme-app .pmdk-dashboard[ data-container-width='wide' ] .pmdk-dashboard__main {
+	padding: 24px var( --pmdk-header-gutter, 28px ) 40px;
+}
+
+/* --- TabStrip (top-level routes — mockup .pd-nav-button) -------------- */
+
+.pmdk-theme-app .pmdk-dashboard__tabs {
+	gap: 2px;
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab {
+	position: relative;
+	min-height: 44px;
+	padding: 0 11px;
+	color: var( --pmdk-color-text-muted );
+	font-size: var( --pmdk-font-size-meta );
+	font-weight: var( --pmdk-font-weight-medium );
+	border-bottom: 0;
+}
+
+/* DS nav hover lifts to full text strength — accent is reserved for the
+   active route. Keyboard focus keeps the accent cue for visibility. */
+.pmdk-theme-app .pmdk-dashboard__tab:hover {
+	color: var( --pmdk-color-text );
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab:focus-visible {
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+}
+
+/* Active route: accent text + the DS quiet underline (2px, inset 10px,
+   overlapping the header divider — mockup [aria-current=page]::after). */
+.pmdk-theme-app .pmdk-dashboard__tab.is-active {
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+	font-weight: var( --pmdk-font-weight-semibold );
+	border-bottom: 0;
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab.is-active::after {
+	content: '';
+	position: absolute;
+	right: 10px;
+	bottom: -1px;
+	left: 10px;
+	height: 2px;
+	background: var( --pmdk-color-accent );
+}
+
+/* --- HelpPanel (trigger = mockup .pd-icon-button; popover = .pd-nav-
+   dropdown conventions) ----------------------------------------------- */
+
+.pmdk-theme-app .pmdk-dashboard__help-trigger-button.components-button.has-icon {
+	width: 44px;
+	height: 44px;
+	/* Explicit chrome reset: `@wordpress/components`' stylesheet already
+	   ships border 0 / transparent on `.components-button` (computed
+	   no-op in wp-admin) — declared here so host pages that render the
+	   shell without that stylesheet don't fall back to UA button chrome. */
+	border: 0;
+	background: transparent;
+	border-radius: var( --pmdk-radius-control );
+	color: var( --pmdk-color-text-muted );
+}
+
+.pmdk-theme-app .pmdk-dashboard__help-trigger-button.components-button.has-icon:hover,
+.pmdk-theme-app .pmdk-dashboard__help-trigger-button.components-button.has-icon[ aria-expanded='true' ] {
+	background: var( --pmdk-color-row-hover );
+	color: var( --pmdk-color-text );
+}
+
+.pmdk-theme-app .pmdk-help-panel .components-popover__content {
+	border-radius: var( --pmdk-radius-card );
+}
+
+.pmdk-theme-app .pmdk-help-panel__heading {
+	color: var( --pmdk-color-text-soft );
+	font-size: var( --pmdk-font-size-caption );
+	letter-spacing: 0.045em;
+}
+
+.pmdk-theme-app .pmdk-help-panel__link {
+	color: var( --pmdk-color-text );
+	font-size: var( --pmdk-font-size-meta );
+	font-weight: var( --pmdk-font-weight-medium );
+}
+
+/* DS menu rows hover with the neutral row wash; the label keeps full
+   text color (accent stays a selected-state voice). */
+.pmdk-theme-app .pmdk-help-panel__link:hover,
+.pmdk-theme-app .pmdk-help-panel__link:focus-visible {
+	background: var( --pmdk-color-row-hover );
+	color: var( --pmdk-color-text );
+}
+
+.pmdk-theme-app .pmdk-help-panel__icon,
+.pmdk-theme-app .pmdk-help-panel__chevron {
+	color: var( --pmdk-color-text-soft );
+}
+
+/* --- ListPageHeader (mockup .pd-page-header) -------------------------- */
+
+.pmdk-theme-app .pmdk-list-page-header {
+	margin: 0 0 20px;
+}
+
+.pmdk-theme-app .pmdk-list-page-header__bar {
+	min-height: 34px;
+}
+
+.pmdk-theme-app .pmdk-list-page-header__title {
+	font-size: var( --pmdk-font-size-heading );
+	font-weight: var( --pmdk-font-weight-medium );
+	line-height: var( --pmdk-line-height-title );
+	letter-spacing: -0.02em;
+}
+
+.pmdk-theme-app .pmdk-list-page-header__description {
+	margin-top: 3px;
+	font-size: var( --pmdk-font-size-caption );
+	line-height: var( --pmdk-line-height-body );
+}
+
+/* Native `.page-title-action` anchor (EntityListPage primaryAction):
+   the route-wide create action — DS primary filled at the 40px
+   page-level tier (mockup .pd-page-actions .pd-button.primary;
+   DESIGN-SYSTEM.md button decision table + control-height rule 3). */
+.pmdk-theme-app .pmdk-dashboard .page-title-action {
+	min-height: var( --pmdk-size-control-md );
+	padding: 0 12px;
+	border: 1px solid var( --pmdk-color-accent );
+	border-radius: var( --pmdk-radius-control );
+	background: var( --pmdk-color-accent );
+	color: var( --pmdk-color-on-accent );
+	font-size: var( --pmdk-font-size-meta );
+	font-weight: var( --pmdk-font-weight-medium );
+	box-shadow: 0 1px 2px
+		color-mix( in srgb, var( --pmdk-color-accent ) 20%, transparent );
+}
+
+.pmdk-theme-app .pmdk-dashboard .page-title-action:hover,
+.pmdk-theme-app .pmdk-dashboard .page-title-action:focus {
+	border-color: color-mix(
+		in srgb,
+		var( --pmdk-color-accent ) 88%,
+		var( --pmdk-color-text )
+	);
+	background: color-mix(
+		in srgb,
+		var( --pmdk-color-accent ) 88%,
+		var( --pmdk-color-text )
+	);
+	color: var( --pmdk-color-on-accent );
+}
+
+/* --- EditorPageHeader ------------------------------------------------- */
+
+.pmdk-theme-app .pmdk-editor-page-header__title {
+	font-size: var( --pmdk-font-size-subheading );
+	font-weight: var( --pmdk-font-weight-medium );
+	line-height: var( --pmdk-line-height-title );
+	letter-spacing: var( --pmdk-letter-spacing-title );
+}
+
+.pmdk-theme-app .pmdk-editor-page-header__back {
+	color: var( --pmdk-color-text-soft );
+	font-size: var( --pmdk-font-size-caption );
+}
+
+.pmdk-theme-app .pmdk-editor-page-header__back:hover {
+	color: var( --pmdk-color-text );
+}
+
+.pmdk-theme-app .pmdk-editor-page-header__status {
+	padding: 2px 8px;
+	border-radius: var( --pmdk-radius-pill );
+	background: var( --pmdk-color-surface-muted );
+	color: var( --pmdk-color-text-muted );
+	font-size: var( --pmdk-font-size-badge );
+	letter-spacing: 0.05em;
+}
+
+/* --- SubNav (mockup .pd-settings-nav rail — flat, no card chrome) ----- */
+
+.pmdk-theme-app .pmdk-subnav {
+	padding: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+}
+
+.pmdk-theme-app .pmdk-subnav__list {
+	gap: 3px;
+}
+
+.pmdk-theme-app .pmdk-subnav__item {
+	min-height: 40px;
+	display: flex;
+	align-items: center;
+	padding: 6px 10px;
+	border-radius: var( --pmdk-radius-control );
+	color: var( --pmdk-color-text-muted );
+	font-size: var( --pmdk-font-size-meta );
+	font-weight: var( --pmdk-font-weight-medium );
+}
+
+.pmdk-theme-app .pmdk-subnav__item:hover,
+.pmdk-theme-app .pmdk-subnav__item:focus,
+.pmdk-theme-app .pmdk-subnav__item:focus-visible {
+	background: var( --pmdk-color-row-hover );
+	color: var( --pmdk-color-text );
+}
+
+/* Active panel: accent-subtle wash + readable accent foreground, weight
+   unchanged (mockup .pd-settings-parent[aria-current=page] — DS marks
+   selection with color, not boldness). */
+.pmdk-theme-app .pmdk-subnav__item.is-active,
+.pmdk-theme-app .pmdk-subnav__item.is-active:hover {
+	background: var( --pmdk-color-accent-subtle );
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+	font-weight: var( --pmdk-font-weight-medium );
+}
+
+/* --- SchemaForm chrome ------------------------------------------------ */
+
+.pmdk-theme-app .pmdk-schema-form {
+	gap: var( --pmdk-space-5 );
+}
+
+/* Field labels/help lift to the DS field roles (13px label tier, caption
+   help) so `@wordpress/components` controls sit on the readable scale. */
+.pmdk-theme-app .pmdk-schema-form .components-base-control__label,
+.pmdk-theme-app .pmdk-schema-form .components-toggle-control__label,
+.pmdk-theme-app .pmdk-schema-form .components-input-control__label {
+	font-size: var( --pmdk-font-size-field-label );
+	font-weight: var( --pmdk-font-weight-medium );
+	text-transform: none;
+}
+
+.pmdk-theme-app .pmdk-schema-form .components-base-control__help {
+	color: var( --pmdk-color-text-muted );
+	font-size: var( --pmdk-font-size-caption );
+}
+
+/* --- SaveBar (core dialect) ------------------------------------------- */
+
+/* Status line joins the DS metadata voice. The full DS sticky chrome
+   (accent hairline, shadow, container-query stacking) ships with
+   primitives/save-bar.css — importing `primitives/style.css` is the
+   chrome opt-in; this only sizes the core-only rendering. */
+.pmdk-theme-app .pmdk-save-bar__status {
+	font-size: var( --pmdk-font-size-meta );
 }

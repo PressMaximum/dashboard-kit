@@ -156,7 +156,15 @@
 }
 
 .pmdk-compare__cta-text {
-	flex: 1 1 auto;
+	/* `1 1 0` + `min-width: 0` (not `1 1 auto`): with an `auto` basis the
+	   text block claims its full content width before grow/shrink applies,
+	   so a naturally long description forced the row's `flex-wrap` to drop
+	   the button below the text. Zero basis lets the text start empty and
+	   grow into the remaining space — the button keeps its seat on the
+	   right and long copy wraps within the text column instead.
+	   KIT_ISSUES K-014. */
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .pmdk-compare__cta-title {

@@ -206,3 +206,13 @@
 .pmdk-dashboard__snackbar > * {
 	pointer-events: auto;
 }
+
+/* `<SnackbarList>`'s notice container is `display: block; width: 100%`, so
+   the wrapper's `align-items: center` is a no-op — the flex child already
+   fills the cross-axis and the `.components-snackbar` inside sat pinned to
+   the container's left edge. Center the snackbar inside the full-width
+   container instead. KIT_ISSUES K-015. */
+.pmdk-dashboard__snackbar .components-snackbar-list__notice-container {
+	display: flex;
+	justify-content: center;
+}

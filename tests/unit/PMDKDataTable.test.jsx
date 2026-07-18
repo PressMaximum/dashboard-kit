@@ -658,3 +658,53 @@ describe( 'PMDKDataTable — API gaps (review round G1/G2/G3/G5)', () => {
 		).toBe( 'Open Charlie' );
 	} );
 } );
+
+describe( 'PMDKDataTable — slot arrays render without React key warnings', () => {
+	// Consumer slots are routinely element ARRAYS (Blocksify's 0.2.0 bump
+	// surfaced the DEV "unique key" warning with the component stack
+	// pointing at the kit's toolbar subtree). The kit auto-keys array slot
+	// results via Children.toArray (renderSlot) and falls back to a
+	// positional key for id-less menuItems.
+	it( 'accepts keyless arrays in toolbarControls/activeFilters/menuItems/bulkActions/primaryAction', () => {
+		const spy = vi.spyOn( console, 'error' ).mockImplementation( () => {} );
+		render(
+			<PMDKDataTable
+				{ ...BASE }
+				enableRowSelection
+				toolbarControls={ () => [
+					<button type="button">Facet A</button>,
+					<button type="button">Facet B</button>,
+				] }
+				activeFilters={ [
+					<span>chip 1</span>,
+					<span>chip 2</span>,
+				] }
+				primaryAction={ [
+					<button type="button">New record</button>,
+				] }
+				menuItems={ [
+					{ label: 'Export', onSelect: () => {} },
+					{ label: 'Import', onSelect: () => {} },
+				] }
+				bulkActions={ () => [
+					<button type="button">Confirm</button>,
+					<button type="button">Cancel</button>,
+				] }
+			/>,
+		);
+		// Trip the bulk bar too (its slot renders only with a selection).
+		act( () => {
+			host.querySelector( 'tbody input[type="checkbox"]' ).click();
+		} );
+
+		const keyWarnings = spy.mock.calls.filter( ( args ) =>
+			String( args[ 0 ] ).includes( 'unique "key"' ),
+		);
+		spy.mockRestore();
+		expect( keyWarnings ).toEqual( [] );
+		// Sanity: the slots actually rendered.
+		expect( host.textContent ).toContain( 'Facet A' );
+		expect( host.textContent ).toContain( 'chip 1' );
+		expect( host.textContent ).toContain( 'Confirm' );
+	} );
+} );

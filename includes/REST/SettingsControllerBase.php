@@ -174,10 +174,25 @@ abstract class SettingsControllerBase extends \WP_REST_Controller {
 	/**
 	 * Sanitize an incoming body, persist, and return the saved shape.
 	 *
+	 * Partial-body safety: a NON-empty body is deep-merged over the
+	 * currently-persisted shape before sanitizing, so fields the caller
+	 * didn't mention keep their saved values. Earlier revisions handed the
+	 * partial body straight to the sanitizer, whose absent-key fallback is
+	 * the field DEFAULT — any partial POST (a script, a Pro panel saving
+	 * only its own section, a hand-written REST call) silently reset every
+	 * unmentioned field to factory state. The kit's own JS store was
+	 * unaffected only because `save()` posts the full merged shape.
+	 *
+	 * The documented reset contract is preserved: an EMPTY body (`{}`)
+	 * skips the merge and still resets the option to defaults.
+	 *
 	 * @param array<string, mixed> $incoming Raw POST body.
 	 * @return array<string, mixed>          Sanitized + saved shape.
 	 */
 	protected function writeMerged( array $incoming ): array {
+		if ( array() !== $incoming ) {
+			$incoming = self::deepMerge( $this->readMerged(), $incoming );
+		}
 		$sanitized = $this->sanitizeIncoming( $incoming );
 		\update_option( $this->getOptionName(), $sanitized, false );
 		return $sanitized;

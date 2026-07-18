@@ -21,6 +21,15 @@
  * kit free of the `confirm()` text. SPEC §5.10b `resetConfirmLabel` is
  * a consumer-side string, not a kit prop.
  *
+ * Chrome unification (KIT-P4): this component is the ONE save bar. The
+ * markup carries both dialects — the locked `.pmdk-save-bar`/`__status`
+ * classes styled by core SaveBar.css (the WP-native default), plus the
+ * primitives chrome class `.pmdk-save-actions` on the action cluster.
+ * Core-only consumers see the default exactly as before (the primitives
+ * classes are unstyled there); consumers importing
+ * `@pressmaximum/dashboard-kit/primitives/style.css` get the DS sticky
+ * chrome (primitives/save-bar.css) applied to this same markup.
+ *
  * `resetDisabledWhenNotDirty` (default `false`) — when `true`, the
  * Reset button disables alongside Save when the form is clean. Use
  * for consumers where Reset semantically means "discard dirty edits"
@@ -100,7 +109,17 @@ export default function SaveBar( {
 					/>
 				</FlexItem>
 				<FlexItem>
-					<Flex align="center" gap={ 2 }>
+					{ /* `pmdk-save-actions` is the primitives-sheet chrome
+					     class for the action cluster (KIT-P4 save-bar
+					     unification): unstyled in core CSS, so default
+					     consumers render byte-identical; consumers importing
+					     `primitives/style.css` get the DS cluster layout on
+					     this same markup. */ }
+					<Flex
+						align="center"
+						gap={ 2 }
+						className="pmdk-save-actions"
+					>
 						<FlexItem>
 							<Button
 								variant="tertiary"

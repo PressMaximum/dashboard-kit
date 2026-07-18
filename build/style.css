@@ -86,6 +86,10 @@
 	--pmdk-hero-bg: #ffffff;
 	--pmdk-hero-radius: var( --pmdk-radius-card, 8px );
 	--pmdk-hero-title-size: 28px;
+	/* K-012: border surface for consumers whose Welcome column wraps the
+	   checklist in a bordered Card and wants the Hero to match. Default
+	   keeps the K-003 flat-on-tinted-chassis look. */
+	--pmdk-hero-border: 0;
 
 	/* Compare table -------------------------------------------------- */
 	--pmdk-compare-head-bg: #fff;
@@ -295,8 +299,14 @@ body.wp-admin,
 		var( --pmdk-color-accent ) var( --pmdk-tone-accent-border ),
 		var( --pmdk-color-border )
 	);
-	/* Readable foreground for accent-tinted-on-surface text (mockup `--pd-color-accent-fg`). */
-	--pmdk-accent-fg: color-mix( in srgb, var( --pmdk-color-accent ) 62%, var( --pmdk-color-text ) );
+	/* Readable foreground for accent-tinted-on-surface text (mockup
+	   `--pd-color-accent-fg`). 78% is the v2/founder-final weight
+	   (plugin-dashboard.css line ~104, `[data-ap-visual=v2] .ap-admin`);
+	   the 62% first shipped in KIT-P3 was the dead base-tier declaration
+	   the v2 flatten should have replaced — corrected in KIT-P4 before
+	   the 0.2.0 tag (no shipped consumer imports the primitives tier
+	   yet, so this is an extraction-drift fix, not a break). */
+	--pmdk-accent-fg: color-mix( in srgb, var( --pmdk-color-accent ) 78%, var( --pmdk-color-text ) );
 	--pmdk-control-border-active: var( --pmdk-color-accent );
 }
 
@@ -676,6 +686,16 @@ body.wp-admin,
 	pointer-events: auto;
 }
 
+/* `<SnackbarList>`'s notice container is `display: block; width: 100%`, so
+   the wrapper's `align-items: center` is a no-op — the flex child already
+   fills the cross-axis and the `.components-snackbar` inside sat pinned to
+   the container's left edge. Center the snackbar inside the full-width
+   container instead. KIT_ISSUES K-015. */
+.pmdk-dashboard__snackbar .components-snackbar-list__notice-container {
+	display: flex;
+	justify-content: center;
+}
+
 /*
  * PageWrapper — DataViews-friendly flex-chain wrapper.
  *
@@ -1011,6 +1031,11 @@ body.wp-admin,
  * (typical: a Card's CardFooter). Status pill on the left mirrors the
  * store lifecycle; right cluster holds Reset (tertiary destructive) +
  * Save (primary, dirty-gated).
+ *
+ * This sheet is the WP-NATIVE default chrome only. The DS look for the
+ * same component/markup lives in primitives/save-bar.css and applies
+ * when the consumer imports `primitives/style.css` (KIT-P4 save-bar
+ * unification) — do not restyle the DS tier here.
  */
 
 .pmdk-save-bar {
@@ -1081,7 +1106,12 @@ body.wp-admin,
 	padding: var( --pmdk-hero-padding, 48px );
 	margin: 0 0 24px;
 	background: var( --pmdk-hero-bg, #ffffff );
-	border: 0;
+	/* Tokenised border surface (KIT_ISSUES K-012): flat-on-tinted-chassis
+	   default stays `0`; consumers wanting a hairline to match surrounding
+	   cards set `--pmdk-hero-border: 1px solid …` instead of overriding the
+	   class (symmetric with the K-007 tokenisation of the rest of this
+	   block). */
+	border: var( --pmdk-hero-border, 0 );
 	border-radius: var( --pmdk-hero-radius, 8px );
 }
 
@@ -1390,7 +1420,15 @@ body.wp-admin,
 }
 
 .pmdk-compare__cta-text {
-	flex: 1 1 auto;
+	/* `1 1 0` + `min-width: 0` (not `1 1 auto`): with an `auto` basis the
+	   text block claims its full content width before grow/shrink applies,
+	   so a naturally long description forced the row's `flex-wrap` to drop
+	   the button below the text. Zero basis lets the text start empty and
+	   grow into the remaining space — the button keeps its seat on the
+	   right and long copy wraps within the text column instead.
+	   KIT_ISSUES K-014. */
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .pmdk-compare__cta-title {

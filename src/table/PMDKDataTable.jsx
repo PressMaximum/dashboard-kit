@@ -33,12 +33,33 @@
  */
 
 import {
+	Children,
 	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
 	useState,
 } from 'react';
+
+/**
+ * Resolve a consumer slot (raw node, array of nodes, or a render function)
+ * and auto-key array results via `Children.toArray`. Consumers routinely
+ * pass element ARRAYS to the toolbar slots (`toolbarControls`,
+ * `activeFilters`, `bulkActions`, `filterBuilder` returns) — rendering a
+ * raw array inline made React's DEV "unique key" warning fire with the
+ * component stack pointing at the KIT's toolbar subtree, even though the
+ * keyless elements were consumer-authored (observed by the Blocksify P4
+ * bump). `Children.toArray` assigns stable positional keys, which is the
+ * right semantic for slot clusters (order = identity).
+ *
+ * @param {unknown}                 slot Slot prop value.
+ * @param {Record<string, unknown>} ctx  Render-prop context (when function).
+ * @return {import('react').ReactNode} Keyed, render-ready node.
+ */
+function renderSlot( slot, ctx ) {
+	const resolved = typeof slot === 'function' ? slot( ctx ) : slot;
+	return Array.isArray( resolved ) ? Children.toArray( resolved ) : resolved;
+}
 import {
 	closestCenter,
 	DndContext,
@@ -432,11 +453,11 @@ function TableActionsMenu( {
 							role="separator"
 						/>
 					) : null }
-					{ ( menuItems || [] ).map( ( item ) => (
+					{ ( menuItems || [] ).map( ( item, index ) => (
 						<button
 							type="button"
 							role="menuitem"
-							key={ item.id }
+							key={ item.id ?? `menu-item-${ index }` }
 							onClick={ () => {
 								item.onSelect?.();
 								setPanel( null );
@@ -964,10 +985,7 @@ export function PMDKDataTable( {
 		typeof filterCount === 'function'
 			? filterCount( { table } )
 			: filterCount;
-	const activeChips =
-		typeof activeFilters === 'function'
-			? activeFilters( { table } )
-			: activeFilters;
+	const activeChips = renderSlot( activeFilters, { table } );
 
 	const toolbar = showToolbar ? (
 		<div className="pmdk-toolbar">
@@ -988,9 +1006,7 @@ export function PMDKDataTable( {
 						</label>
 					) : null }
 					<div className="pmdk-toolbar-filter-controls">
-						{ typeof toolbarControls === 'function'
-							? toolbarControls( { table } )
-							: toolbarControls }
+						{ renderSlot( toolbarControls, { table } ) }
 						{ hasFilterArea ? (
 							<button
 								className="pmdk-toolbar-export pmdk-toolbar-filter-button"
@@ -1031,7 +1047,9 @@ export function PMDKDataTable( {
 							renderIcon={ renderIcon }
 						/>
 					) : null }
-					{ primaryAction || null }
+					{ ( Array.isArray( primaryAction )
+						? Children.toArray( primaryAction )
+						: primaryAction ) || null }
 				</div>
 			</div>
 			{ activeChips && ! filtersOpen ? (
@@ -1048,7 +1066,7 @@ export function PMDKDataTable( {
 					id={ filterBuilderId.current }
 					aria-label={ labels.filtersTitle }
 				>
-					{ filterBuilder( {
+					{ renderSlot( filterBuilder, {
 						table,
 						close: () => setFiltersOpenState( false ),
 					} ) }
@@ -1145,10 +1163,13 @@ export function PMDKDataTable( {
 												) }
 											</strong>
 											<div className="pmdk-bulk-actions">
-												{ bulkActions?.( {
-													selectedRows,
-													clearSelection,
-												} ) ?? null }
+												{ renderSlot(
+													bulkActions,
+													{
+														selectedRows,
+														clearSelection,
+													},
+												) ?? null }
 											</div>
 											<button
 												className="pmdk-bulk-clear"

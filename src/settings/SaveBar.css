@@ -8,6 +8,11 @@
  * (typical: a Card's CardFooter). Status pill on the left mirrors the
  * store lifecycle; right cluster holds Reset (tertiary destructive) +
  * Save (primary, dirty-gated).
+ *
+ * This sheet is the WP-NATIVE default chrome only. The DS look for the
+ * same component/markup lives in primitives/save-bar.css and applies
+ * when the consumer imports `primitives/style.css` (KIT-P4 save-bar
+ * unification) — do not restyle the DS tier here.
  */
 
 .pmdk-save-bar {

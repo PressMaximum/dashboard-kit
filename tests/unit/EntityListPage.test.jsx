@@ -162,6 +162,62 @@ describe( 'EntityListPage — state switching', () => {
 		expect( host.querySelector( '[data-testid="dataviews-stub"]' ) ).toBeNull();
 	} );
 
+	// K-017: an active filter/search that matches zero rows must NOT
+	// unmount DataViews — its toolbar (filter chips + reset) is the only
+	// way out, and ViewPersistence restores the trapping filter on reload.
+	it( 'keeps DataViews mounted when a filter matches zero rows (K-017)', () => {
+		render(
+			<EntityListPage
+				{ ...BASE_PROPS }
+				view={ {
+					type: 'table',
+					perPage: 10,
+					filters: [
+						{ field: 'status', operator: 'is', value: 'trash' },
+					],
+				} }
+			/>,
+		);
+		expect(
+			host.querySelector( '[data-testid="dataviews-stub"]' ),
+		).toBeTruthy();
+		expect(
+			host.querySelector( '.pmdk-entity-list-page__empty' ),
+		).toBeNull();
+	} );
+
+	it( 'keeps DataViews mounted when a search matches zero rows (K-017)', () => {
+		render(
+			<EntityListPage
+				{ ...BASE_PROPS }
+				view={ { type: 'table', perPage: 10, search: 'zebra' } }
+			/>,
+		);
+		expect(
+			host.querySelector( '[data-testid="dataviews-stub"]' ),
+		).toBeTruthy();
+	} );
+
+	it( 'still shows the bare empty state when no query is active (K-017)', () => {
+		render(
+			<EntityListPage
+				{ ...BASE_PROPS }
+				view={ {
+					type: 'table',
+					perPage: 10,
+					filters: [],
+					search: '   ',
+				} }
+			/>,
+		);
+		expect(
+			host.querySelector( '.pmdk-entity-list-page__empty' ),
+		).toBeTruthy();
+		expect(
+			host.querySelector( '[data-testid="dataviews-stub"]' ),
+		).toBeNull();
+	} );
+
 	it( 'falls back to English defaults when labels prop omitted', () => {
 		render( <EntityListPage { ...BASE_PROPS } isLoading /> );
 		expect(

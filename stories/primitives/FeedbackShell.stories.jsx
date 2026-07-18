@@ -4,14 +4,16 @@
  * Avatar: one uppercase letter, one shared quiet tint (no per-record color
  * cycling). Tabs: `.pmdk-section-tabs` + `createTablist` (Left/Right/Home/End
  * with wrap; count badges optional). Toast: transient confirmation, `.show`
- * state. Save bar: the DS chrome for `.pmdk-save-bar` — KIT-P4 unifies it
- * with the core SaveBar component (collision map: REPLACES).
+ * state. Save bar: the DS chrome for `.pmdk-save-bar` — unified with the
+ * core SaveBar component in KIT-P4 (see the SaveBarUnifiedComponent
+ * stories: one component, chrome opt-in via primitives/style.css).
  */
 
 import { useEffect, useRef, useState } from 'react';
 import '../../src/primitives/style.css';
 import '../../src/themes/app.css';
 import { createTablist } from '../../src/primitives/index.mjs';
+import SaveBarComponent from '../../src/settings/SaveBar.jsx';
 import { Chassis } from '../helpers/Chassis.jsx';
 
 export default {
@@ -136,6 +138,39 @@ export const SaveBarThemeAppDark = {
 	render: () => (
 		<Chassis theme scheme="dark">
 			<SaveBarChrome />
+		</Chassis>
+	),
+};
+
+/* KIT-P4 unification proof: the CORE `<SaveBar>` component rendered under
+   the primitives chassis. Same markup that ships the WP-native default in
+   core-only consumers picks up the DS sticky chrome here — one component,
+   one chrome sheet, two opt-in tiers. */
+function SaveBarComponentMount( { isDirty } ) {
+	return (
+		<div style={ { paddingTop: 40 } }>
+			<SaveBarComponent
+				isDirty={ isDirty }
+				isSaving={ false }
+				onSave={ () => {} }
+				onReset={ () => {} }
+			/>
+		</div>
+	);
+}
+
+export const SaveBarUnifiedComponent = {
+	render: () => (
+		<Chassis theme>
+			<SaveBarComponentMount isDirty />
+		</Chassis>
+	),
+};
+
+export const SaveBarUnifiedComponentDark = {
+	render: () => (
+		<Chassis theme scheme="dark">
+			<SaveBarComponentMount isDirty />
 		</Chassis>
 	),
 };

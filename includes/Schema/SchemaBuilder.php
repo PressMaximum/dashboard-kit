@@ -274,21 +274,43 @@ final class SchemaBuilder {
 	 * types. Unknown keys dropped, enums whitelisted, bools / numbers
 	 * coerced, invalid values fall back to the field default.
 	 *
-	 * @param array<string, mixed> $incoming Raw body.
+	 * Absent keys and the reset pitfall: a field that is missing from
+	 * `$incoming` falls back to `$current` (the currently-persisted shape)
+	 * when one is provided, and only then to the field default. Earlier
+	 * revisions always substituted the DEFAULT for absent fields, which
+	 * silently reset every field a partial body didn't mention — callers
+	 * that posted one panel's values wiped the rest of the option back to
+	 * factory state. Passing no `$current` preserves that legacy
+	 * "absent means default" behavior, which is exactly what an explicit
+	 * reset-to-defaults call (`sanitize( array() )`) still relies on.
+	 *
+	 * @param array<string, mixed>      $incoming Raw body.
+	 * @param array<string, mixed>|null $current  Optional currently-saved
+	 *                                            shape absent fields fall
+	 *                                            back to before defaults.
 	 * @return array<string, mixed> Sanitized shape (same keys as defaults).
 	 */
-	public function sanitize( array $incoming ): array {
+	public function sanitize( array $incoming, ?array $current = null ): array {
 		$out = array();
 		foreach ( $this->panels as $panelId => $panel ) {
-			$panelIn      = isset( $incoming[ $panelId ] ) && is_array( $incoming[ $panelId ] )
+			$panelIn         = isset( $incoming[ $panelId ] ) && is_array( $incoming[ $panelId ] )
 				? $incoming[ $panelId ]
+				: array();
+			$panelCurrent    = null !== $current
+				&& isset( $current[ $panelId ] )
+				&& is_array( $current[ $panelId ] )
+				? $current[ $panelId ]
 				: array();
 			$out[ $panelId ] = array();
 			foreach ( $panel['fields'] as $field ) {
-				$fieldId          = $field['id'];
-				$raw              = array_key_exists( $fieldId, $panelIn )
-					? $panelIn[ $fieldId ]
-					: $field['default'];
+				$fieldId = $field['id'];
+				if ( array_key_exists( $fieldId, $panelIn ) ) {
+					$raw = $panelIn[ $fieldId ];
+				} elseif ( array_key_exists( $fieldId, $panelCurrent ) ) {
+					$raw = $panelCurrent[ $fieldId ];
+				} else {
+					$raw = $field['default'];
+				}
 				$out[ $panelId ][ $fieldId ] = self::coerce( $raw, $field );
 			}
 		}
