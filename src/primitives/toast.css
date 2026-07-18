@@ -1,0 +1,26 @@
+/*
+ * @pressmaximum/dashboard-kit — toast (transient confirmation) (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-toast {
+  position:absolute;z-index:100;right:18px;bottom:18px;max-width:340px;padding:10px 13px;border:1px solid var(--pmdk-color-border-strong);border-left:3px solid var(--pmdk-color-success);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);font-size:var(--pmdk-font-size-meta);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity var(--pmdk-motion-standard),transform var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-toast.show {
+  opacity:1;transform:none
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-toast {
+    right:12px;bottom:12px;left:12px;max-width:none
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .pmdk-dashboard .pmdk-toast {
+    animation:none;transition:none
+  }
+}

@@ -1,0 +1,209 @@
+/*
+ * @pressmaximum/dashboard-kit — module card + tier badge + toggle (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ *
+ * DEDUPED (review round 2): the mechanical extraction emitted base + v2 +
+ * later-source re-declarations of the same selectors sequentially; they are
+ * merged here into single rules carrying the FINAL computed value of each
+ * property (VR gate proves computed-identical).
+ */
+
+@keyframes pdModuleCardReveal {
+	from {
+		opacity: 0;
+		transform: translateY( 8px );
+	}
+	to {
+		opacity: 1;
+		transform: translateY( 0 );
+	}
+}
+
+.pmdk-dashboard .pmdk-module-grid {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.pmdk-dashboard .pmdk-module-grid.is-revealing .pmdk-module-card {
+  animation:pdModuleCardReveal 190ms cubic-bezier(.2,.7,.3,1) backwards;animation-delay:calc(var(--pmdk-module-index,0) * 24ms)
+}
+.pmdk-dashboard .pmdk-module-card {
+  position:relative;min-width:0;min-height:250px;display:flex;flex-direction:column;padding:18px 18px 0;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);box-shadow:none;transition:border-color var(--pmdk-motion-standard),transform var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-module-card:hover {
+  border-color:var(--pmdk-color-border-strong);transform:none;box-shadow:none
+}
+/* `.is-enabled:hover` listed explicitly so a hovered enabled card keeps the
+   accent edge (equal-specificity order vs the generic :hover rule). */
+.pmdk-dashboard .pmdk-module-card.is-enabled,
+.pmdk-dashboard .pmdk-module-card.is-enabled:hover {
+  border-color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-module-card.is-planned {
+  background:color-mix(in srgb,var(--pmdk-color-surface-subtle) 46%,var(--pmdk-color-surface))
+}
+.pmdk-dashboard .pmdk-module-card-head {
+  display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:start
+}
+.pmdk-dashboard .pmdk-module-icon {
+  width:34px;height:34px;margin-top:1px;display:grid;place-items:center;color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-module-card.is-enabled .pmdk-module-icon {
+  color:var(--pmdk-accent-fg,var(--pmdk-color-accent))
+}
+.pmdk-dashboard .pmdk-module-card.is-planned .pmdk-module-icon {
+  color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-module-card h2 {
+  margin:0;overflow:hidden;text-overflow:ellipsis;font-size:var(--pmdk-font-size-item);line-height:1.35;font-weight:var(--pmdk-font-weight-medium);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-module-card-foot {
+  min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;border-top:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-module-card-foot>.pmdk-button {
+  margin-left:-10px
+}
+.pmdk-dashboard .pmdk-module-toggle {
+  min-height:40px;display:flex;align-items:center;gap:8px;margin-left:auto;cursor:pointer
+}
+.pmdk-dashboard .pmdk-module-toggle-label {
+  min-width:20px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);text-align:right
+}
+.pmdk-dashboard .pmdk-module-toggle input {
+  position:absolute;width:1px;height:1px;overflow:hidden;opacity:0
+}
+.pmdk-dashboard .pmdk-module-toggle input:checked+.pmdk-toggle-track {
+  border-color:var(--pmdk-color-accent);background:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-module-toggle input:checked+.pmdk-toggle-track>span {
+  transform:translateX(16px)
+}
+.pmdk-dashboard .pmdk-module-toggle input:focus-visible+.pmdk-toggle-track {
+  outline:2px solid var(--pmdk-color-accent);outline-offset:2px
+}
+.pmdk-dashboard .pmdk-module-toggle:hover .pmdk-module-toggle-label {
+  color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-module-card:not(.is-enabled) .pmdk-button.text {
+  color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-module-card:not(.is-enabled) .pmdk-button.text:hover {
+  color:var(--pmdk-color-text)
+}
+@container (max-width:1100px) {
+  .pmdk-dashboard .pmdk-module-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-module-grid {
+    grid-template-columns:1fr
+  }
+  .pmdk-dashboard .pmdk-module-card {
+    min-height:240px;padding-inline:16px
+  }
+  .pmdk-dashboard .pmdk-module-card-foot {
+    margin-top:14px
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .pmdk-dashboard .pmdk-module-grid.is-revealing .pmdk-module-card {
+    animation:none;transition:none
+  }
+}
+
+.pmdk-dashboard .pmdk-toggle-track {
+  width:38px;height:22px;display:flex;align-items:center;padding:2px;border:1px solid var(--pmdk-color-border-strong);border-radius:var(--pmdk-radius-pill);background:var(--pmdk-color-surface-muted);transition:background var(--pmdk-motion-standard),border-color var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-toggle-track>span {
+  width:16px;height:16px;border-radius:50%;background:var(--pmdk-color-surface);box-shadow:0 1px 2px color-mix(in srgb,var(--pmdk-color-inverse-surface) 20%,transparent);transition:transform var(--pmdk-motion-standard)
+}
+
+/* Tier + phase badges (DESIGN-SYSTEM: entitlement / roadmap signals — never
+   runtime status). Mechanical rename keeps the source name `module-license`;
+   the flattened v2 tier's FINAL premium look is the warning tint (the earlier
+   accent-tint declarations were dead cascade). */
+.pmdk-dashboard .pmdk-module-license,
+.pmdk-dashboard .pmdk-module-phase {
+  height:21px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:var(--pmdk-radius-pill);font-size:var(--pmdk-font-size-badge);font-weight:var(--pmdk-font-weight-semibold);letter-spacing:.03em;text-transform:uppercase;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-module-license {
+  border:1px solid transparent
+}
+.pmdk-dashboard .pmdk-module-license.is-premium {
+  border-color:var(--pmdk-color-warning-border);background:var(--pmdk-color-warning-subtle);color:var(--pmdk-color-on-warning)
+}
+.pmdk-dashboard .pmdk-module-license.is-free {
+  border-color:color-mix(in srgb,var(--pmdk-color-success) 28%,var(--pmdk-color-border));background:var(--pmdk-color-success-subtle);color:var(--pmdk-color-on-success)
+}
+.pmdk-dashboard .pmdk-module-phase {
+  min-width:28px;border:1px solid var(--pmdk-color-border);color:var(--pmdk-color-text-soft)
+}
+
+/* Integration-state line (K-018 optional): quiet pill, warning tint while not
+   connected, success tint once connected. */
+.pmdk-dashboard .pmdk-module-connection {
+  height:22px;display:inline-flex;align-items:center;flex:0 0 auto;padding:0 7px;border-radius:var(--pmdk-radius-pill);background:var(--pmdk-color-warning-subtle);color:var(--pmdk-color-on-warning);font-size:var(--pmdk-font-size-micro);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-module-connection.is-connected {
+  background:var(--pmdk-color-success-subtle);color:var(--pmdk-color-on-success)
+}
+
+/* --- K-018 anatomy — meta / description / badges are MECHANICAL extraction
+   (source `.pd-module-meta` / `-description` / `-badges` rules; description
+   keeps the 2-line clamp + 42px min-height so grid cards stay row-aligned
+   with long copy). Only the pieces the source has no rule for are
+   hand-authored and marked below. */
+.pmdk-dashboard .pmdk-module-meta {
+	margin: 0 0 2px;
+	color: var( --pmdk-color-text-soft );
+	font-size: var( --pmdk-font-size-caption );
+}
+.pmdk-dashboard .pmdk-module-description {
+	display: -webkit-box;
+	min-height: 42px;
+	margin: 14px 0 0;
+	overflow: hidden;
+	color: var( --pmdk-color-text-muted );
+	font-size: var( --pmdk-font-size-meta );
+	line-height: 1.5;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+.pmdk-dashboard .pmdk-module-badges {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 5px;
+}
+/* Hand-authored (no source rule) — component scaffolding for <PMDKModuleCard>:
+   copy column, heading generalisation (`headingLevel` h2/h3/h4 share the
+   extracted h2 treatment; medium weight per the flattened v2 tier + K-010
+   weight discipline), integration-state line, footer action slot, planned
+   static label tint. */
+.pmdk-dashboard .pmdk-module-copy {
+	min-width: 0;
+}
+.pmdk-dashboard .pmdk-module-copy > :is( h2, h3, h4 ) {
+	margin: 0;
+	overflow: hidden;
+	font-size: var( --pmdk-font-size-item );
+	font-weight: var( --pmdk-font-weight-medium );
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.pmdk-dashboard .pmdk-module-connection-line {
+	margin: 8px 0 0;
+}
+.pmdk-dashboard .pmdk-module-card-action {
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+}
+.pmdk-dashboard .pmdk-module-card.is-planned .pmdk-module-toggle-label {
+	color: var( --pmdk-color-text-soft );
+}

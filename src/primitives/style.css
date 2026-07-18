@@ -41,3 +41,14 @@
 @import './pagination.css';
 @import './status.css';
 @import './states.css';
+
+/* --- slice 3: in-flow inspector tier --------------------------------------- */
+@import './inspector.css';
+@import './drawer.css';
+
+/* --- slice 4: feedback & shell-adjacent ------------------------------------ */
+@import './module-card.css';
+@import './avatar.css';
+@import './tabs.css';
+@import './toast.css';
+@import './save-bar.css';

@@ -31,6 +31,25 @@ export const STORY_IDS = [
 	'table-pmdkdatatable--theme-app',
 	'table-pmdkdatatable--theme-app-dark',
 	'table-consumerexample--aponto-like-consumer',
+	// slice 3 — in-flow inspector tier (menu shot renders the closed trigger;
+	// open/roving behavior is unit-tested)
+	'primitives-inflowinspector--workspace-with-resizer',
+	'primitives-inflowinspector--theme-app-dark',
+	'primitives-drawermenu--detail-panel',
+	'primitives-drawermenu--detail-panel-theme-app-dark',
+	'primitives-drawermenu--menu-anchored',
+	'primitives-drawermenu--menu-fixed-floating',
+	// slice 4 — feedback & shell-adjacent (module-card shots exercise the
+	// K-018 <PMDKModuleCard> component, incl. the ModulesPage consumer story)
+	'primitives-modulecard--catalogue-3-up',
+	'primitives-modulecard--integration-states',
+	'primitives-modulecard--theme-app-dark',
+	'modulecard-modulespage--press-listing-like-modules',
+	'primitives-feedbackshell--avatars',
+	'primitives-feedbackshell--tabs',
+	'primitives-feedbackshell--toast',
+	'primitives-feedbackshell--save-bar',
+	'primitives-feedbackshell--save-bar-theme-app-dark',
 ];
 
 export const VIEWPORT = { width: 1280, height: 900 };

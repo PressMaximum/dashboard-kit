@@ -2189,6 +2189,709 @@
 }
 
 /*
+ * @pressmaximum/dashboard-kit — in-flow inspector tier (workspace + resizer) (KIT-P3 slice 3)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ *//* Dropped on extraction: `[data-panel-kind=calendar-editor|category-editor|
+   customer|service]` variants — Aponto panel kinds; products re-add their own
+   kind tuning. `data-panel-kind=detail` (a MODE, not a domain) stays, in
+   drawer.css. Behavior: `createInspectorResizer` (resizer.js). *//* The rendered pane width. Defaults to the token-tier scalar so a theme or
+   bridge can retune it; `createInspectorResizer` writes this same property. */
+.pmdk-dashboard .pmdk-inflow-workspace {
+  --pmdk-inflow-inspector-width:var(--pmdk-inspector-width,360px);min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 0 minmax(0,0);align-items:stretch;overflow:clip;transition:grid-template-columns 360ms cubic-bezier(.4,0,.2,1),grid-template-rows 360ms cubic-bezier(.4,0,.2,1)
+}
+.pmdk-dashboard .pmdk-inflow-workspace.is-inspecting:not(.is-closing) {
+  grid-template-columns:minmax(0,1fr) 6px minmax(320px,var(--pmdk-inflow-inspector-width))
+}
+.pmdk-dashboard .pmdk-inflow-workspace.is-resizing {
+  user-select:none;transition:none
+}
+.pmdk-dashboard .pmdk-inflow-main {
+  min-width:0;grid-column:1;padding:24px var(--pmdk-content-gutter) 40px
+}
+.pmdk-dashboard .pmdk-inflow-resizer {
+  position:relative;z-index:3;min-width:0;grid-column:2;grid-row:1;align-self:stretch;border:0;background:var(--pmdk-color-surface-muted);cursor:col-resize;outline:0;touch-action:none
+}
+.pmdk-dashboard .pmdk-inflow-resizer::after {
+  content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:transparent;transform:translateX(-50%);transition:background 120ms ease
+}
+.pmdk-dashboard .pmdk-inflow-resizer:hover::after,
+.pmdk-dashboard .pmdk-inflow-resizer:focus-visible::after,
+.pmdk-dashboard .pmdk-inflow-workspace.is-resizing .pmdk-inflow-resizer::after {
+  background:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-inflow-resizer>span {
+  position:absolute;z-index:2;top:12px;left:50%;padding:5px 7px;border-radius:5px;background:var(--pmdk-color-inverse-surface);color:var(--pmdk-color-on-inverse);font-size:var(--pmdk-font-size-micro);line-height:1;opacity:0;pointer-events:none;transform:translate(-50%,-4px);transition:opacity 120ms ease,transform 120ms ease;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-inflow-resizer:hover>span,
+.pmdk-dashboard .pmdk-inflow-resizer:focus-visible>span,
+.pmdk-dashboard .pmdk-inflow-workspace.is-resizing .pmdk-inflow-resizer>span {
+  opacity:1;transform:translate(-50%,0)
+}
+.pmdk-dashboard .pmdk-inflow-workspace.is-inspecting:not(.is-closing) .pmdk-inflow-inspector {
+  pointer-events:auto
+}
+.pmdk-dashboard .pmdk-inflow-inspector>* {
+  width:var(--pmdk-inflow-inspector-width);box-sizing:border-box;align-self:flex-end;flex-shrink:0
+}
+.pmdk-dashboard .pmdk-inflow-inspector>.pmdk-inflow-inspector-head {
+  min-height:68px;align-items:flex-start;padding:14px 16px 12px;border-bottom:0
+}
+.pmdk-dashboard .pmdk-inflow-inspector-head h2 {
+  margin:0;font-size:var(--pmdk-font-size-subheading);line-height:1.3;letter-spacing:-.01em
+}
+.pmdk-dashboard .pmdk-inflow-inspector-head p {
+  margin:3px 0 0;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-regular);letter-spacing:0;text-transform:none
+}
+.pmdk-dashboard .pmdk-inflow-inspector-head .pmdk-icon-button {
+  width:34px;height:34px;min-height:34px;flex:0 0 34px;border:0;background:var(--pmdk-color-surface-subtle);color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-inflow-inspector-head .pmdk-icon-button:hover {
+  border-color:transparent;background:var(--pmdk-color-surface-muted);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-inflow-inspector-head .pmdk-icon-button:focus-visible {
+  border-color:transparent;outline:2px solid var(--pmdk-color-accent);outline-offset:2px
+}
+.pmdk-dashboard .pmdk-inflow-inspector-head .pmdk-icon-button svg {
+  width:16px;height:16px
+}
+.pmdk-dashboard .pmdk-inflow-inspector>.pmdk-drawer-body {
+  min-height:0;flex:1 1 auto;overflow:auto;padding:4px 16px 24px;overscroll-behavior:contain
+}
+.pmdk-dashboard .pmdk-inflow-inspector>.pmdk-drawer-foot {
+  flex:0 0 auto;padding:12px 16px;border-top:1px solid var(--pmdk-color-border);background:var(--pmdk-color-surface)
+}
+@container (max-width:820px) {
+  .pmdk-dashboard .pmdk-inflow-workspace {
+    grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,0) 0 auto
+  }
+  .pmdk-dashboard .pmdk-inflow-workspace.is-inspecting:not(.is-closing) {
+    grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(320px,var(--pmdk-inflow-inspector-height,calc(100dvh - 144px))) 6px auto
+  }
+  .pmdk-dashboard .pmdk-inflow-main {
+    grid-column:1;grid-row:3
+  }
+  .pmdk-dashboard .pmdk-inflow-resizer {
+    min-height:0;grid-column:1;grid-row:2;cursor:default;touch-action:auto
+  }
+  .pmdk-dashboard .pmdk-inflow-resizer::after {
+    top:50%;right:0;bottom:auto;left:0;width:auto;height:2px;transform:translateY(-50%)
+  }
+  .pmdk-dashboard .pmdk-inflow-resizer>span {
+    display:none
+  }
+  .pmdk-dashboard .pmdk-inflow-inspector>* {
+    width:100%;align-self:stretch
+  }
+}@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-inflow-main {
+    padding:18px var(--pmdk-content-gutter) 30px
+  }
+  .pmdk-dashboard .pmdk-inflow-inspector>.pmdk-inflow-inspector-head {
+    padding-inline:14px
+  }
+  .pmdk-dashboard .pmdk-inflow-inspector>.pmdk-drawer-body {
+    padding-inline:14px
+  }
+  .pmdk-dashboard .pmdk-inflow-inspector>.pmdk-drawer-foot {
+    padding-inline:14px
+  }
+}@media (prefers-reduced-motion:reduce) {
+  .pmdk-dashboard .pmdk-inflow-workspace {
+    transition:none
+  }
+}
+/*
+ * @pressmaximum/dashboard-kit — drawer + panel content + metric strip (KIT-P3 slice 3)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+.pmdk-dashboard .pmdk-drawer {
+  z-index:70;top:0;right:0;bottom:0;width:min(440px,100%);display:flex;flex-direction:column;background:var(--pmdk-color-surface);transform:translateX(101%);visibility:hidden;transition:transform var(--pmdk-motion-standard),visibility 0s linear 180ms;position:fixed;border-left:0;box-shadow:-10px 0 30px color-mix(in srgb,var(--pmdk-color-inverse-surface) 9%,transparent)
+}
+.pmdk-dashboard .pmdk-drawer.open {
+  transform:none;visibility:visible;transition:transform var(--pmdk-motion-standard),visibility 0s
+}
+.pmdk-dashboard .pmdk-drawer-head {
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;min-height:82px;padding:19px 20px 17px;border-bottom:0
+}
+.pmdk-dashboard .pmdk-drawer-head h2,
+.pmdk-dashboard .pmdk-drawer-head p {
+  margin:0
+}
+.pmdk-dashboard .pmdk-drawer-head h2 {
+  line-height:var(--pmdk-line-height-title);font-weight:var(--pmdk-font-weight-semibold);margin-top:4px;font-size:21px;letter-spacing:-.015em
+}
+.pmdk-dashboard .pmdk-drawer-head p {
+  color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold);letter-spacing:.05em;text-transform:uppercase
+}
+.pmdk-dashboard .pmdk-drawer-body {
+  flex:1;overflow:auto;padding:4px 20px 28px
+}
+.pmdk-dashboard .pmdk-drawer-hero {
+  display:flex;align-items:center;padding-bottom:16px;gap:13px;margin:0 0 26px;padding:16px;border-radius:10px;background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-drawer-hero .pmdk-avatar {
+  width:42px;height:42px;border:0
+}
+.pmdk-dashboard .pmdk-drawer-hero-copy {
+  min-width:0;flex:1
+}
+.pmdk-dashboard .pmdk-drawer-hero h3,
+.pmdk-dashboard .pmdk-drawer-hero p {
+  margin:0
+}
+.pmdk-dashboard .pmdk-drawer-hero h3 {
+  text-overflow:ellipsis;font-size:var(--pmdk-font-size-item);font-weight:var(--pmdk-font-weight-semibold);display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.35;white-space:normal
+}
+.pmdk-dashboard .pmdk-drawer-hero p {
+  margin-top:2px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);overflow-wrap:anywhere
+}
+.pmdk-dashboard .pmdk-drawer-confirm {
+  background:var(--pmdk-color-danger-subtle);margin:0 20px 14px;padding:14px;border:0;border-radius:8px
+}
+.pmdk-dashboard .pmdk-drawer-confirm p {
+  margin:0;color:var(--pmdk-color-on-danger);font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-drawer-confirm-actions {
+  display:flex;justify-content:flex-end;gap:7px;margin-top:10px
+}
+.pmdk-dashboard .pmdk-drawer-foot {
+  display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--pmdk-color-border);padding:14px 20px;border-top-color:var(--pmdk-color-border);background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-drawer-primary-actions {
+  display:flex;gap:8px
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-drawer {
+    width:100%;border-left:0
+  }
+  .pmdk-dashboard .pmdk-drawer-foot {
+    align-items:stretch;flex-direction:column-reverse
+  }
+  .pmdk-dashboard .pmdk-drawer-foot>.pmdk-button,
+  .pmdk-dashboard .pmdk-drawer-primary-actions .pmdk-button {
+    flex:1
+  }
+  .pmdk-dashboard .pmdk-drawer-primary-actions {
+    width:100%
+  }
+}
+.pmdk-dashboard .pmdk-drawer-head .pmdk-icon-button {
+  width:40px;height:40px;box-sizing:border-box;border:1px solid transparent;background:var(--pmdk-color-surface)
+}
+.pmdk-dashboard .pmdk-drawer-head .pmdk-icon-button:hover {
+  border-color:var(--pmdk-color-border-strong);background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-drawer-head .pmdk-icon-button:focus-visible {
+  outline:0;border-color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-drawer-head .pmdk-icon-button svg {
+  width:18px;height:18px
+}
+.pmdk-dashboard .pmdk-drawer-confirm-foot {
+  grid-template-columns:minmax(0,1fr) auto;padding-block:10px;background:var(--pmdk-color-danger-subtle);display:flex;flex-direction:column;align-items:stretch;gap:10px
+}
+.pmdk-dashboard .pmdk-drawer-confirm-foot p {
+  margin:0;color:var(--pmdk-color-on-danger);line-height:1.3
+}
+.pmdk-dashboard .pmdk-drawer-confirm-foot p strong,
+.pmdk-dashboard .pmdk-drawer-confirm-foot p span {
+  display:block
+}
+.pmdk-dashboard .pmdk-drawer-confirm-foot p strong {
+  font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-drawer-confirm-foot p span {
+  margin-top:2px;font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-drawer-confirm-foot .pmdk-drawer-confirm-actions {
+  margin-top:0;display:flex;gap:8px;justify-content:flex-end;width:auto;margin:0
+}
+.pmdk-dashboard .pmdk-drawer .pmdk-button:not(.primary):not(.danger):hover:not(:disabled) {
+  border-color:var(--pmdk-color-border-strong);background:var(--pmdk-color-surface);color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-drawer .pmdk-button.danger:hover:not(:disabled) {
+  border-color:var(--pmdk-color-danger);background:var(--pmdk-color-surface);color:var(--pmdk-color-danger)
+}
+.pmdk-dashboard .pmdk-drawer[data-panel-kind=detail] .pmdk-drawer-head {
+  min-height:80px;padding:24px 20px 22px;align-items:center
+}
+.pmdk-dashboard .pmdk-drawer[data-panel-kind=detail] .pmdk-drawer-head h2 {
+  margin-top:0;font-size:var(--pmdk-font-size-heading);line-height:var(--pmdk-line-height-title);letter-spacing:0
+}
+.pmdk-dashboard .pmdk-drawer[data-panel-kind=detail] .pmdk-drawer-body {
+  padding:0 20px 28px
+}
+.pmdk-dashboard .pmdk-drawer[data-panel-kind=detail] .pmdk-drawer-foot .pmdk-button {
+  height:var(--pmdk-size-control-sm);min-height:var(--pmdk-size-control-sm);padding-inline:9px
+}
+@media(prefers-reduced-motion:reduce) {
+  .pmdk-dashboard .pmdk-drawer {
+    animation:none;transition:none
+  }
+}
+.pmdk-dashboard[dir=rtl] .pmdk-drawer {
+  transform:translateX(-104%);box-shadow:10px 0 30px color-mix(in srgb,var(--pmdk-color-inverse-surface) 9%,transparent)
+}
+.pmdk-dashboard[dir=rtl] .pmdk-drawer.open {
+  transform:translateX(0)
+}
+.pmdk-dashboard .pmdk-drawer-foot .pmdk-button {
+  height:var(--pmdk-size-control-md);padding-inline:12px
+}
+@container (max-width:520px) {
+  .pmdk-dashboard .pmdk-drawer-foot .pmdk-button {
+    min-height:var(--pmdk-size-control-lg)
+  }
+}
+.pmdk-dashboard .pmdk-drawer.pmdk-inflow-inspector {
+  position:sticky;z-index:1;inset:auto;top:var(--pmdk-inflow-inspector-sticky-top,0);align-self:start;justify-self:stretch;width:100%;min-width:0;height:var(--pmdk-inflow-inspector-height,calc(100dvh - 144px));grid-column:3;grid-row:1;display:flex;overflow:hidden;border:0;border-radius:0;background:var(--pmdk-color-surface);box-shadow:none;opacity:1;visibility:visible;pointer-events:none;transform:none;transition:none
+}
+@container (max-width:820px) {
+  .pmdk-dashboard .pmdk-drawer.pmdk-inflow-inspector {
+    position:relative;top:auto;width:100%;height:100%;grid-column:1;grid-row:1
+  }
+}
+.pmdk-dashboard .pmdk-drawer-confirm-copy {
+  display:flex;flex-direction:column;gap:8px;min-width:0
+}
+.pmdk-dashboard .pmdk-drawer-confirm-foot .pmdk-force-reason {
+  width:100%
+}
+.pmdk-dashboard .pmdk-drawer-title-group {
+  min-width:0;display:flex;align-items:center;gap:10px
+}
+.pmdk-dashboard .pmdk-drawer-title-leading {
+  display:grid;place-items:center;flex:0 0 auto
+}
+.pmdk-dashboard .pmdk-drawer-title-copy {
+  min-width:0
+}
+.pmdk-dashboard .pmdk-panel-section+.pmdk-panel-section {
+  margin-top:22px
+}
+.pmdk-dashboard .pmdk-panel-section h4 {
+  margin-bottom:14px
+}
+.pmdk-dashboard .pmdk-panel-section>p {
+  color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);line-height:1.55
+}
+.pmdk-dashboard .pmdk-panel-section .pmdk-mini-stats {
+  margin-bottom:16px
+}
+.pmdk-dashboard .pmdk-panel-footer {
+  min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid var(--pmdk-color-border);color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption)
+}
+.pmdk-dashboard .pmdk-panel-drawer-foot>div,
+.pmdk-dashboard .pmdk-panel-drawer-foot>div:last-child {
+  display:flex;align-items:center;gap:8px;margin-inline-start:auto
+}
+.pmdk-dashboard .pmdk-panel-hero {
+  display:flex;align-items:center;gap:13px;margin-bottom:16px;padding:14px;border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface-subtle)
+}
+.pmdk-dashboard .pmdk-panel-hero h3,
+.pmdk-dashboard .pmdk-panel-hero p {
+  margin:0
+}
+.pmdk-dashboard .pmdk-panel-hero h3 {
+  font-size:var(--pmdk-font-size-subheading)
+}
+.pmdk-dashboard .pmdk-panel-hero p {
+  margin-top:3px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);overflow-wrap:anywhere
+}
+.pmdk-dashboard .pmdk-panel-section h4,
+.pmdk-dashboard .pmdk-panel-section p {
+  margin:0
+}
+.pmdk-dashboard .pmdk-panel-section-head p {
+  margin-top:3px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-caption)
+}
+@container (max-width:700px) {
+  .pmdk-dashboard .pmdk-panel-drawer-foot {
+    align-items:stretch;flex-direction:column
+  }
+  .pmdk-dashboard .pmdk-panel-drawer-foot>div {
+    width:100%;margin-inline-start:0
+  }
+  .pmdk-dashboard .pmdk-panel-drawer-foot .pmdk-button {
+    flex:1
+  }
+}
+.pmdk-dashboard .pmdk-panel-footer .pmdk-button {
+  height:var(--pmdk-size-control-md);padding-inline:12px
+}
+@container (max-width:520px) {
+  .pmdk-dashboard .pmdk-panel-footer .pmdk-button {
+    min-height:var(--pmdk-size-control-lg)
+  }
+}/* Compact metric strip — DESIGN-SYSTEM inspector convention ("keep both
+   inline borders and symmetric cell padding"). */
+.pmdk-dashboard .pmdk-mini-stats {
+  display:grid;grid-template-columns:repeat(3,1fr);margin-bottom:18px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control)
+}
+.pmdk-dashboard .pmdk-mini-stats div {
+  padding:11px;border-inline-start:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-mini-stats div:first-child {
+  border-inline-start:0
+}
+.pmdk-dashboard .pmdk-mini-stats strong,
+.pmdk-dashboard .pmdk-mini-stats span {
+  display:block
+}
+.pmdk-dashboard .pmdk-mini-stats strong {
+  font-size:var(--pmdk-font-size-subheading)
+}
+.pmdk-dashboard .pmdk-mini-stats span {
+  margin-top:2px;color:var(--pmdk-color-text-soft);font-size:var(--pmdk-font-size-micro)
+}
+@container (max-width:700px) {
+  .pmdk-dashboard .pmdk-mini-stats {
+    grid-template-columns:1fr
+  }
+  .pmdk-dashboard .pmdk-mini-stats div {
+    border-inline-start:0;border-top:1px solid var(--pmdk-color-border)
+  }
+  .pmdk-dashboard .pmdk-mini-stats div:first-child {
+    border-top:0
+  }
+}
+/*
+ * @pressmaximum/dashboard-kit — module card + tier badge + toggle (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ *
+ * DEDUPED (review round 2): the mechanical extraction emitted base + v2 +
+ * later-source re-declarations of the same selectors sequentially; they are
+ * merged here into single rules carrying the FINAL computed value of each
+ * property (VR gate proves computed-identical).
+ */
+
+@keyframes pdModuleCardReveal {
+	from {
+		opacity: 0;
+		transform: translateY( 8px );
+	}
+	to {
+		opacity: 1;
+		transform: translateY( 0 );
+	}
+}
+
+.pmdk-dashboard .pmdk-module-grid {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.pmdk-dashboard .pmdk-module-grid.is-revealing .pmdk-module-card {
+  animation:pdModuleCardReveal 190ms cubic-bezier(.2,.7,.3,1) backwards;animation-delay:calc(var(--pmdk-module-index,0) * 24ms)
+}
+.pmdk-dashboard .pmdk-module-card {
+  position:relative;min-width:0;min-height:250px;display:flex;flex-direction:column;padding:18px 18px 0;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);box-shadow:none;transition:border-color var(--pmdk-motion-standard),transform var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-module-card:hover {
+  border-color:var(--pmdk-color-border-strong);transform:none;box-shadow:none
+}
+/* `.is-enabled:hover` listed explicitly so a hovered enabled card keeps the
+   accent edge (equal-specificity order vs the generic :hover rule). */
+.pmdk-dashboard .pmdk-module-card.is-enabled,
+.pmdk-dashboard .pmdk-module-card.is-enabled:hover {
+  border-color:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-module-card.is-planned {
+  background:color-mix(in srgb,var(--pmdk-color-surface-subtle) 46%,var(--pmdk-color-surface))
+}
+.pmdk-dashboard .pmdk-module-card-head {
+  display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:start
+}
+.pmdk-dashboard .pmdk-module-icon {
+  width:34px;height:34px;margin-top:1px;display:grid;place-items:center;color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-module-card.is-enabled .pmdk-module-icon {
+  color:var(--pmdk-accent-fg,var(--pmdk-color-accent))
+}
+.pmdk-dashboard .pmdk-module-card.is-planned .pmdk-module-icon {
+  color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-module-card h2 {
+  margin:0;overflow:hidden;text-overflow:ellipsis;font-size:var(--pmdk-font-size-item);line-height:1.35;font-weight:var(--pmdk-font-weight-medium);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-module-card-foot {
+  min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;border-top:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-module-card-foot>.pmdk-button {
+  margin-left:-10px
+}
+.pmdk-dashboard .pmdk-module-toggle {
+  min-height:40px;display:flex;align-items:center;gap:8px;margin-left:auto;cursor:pointer
+}
+.pmdk-dashboard .pmdk-module-toggle-label {
+  min-width:20px;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);text-align:right
+}
+.pmdk-dashboard .pmdk-module-toggle input {
+  position:absolute;width:1px;height:1px;overflow:hidden;opacity:0
+}
+.pmdk-dashboard .pmdk-module-toggle input:checked+.pmdk-toggle-track {
+  border-color:var(--pmdk-color-accent);background:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-module-toggle input:checked+.pmdk-toggle-track>span {
+  transform:translateX(16px)
+}
+.pmdk-dashboard .pmdk-module-toggle input:focus-visible+.pmdk-toggle-track {
+  outline:2px solid var(--pmdk-color-accent);outline-offset:2px
+}
+.pmdk-dashboard .pmdk-module-toggle:hover .pmdk-module-toggle-label {
+  color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-module-card:not(.is-enabled) .pmdk-button.text {
+  color:var(--pmdk-color-text-muted)
+}
+.pmdk-dashboard .pmdk-module-card:not(.is-enabled) .pmdk-button.text:hover {
+  color:var(--pmdk-color-text)
+}
+@container (max-width:1100px) {
+  .pmdk-dashboard .pmdk-module-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-module-grid {
+    grid-template-columns:1fr
+  }
+  .pmdk-dashboard .pmdk-module-card {
+    min-height:240px;padding-inline:16px
+  }
+  .pmdk-dashboard .pmdk-module-card-foot {
+    margin-top:14px
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .pmdk-dashboard .pmdk-module-grid.is-revealing .pmdk-module-card {
+    animation:none;transition:none
+  }
+}
+
+.pmdk-dashboard .pmdk-toggle-track {
+  width:38px;height:22px;display:flex;align-items:center;padding:2px;border:1px solid var(--pmdk-color-border-strong);border-radius:var(--pmdk-radius-pill);background:var(--pmdk-color-surface-muted);transition:background var(--pmdk-motion-standard),border-color var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-toggle-track>span {
+  width:16px;height:16px;border-radius:50%;background:var(--pmdk-color-surface);box-shadow:0 1px 2px color-mix(in srgb,var(--pmdk-color-inverse-surface) 20%,transparent);transition:transform var(--pmdk-motion-standard)
+}
+
+/* Tier + phase badges (DESIGN-SYSTEM: entitlement / roadmap signals — never
+   runtime status). Mechanical rename keeps the source name `module-license`;
+   the flattened v2 tier's FINAL premium look is the warning tint (the earlier
+   accent-tint declarations were dead cascade). */
+.pmdk-dashboard .pmdk-module-license,
+.pmdk-dashboard .pmdk-module-phase {
+  height:21px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:var(--pmdk-radius-pill);font-size:var(--pmdk-font-size-badge);font-weight:var(--pmdk-font-weight-semibold);letter-spacing:.03em;text-transform:uppercase;white-space:nowrap
+}
+.pmdk-dashboard .pmdk-module-license {
+  border:1px solid transparent
+}
+.pmdk-dashboard .pmdk-module-license.is-premium {
+  border-color:var(--pmdk-color-warning-border);background:var(--pmdk-color-warning-subtle);color:var(--pmdk-color-on-warning)
+}
+.pmdk-dashboard .pmdk-module-license.is-free {
+  border-color:color-mix(in srgb,var(--pmdk-color-success) 28%,var(--pmdk-color-border));background:var(--pmdk-color-success-subtle);color:var(--pmdk-color-on-success)
+}
+.pmdk-dashboard .pmdk-module-phase {
+  min-width:28px;border:1px solid var(--pmdk-color-border);color:var(--pmdk-color-text-soft)
+}
+
+/* Integration-state line (K-018 optional): quiet pill, warning tint while not
+   connected, success tint once connected. */
+.pmdk-dashboard .pmdk-module-connection {
+  height:22px;display:inline-flex;align-items:center;flex:0 0 auto;padding:0 7px;border-radius:var(--pmdk-radius-pill);background:var(--pmdk-color-warning-subtle);color:var(--pmdk-color-on-warning);font-size:var(--pmdk-font-size-micro);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-module-connection.is-connected {
+  background:var(--pmdk-color-success-subtle);color:var(--pmdk-color-on-success)
+}
+
+/* --- K-018 anatomy — meta / description / badges are MECHANICAL extraction
+   (source `.pd-module-meta` / `-description` / `-badges` rules; description
+   keeps the 2-line clamp + 42px min-height so grid cards stay row-aligned
+   with long copy). Only the pieces the source has no rule for are
+   hand-authored and marked below. */
+.pmdk-dashboard .pmdk-module-meta {
+	margin: 0 0 2px;
+	color: var( --pmdk-color-text-soft );
+	font-size: var( --pmdk-font-size-caption );
+}
+.pmdk-dashboard .pmdk-module-description {
+	display: -webkit-box;
+	min-height: 42px;
+	margin: 14px 0 0;
+	overflow: hidden;
+	color: var( --pmdk-color-text-muted );
+	font-size: var( --pmdk-font-size-meta );
+	line-height: 1.5;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+.pmdk-dashboard .pmdk-module-badges {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 5px;
+}
+/* Hand-authored (no source rule) — component scaffolding for <PMDKModuleCard>:
+   copy column, heading generalisation (`headingLevel` h2/h3/h4 share the
+   extracted h2 treatment; medium weight per the flattened v2 tier + K-010
+   weight discipline), integration-state line, footer action slot, planned
+   static label tint. */
+.pmdk-dashboard .pmdk-module-copy {
+	min-width: 0;
+}
+.pmdk-dashboard .pmdk-module-copy > :is( h2, h3, h4 ) {
+	margin: 0;
+	overflow: hidden;
+	font-size: var( --pmdk-font-size-item );
+	font-weight: var( --pmdk-font-weight-medium );
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.pmdk-dashboard .pmdk-module-connection-line {
+	margin: 8px 0 0;
+}
+.pmdk-dashboard .pmdk-module-card-action {
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+}
+.pmdk-dashboard .pmdk-module-card.is-planned .pmdk-module-toggle-label {
+	color: var( --pmdk-color-text-soft );
+}
+
+/*
+ * @pressmaximum/dashboard-kit — initial avatar (one letter, one tint) (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-avatar {
+  width:32px;height:32px;display:grid;place-items:center;flex:0 0 auto;border:1px solid var(--pmdk-color-border);border-radius:50%;background:var(--pmdk-color-avatar-surface);color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-caption);font-weight:var(--pmdk-font-weight-semibold)
+}
+.pmdk-dashboard .pmdk-avatar.is-large {
+  width:52px;height:52px;border:0;background:var(--pmdk-color-avatar-surface);font-size:var(--pmdk-font-size-body)
+}
+
+/*
+ * @pressmaximum/dashboard-kit — section tabs (peer views within a route) (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+/* Behavior: `createTablist` (tablist.js) — Left/Right/Home/End roving +
+   aria-selected sync. */
+
+.pmdk-dashboard .pmdk-section-tabs {
+  display:flex;gap:20px;overflow:auto;margin-bottom:12px;border-bottom:1px solid var(--pmdk-color-border)
+}
+.pmdk-dashboard .pmdk-section-tabs button {
+  position:relative;min-height:44px;display:flex;align-items:center;gap:7px;padding:0 2px;border:0;background:transparent;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);white-space:nowrap
+}
+.pmdk-dashboard .pmdk-section-tabs button:hover {
+  color:var(--pmdk-color-text)
+}
+.pmdk-dashboard .pmdk-section-tabs button[aria-selected=true] {
+  color:var(--pmdk-accent-fg)
+}
+.pmdk-dashboard .pmdk-section-tabs button[aria-selected=true]::after {
+  content:"";position:absolute;right:0;bottom:-1px;left:0;height:2px;background:var(--pmdk-color-accent)
+}
+.pmdk-dashboard .pmdk-section-tabs button>span {
+  min-width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--pmdk-color-surface-subtle);font-size:var(--pmdk-font-size-micro)
+}
+@container (max-width:700px) {
+  .pmdk-dashboard .pmdk-section-tabs {
+    gap:14px
+  }
+}
+
+/*
+ * @pressmaximum/dashboard-kit — toast (transient confirmation) (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+.pmdk-dashboard .pmdk-toast {
+  position:absolute;z-index:100;right:18px;bottom:18px;max-width:340px;padding:10px 13px;border:1px solid var(--pmdk-color-border-strong);border-left:3px solid var(--pmdk-color-success);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);font-size:var(--pmdk-font-size-meta);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity var(--pmdk-motion-standard),transform var(--pmdk-motion-standard)
+}
+.pmdk-dashboard .pmdk-toast.show {
+  opacity:1;transform:none
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-toast {
+    right:12px;bottom:12px;left:12px;max-width:none
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .pmdk-dashboard .pmdk-toast {
+    animation:none;transition:none
+  }
+}
+
+/*
+ * @pressmaximum/dashboard-kit — save bar chrome (DS look) (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+/* COLLISION NOTE (KIT-P4 unification pending): the kit CORE also ships a
+   `.pmdk-save-bar` component (src/settings/SaveBar + core style.css). This
+   sheet re-skins that class with the DS chrome for primitives-importing
+   consumers ONLY — Blocksify/Customify (core-only) are untouched. KIT-P4
+   merges the two into one SaveBar (collision map: REPLACES); until then do
+   not restyle src/settings/SaveBar or its CSS. */
+
+.pmdk-dashboard .pmdk-save-bar {
+  position:sticky;z-index:10;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border:1px solid var(--pmdk-color-accent-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);box-shadow:0 -4px 16px color-mix(in srgb,var(--pmdk-color-inverse-surface) 8%,transparent)
+}
+.pmdk-dashboard .pmdk-save-bar p {
+  margin:0;font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-save-actions {
+  display:flex;gap:8px
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-save-bar {
+    align-items:stretch;flex-direction:column
+  }
+  .pmdk-dashboard .pmdk-save-actions .pmdk-button {
+    flex:1
+  }
+}
+
+/*
  * @pressmaximum/dashboard-kit — primitives stylesheet (KIT-P3, slices 1 + 2)
  *
  * Public export:  @pressmaximum/dashboard-kit/primitives/style.css
@@ -2218,6 +2921,10 @@
 /* --- slice 1: fields & controls ------------------------------------------- */
 
 /* --- slice 2: data table tier --------------------------------------------- */
+
+/* --- slice 3: in-flow inspector tier --------------------------------------- */
+
+/* --- slice 4: feedback & shell-adjacent ------------------------------------ */
 
 
 /*# sourceMappingURL=style.css.map*/

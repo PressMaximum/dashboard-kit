@@ -1,0 +1,34 @@
+/*
+ * @pressmaximum/dashboard-kit — save bar chrome (DS look) (KIT-P3 slice 4)
+ *
+ * Extracted from the Aponto plugin-dashboard mockup `.pd-*` layer and
+ * neutralised: `.pd-*`->`.pmdk-*`, `.ap-admin`->`.pmdk-dashboard` chassis,
+ * `[data-ap-visual=v2]` tier flattened to the default, and every brand
+ * `--ap-*` / component `--pd-*` value routed through the `--pmdk-*` token API.
+ * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
+ */
+
+/* COLLISION NOTE (KIT-P4 unification pending): the kit CORE also ships a
+   `.pmdk-save-bar` component (src/settings/SaveBar + core style.css). This
+   sheet re-skins that class with the DS chrome for primitives-importing
+   consumers ONLY — Blocksify/Customify (core-only) are untouched. KIT-P4
+   merges the two into one SaveBar (collision map: REPLACES); until then do
+   not restyle src/settings/SaveBar or its CSS. */
+
+.pmdk-dashboard .pmdk-save-bar {
+  position:sticky;z-index:10;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border:1px solid var(--pmdk-color-accent-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);box-shadow:0 -4px 16px color-mix(in srgb,var(--pmdk-color-inverse-surface) 8%,transparent)
+}
+.pmdk-dashboard .pmdk-save-bar p {
+  margin:0;font-size:var(--pmdk-font-size-meta)
+}
+.pmdk-dashboard .pmdk-save-actions {
+  display:flex;gap:8px
+}
+@container (max-width:620px) {
+  .pmdk-dashboard .pmdk-save-bar {
+    align-items:stretch;flex-direction:column
+  }
+  .pmdk-dashboard .pmdk-save-actions .pmdk-button {
+    flex:1
+  }
+}

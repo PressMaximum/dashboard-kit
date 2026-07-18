@@ -10,7 +10,7 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
-### 0.2.0-alpha (draft — KIT-P2 + KIT-P3 slices 1–2; slices 3–4 + KIT-P4 land before the 0.2.0 tag)
+### 0.2.0-alpha (draft — KIT-P2 + KIT-P3 slices 1–4; KIT-P4 lands before the 0.2.0 tag)
 
 #### KIT-P2 — DS token API + opt-in app theme
 
@@ -70,15 +70,64 @@ public API per the deprecation cycle in §12.2.
 - **Size budgets** for the new artifacts: `primitives/style.css` 15 kB,
   `primitives` entry 3 kB, `table` entry 45 kB (gzip).
 
+#### KIT-P3 slices 3–4 — inspector tier + feedback & shell-adjacent
+
+- **In-flow inspector tier** (slice 3) — `primitives/style.css` grows the
+  `.pmdk-inflow-*` workspace chrome (main content narrows when the panel
+  opens; no backdrop), the `.pmdk-drawer-*` overlay drawer with the
+  `data-panel-kind="detail"` read-only mode, shared `.pmdk-panel-*` content
+  conventions and the `.pmdk-mini-stats` metric strip. Aponto's domain
+  `data-panel-kind` variants were left product-side.
+- **`createInspectorResizer`** — headless separator behavior (pointer drag,
+  Arrow keys in 16px steps, Home/End, ARIA values) persisting under
+  `dashboard-kit.inspector-width.v1`; a temporarily narrow viewport clamps the
+  render without overwriting the stored preference. Writes
+  `--pmdk-inflow-inspector-width` (defaults to the `--pmdk-inspector-width`
+  token).
+- **`createMenu`** — the promised G4 headless menu/popover primitive:
+  trigger toggle, keyboard-open first-item focus, roving menu keys,
+  Escape-focus-return, outside dismiss, anchored `.opens-up` flip or
+  viewport-clamped fixed positioning. One module instead of ~200 lines of
+  per-menu behavior in each product.
+- **Feedback & shell-adjacent chrome** (slice 4) — module card catalogue
+  (grid/card/icon/tier badge `.pmdk-module-license`/toggle
+  `.pmdk-toggle-track`), one-letter/one-tint `.pmdk-avatar`,
+  `.pmdk-section-tabs` + **`createTablist`** (wrap-around roving, headless
+  panels), `.pmdk-toast`, and the DS `.pmdk-save-bar` chrome — the latter
+  re-skins the class the core SaveBar emits for primitives-importing
+  consumers; KIT-P4 unifies component + chrome (core SaveBar untouched here).
+- **`<PMDKModuleCard>` — K-018, PressListing consumer request.** New React
+  sub-entry `@pressmaximum/dashboard-kit/module-card` (own entry keeps
+  `./primitives` React-free; zero third-party deps). The PMDKDataTable split:
+  kit ships behavior + chrome + slots — icon slot, meta line, title
+  (`headingLevel`), tier badge chrome (`.pmdk-module-license`) + free badge
+  slot (phase `.pmdk-module-phase`), description, optional integration-state
+  line (`.pmdk-module-connection` + `is-connected`), footer action slot + the
+  canonical on/off toggle (`onToggle`, `toggleDisabled` for gated modules);
+  states `enabled`/`disabled`/`planned` — planned renders NO toggle, the
+  product injects a static label. A11y: no whole-card click; accessible
+  toggle names; tier ≠ runtime status. Grid/category-tabs/counts-strip stay
+  product-side (SPEC §5.12 recipe + the `ModuleCard/ModulesPage` story).
+  Resolves `K-018`.
+- Already shipped in slice 2, not re-extracted: five states, status pill,
+  pagination, popover chrome (phase-1 inventory cross-check in SPEC §16.5).
+- 18 new stories (inspector/drawer/menu/module-card + ModulesPage consumer
+  example/avatar/tabs/toast/save-bar, light + theme-app + dark) and 39 new
+  unit tests (menu incl. numeric fixed-positioning/RTL/clamp, resizer,
+  tablist, PMDKModuleCard); the VR story matrix grows 17 → 32 shots.
+- Size: `primitives/style.css` 13.14 kB gzip after the cascade dedupe
+  (budget 15 kB unchanged); `primitives` entry budget recalibrated 3 → 5 kB
+  (measured 4.28 kB — the entry now bundles four behavior modules, not one);
+  `module-card` entry 1.84 kB (budget 2 kB).
+
 #### Notes
 
 - `EntityListPage`/DataViews stay unchanged (legacy tier for existing
   consumers); `PMDKDataTable` is the DS-tier alternative, not a replacement.
 - Core `style.css`, core entry and both existing consumers are byte-for-byte
   unaffected unless the new sub-entries are imported.
-- Backlog (slice 3): a shared headless menu/popover primitive (G4) — the
-  popover chrome ships now; open/close/roving behavior stays per-component
-  until the inspector/drawer slice needs it too.
+- The mockup's primary-color preset engine (`dashboard-kit-preferences.js`)
+  is deliberately NOT ported in P3 — theming tooling, revisit at KIT-P4/P5.
 
 ## [0.1.1] — 2026-07-18
 

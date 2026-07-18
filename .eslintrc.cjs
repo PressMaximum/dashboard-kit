@@ -88,6 +88,7 @@ module.exports = {
 			files: [
 				'src/primitives/**/*.{js,mjs,jsx}',
 				'src/table/**/*.{js,mjs,jsx}',
+				'src/module-card/**/*.{js,mjs,jsx}',
 				'stories/**/*.{js,mjs,jsx}',
 			],
 			rules: {

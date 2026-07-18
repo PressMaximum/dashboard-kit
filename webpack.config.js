@@ -104,6 +104,13 @@ export default ( env, argv ) => {
 			// react/react-dom/@wordpress/* stay external. Opt-in + separate from
 			// core, so Blocksify/Customify never pull this weight.
 			'table/index': path.resolve( __dirname, 'src/table/index.mjs' ),
+			// KIT-P3 module card (<PMDKModuleCard>, K-018). Own entry (mirrors
+			// `table/`) so the React-free contract of `primitives/` holds; zero
+			// third-party deps — react stays external.
+			'module-card/index': path.resolve(
+				__dirname,
+				'src/module-card/index.mjs'
+			),
 			// Opt-in app theme — pure-CSS entry. Emits `build/themes/app.css`
 			// only; the JS stub webpack generates for a CSS entry is dropped
 			// by RemoveCssEntryJsStubPlugin below (no JS export path exists

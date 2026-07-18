@@ -46,6 +46,10 @@
       "import": "./build/table/index.mjs",
       "types": "./build/table/index.d.mts"
     },
+    "./module-card": {
+      "import": "./build/module-card/index.mjs",
+      "types": "./build/module-card/index.d.mts"
+    },
     "./style.css": "./build/style.css",
     "./datasets/style.css": "./build/datasets/style.css",
     "./themes/app.css": "./build/themes/app.css",
@@ -171,13 +175,19 @@
     {
       "name": "Primitives entry (gzip)",
       "path": "build/primitives/index.mjs",
-      "limit": "3 KB",
+      "limit": "5 KB",
       "gzip": true
     },
     {
       "name": "Table entry (gzip)",
       "path": "build/table/index.mjs",
       "limit": "45 KB",
+      "gzip": true
+    },
+    {
+      "name": "Module card entry (gzip)",
+      "path": "build/module-card/index.mjs",
+      "limit": "2 KB",
       "gzip": true
     }
   ],

@@ -1232,6 +1232,83 @@ selection, typed exact match (case-insensitive) commits on dismiss.
 activeIcon? })` returns the escaped ARIA scaffold string so consumers don't
 hand-write it.
 
+#### `createMenu( root, options? )` → controller (slice 3, G4)
+
+The shared menu/popover behavior the BookingsTable patterns implement
+per-component, shipped once: trigger toggle + `aria-expanded`, keyboard-open
+(detail 0) focuses the first enabled item, ArrowUp/Down/Home/End roving over
+`[role=menuitem]`/`[role=menuitemradio]`, Escape closes with focus returned to
+the trigger, outside-pointerdown dismisses, item activation calls
+`options.onSelect(item, event)` then closes (keyboard activation returns
+focus). DOM contract: root contains `[data-menu-trigger]` + a `[role="menu"]`
+(or `[data-menu-popover]`) element. `options.position`: `'anchored'` (default)
+toggles `.opens-up` on the root when space below is short; `'fixed'` ports the
+floating row-action mode (viewport-clamped `left/top`, `.is-floating`,
+scroll/resize tracking, RTL-aware). Controller: `open() / close({returnFocus})
+/ toggle() / isOpen() / destroy()`.
+
+#### `createInspectorResizer( workspace, options? )` → controller (slice 3)
+
+The in-flow inspector separator: pointer drag; ArrowLeft/ArrowRight in 16px
+steps; Home = default width; End = max; `aria-valuemin/-valuemax/-valuenow`;
+`is-resizing` on the workspace while dragging. Width renders to
+`--pmdk-inflow-inspector-width` on the workspace and persists under
+`dashboard-kit.inspector-width.v1` (options: `storageKey` — `''` disables,
+`cssVar`, `minWidth` 320 / `maxWidth` 520 / `mainMinWidth` 360 /
+`defaultWidth` 360 / `step` 16, `onWidthChange`). A narrow viewport clamps
+only the RENDERED width — the stored preference survives (DESIGN-SYSTEM).
+Controller: `setWidth(value, persist?) / getWidth() / refresh() / destroy()`.
+
+#### `createTablist( root, options? )` → controller (slice 4)
+
+Source-parity tablist for `.pmdk-section-tabs`: click activates;
+ArrowLeft/ArrowRight rove with wrap-around; Home/End jump; activation follows
+focus; `aria-selected` synced; `options.onChange(tab, index)`. Panel swapping
+stays consumer-side (headless). Controller: `activate(tab, moveFocus?) /
+getActive() / destroy()`.
+
+#### `<PMDKModuleCard>` (K-018 — `@pressmaximum/dashboard-kit/module-card`)
+
+The shared module/integration card, promoted on PressListing's request (the
+second product instantiating the Aponto anatomy). Own React sub-entry so
+`./primitives` stays React-free; zero third-party deps; chrome from
+`primitives/style.css` (module-card.css). The PMDKDataTable split applies:
+kit ships behavior + chrome + slots, product keeps data + copy.
+
+| Prop | Type / default | Contract |
+|---|---|---|
+| `title` | `node` (required) | Card title (`headingLevel` = `2` picks h2/h3/h4) |
+| `icon` | `node` | Icon slot (product glyph, 30px box) |
+| `meta` | `node` | Meta line — product copy, e.g. `"{Category} · {Module\|Integration}"` |
+| `description` | `node` | One-sentence description |
+| `tier` | `{ label: node, isPremium?: bool }` | TIER badge — kit chrome (`.pmdk-module-license`), product label. Entitlement signal, visually distinct from runtime status |
+| `badges` | `node` | Extra badge slot (phase etc. — compose `.pmdk-module-phase`) |
+| `state` | `'enabled'│'disabled'│'planned'` = `'disabled'` | Stamped `is-enabled` / `is-disabled` / `is-planned` |
+| `integrationState` / `connected` | `node` / `bool` | Optional integration-state line (`.pmdk-module-connection`, `is-connected` tint) |
+| `action` | `node` | Footer action slot (Configure / deep link / View roadmap) |
+| `plannedLabel` | `node` | Static footer label for `planned` — which renders NO toggle |
+| `onToggle` | `(next: bool) => void` | The toggle is the canonical activation control; controlled by `state` |
+| `toggleDisabled` | `bool` = `false` | Gated module: toggle stays disabled (pair with an upgrade `action`) |
+| `labels` | `{ toggleOn, toggleOff, toggleAria(title, enabled) }` | i18n overrides (English defaults per §5.13 Tier-2 rules) |
+| `className` | `string` | Extra classes on the `<article>` |
+
+A11y: the kit renders no card-level click handler (never make the whole card
+clickable); every toggle carries an accessible name.
+
+**Recipe — the Modules page around the card (product-side).** The grid,
+category tabs and counts strip are deliberately NOT part of the component:
+
+```jsx
+<div className="pmdk-mini-stats">…counts…</div>            // counts strip
+<div className="pmdk-section-tabs" ref={ tabsEl }>…</div>  // + createTablist
+<div className="pmdk-module-grid">
+  { modules.map( ( m ) => <PMDKModuleCard key={ m.id } … /> ) }
+</div>
+```
+
+The `ModuleCard/ModulesPage` story is the working reference (registry data,
+category filtering via `createTablist`, lock/planned/integration states).
+
 #### `<PMDKDataTable>` props
 
 The Q13 split: **kit ships** sorting, search + filter wiring, pagination
@@ -2246,12 +2323,26 @@ the mockup `DESIGN-SYSTEM.md`):
 | Pagination | `.pmdk-pagination` (+ `-tools` / `-size`), `.pmdk-page-controls` | `Showing x–y of z` + 25/50/100 + 34px prev/next |
 | Status + row actions | `.pmdk-status` (+ status modifier classes), `.pmdk-status-picker` / `-trigger` / `-menu` / `-option`, `.pmdk-row-actions` (+ `is-open` / `opens-up`), `.pmdk-row-action`, `.pmdk-row-action-icon`, `.pmdk-row-action-menu` (+ `is-floating`), `.pmdk-row-action-separator` | Kebabs transparent at rest, neutral fill on hover; status pills quiet tints |
 | Five states | `.pmdk-state-panel`, `.pmdk-state-icon` (+ `is-error`), `.pmdk-state-loading`, `.pmdk-state-skeleton-head` / `-grid`, `.pmdk-skeleton`, `.pmdk-empty`, `.pmdk-inline-empty` | Ready / Loading / Empty / Error / Permission |
+| In-flow inspector (slice 3) | `.pmdk-inflow-workspace` (+ `is-inspecting` / `is-resizing` / `is-closing`), `.pmdk-inflow-main`, `.pmdk-inflow-resizer`, `.pmdk-inflow-inspector` (+ `-head`) | Workspace plane: open pushes main narrower, no backdrop. Width via `--pmdk-inflow-inspector-width` (defaults to the token `--pmdk-inspector-width`); behavior via `createInspectorResizer`. Aponto `data-panel-kind` domain variants were NOT extracted |
+| Drawer + panel content (slice 3) | `.pmdk-drawer` (+ `open`, `[data-panel-kind=detail]` mode), `.pmdk-drawer-head` / `-body` / `-foot` / `-hero` (+ `-hero-copy`) / `-title-group` / `-title-copy` / `-title-leading` / `-primary-actions` / `-confirm` / `-confirm-foot` / `-confirm-actions`, `.pmdk-panel-section` / `-hero` / `-footer` / `-drawer-foot`, `.pmdk-mini-stats` | Overlay-plane drawer + shared panel content conventions; `.pmdk-mini-stats` is the compact metric strip |
+| Module card (slice 4 + K-018) | `.pmdk-module-grid` (+ `is-revealing`), `.pmdk-module-card` (+ `is-enabled` / `is-disabled` / `is-planned`), `.pmdk-module-card-head` / `-foot`, `.pmdk-module-icon`, `.pmdk-module-copy` / `-meta` / `-description` / `-badges` / `-card-action` / `-connection-line` (K-018 anatomy), `.pmdk-module-license` (+ `is-premium` — the TIER badge; source name kept), `.pmdk-module-phase`, `.pmdk-module-connection` (+ `is-connected`), `.pmdk-module-toggle` (+ `-label`), `.pmdk-toggle-track` | DESIGN-SYSTEM anatomy: icon, tier badge, title, description, status, toggle. Component: `<PMDKModuleCard>` (§5.12) |
+| Avatar (slice 4) | `.pmdk-avatar` (+ `is-large`) | One uppercase letter, one shared quiet tint — no per-record colour cycling |
+| Tabs (slice 4) | `.pmdk-section-tabs` | Peer views within a route; underline active, optional count badge span; behavior via `createTablist` |
+| Toast (slice 4) | `.pmdk-toast` (+ `show`) | Transient confirmation anchored to the workspace corner |
+| Save bar (slice 4) | `.pmdk-save-bar`, `.pmdk-save-actions` | DS chrome for the SAME class the core SaveBar component emits — re-skins it for primitives-importing consumers only. KIT-P4 unifies component + chrome (collision map: REPLACES); until then core `src/settings/SaveBar` stays untouched |
 | Foundations | `.pmdk-react-icon` (icon slot), `--pmdk-checkbox-check-image` (check glyph token; override when `--pmdk-color-on-accent` is dark) | `base.css` |
 
 These classes follow the §16.2 lock-scope rule: the FAMILY names above are the
 supported surface for product composition; unlisted subparts may change without
-a major bump. (Slices 3–4 — inspector/resizer/drawer, module card, tabs, toast,
-save-bar — extend this sheet.)
+a major bump.
+
+Phase-1 inventory cross-check (ds-contract-phase1, ~15 families): everything
+route-neutral now ships across slices 1–4. Already covered by earlier slices
+(no re-extraction in 3–4): five states, status pill, pagination, popover
+chrome. NOT in P3 by design: page headers / TabStrip / SchemaForm chrome
+(KIT-P4 REPLACES work), the primary-color preset engine
+(`dashboard-kit-preferences.js` — theming tooling, later phase), Aponto-domain
+composition (~45% of the mockup sheet).
 
 ---
 
