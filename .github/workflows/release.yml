@@ -43,8 +43,16 @@ jobs:
             exit 1
           fi
 
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      # Founder decision 2026-07-18: GitHub git-dep (tag pin) is the supported
+      # distribution channel for now; npm registry publish is optional and
+      # activates automatically once the NPM_TOKEN secret is configured.
+      - name: Publish to npm (auto-skips without NPM_TOKEN)
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "NPM_TOKEN not configured — skipping npm publish (consumers pin the git tag)."
+            exit 0
+          fi
+          npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
