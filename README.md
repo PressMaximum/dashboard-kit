@@ -83,7 +83,7 @@ Importing nothing from `/datasets` means webpack never traverses it. See [docs/S
 
 ## Theming
 
-CSS custom properties on `:root` — override at any scope. See [docs/SPEC.md §16.1](docs/SPEC.md) for the full token table.
+CSS custom properties on `:root` — override at any scope. See [docs/SPEC.md §16.1](docs/SPEC.md) for the full token table, including the 0.2 DS token API (tone-derivation engine + semantic / type / space / size / motion / component-tier families).
 
 ```css
 .my-dashboard-root {
@@ -91,6 +91,18 @@ CSS custom properties on `:root` — override at any scope. See [docs/SPEC.md §
 	--pmdk-radius-small: 6px;
 }
 ```
+
+Optional packaged "app look" (16px type, 6px radius, DS tones + dark preset) — opt in, not the default:
+
+```js
+import '@pressmaximum/dashboard-kit/themes/app.css'; // then add `.pmdk-theme-app`
+```
+
+**Browser floor:** `color-mix()`, `:has()` and container queries are required by
+the P3 primitives and the opt-in app theme (tone engine, compact-field kit,
+in-flow inspector). The 0.1-era core components and tokens do not require them —
+consumers that don't adopt the new surfaces are unaffected. All three features are
+supported by the evergreen browsers wp-admin targets in 2026.
 
 ## Compatibility matrix
 

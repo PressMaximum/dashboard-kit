@@ -1,0 +1,103 @@
+/*
+ * @pressmaximum/dashboard-kit — App theme (opt-in)
+ *
+ * Import path:  @pressmaximum/dashboard-kit/themes/app.css
+ * Scope class:  .pmdk-theme-app
+ *
+ * This is the packaged, versioned "founder look" distilled from the Aponto
+ * plugin-dashboard mockup — the 16px readable type scale, 6px card radius and
+ * DS neutral tones. Per the REVISED C decision (2026-07-18) it is NOT the kit
+ * default: kit core stays WP-native (14px / 8px) so Blocksify + Customify keep
+ * their look on a version bump. Products that want the new language add the
+ * scope class and import this sheet; Aponto + PressListing share this one file.
+ *
+ * Mechanism (proven here, values finished over KIT-P3/P4): the sheet only moves
+ * the tone-derivation *seeds*, *weights*, type scale and radius. Every derived
+ * role (`--pmdk-color-*-subtle/-border/-soft`, text-soft, borders, row-hover,
+ * on-* foregrounds …) recomputes automatically because the `color-mix()`
+ * formulas live in tokens.css and substitute the cascaded seed/weight at the
+ * point of use. Brand accent is deliberately NOT set here — it stays with the
+ * consumer bridge / WP admin scheme so one theme serves multiple brands.
+ *
+ * Constraint: the accent seed lives on `body.wp-admin` / `.pmdk-dashboard`.
+ * A `.pmdk-theme-app` scope with no dashboard root beneath it (e.g. the class
+ * on `<html>` in a bare page) has no accent seed, so accent-derived roles
+ * won't resolve there — keep the dashboard root inside the themed subtree.
+ */
+
+.pmdk-theme-app {
+	/* Type: lift the readable DS scale (base 16px). */
+	--pmdk-font-size-base: 16px;
+	--pmdk-line-height-base: 1.45;
+	--pmdk-font-size-badge: 11px;
+	--pmdk-font-size-micro: 12px;
+	--pmdk-font-size-caption: 13px;
+	--pmdk-font-size-meta: 15px;
+	--pmdk-font-size-control: 16px;
+	--pmdk-font-size-item: 17px;
+	--pmdk-font-size-subheading: 20px;
+	--pmdk-font-size-heading: 24px;
+	--pmdk-font-size-field-label: 13px;
+	--pmdk-line-height-body: 1.45;
+	--pmdk-letter-spacing-title: -0.01em;
+
+	/* Shape: DS card radius is 6px (control geometry stays 4px). */
+	--pmdk-radius-card: 6px;
+	--pmdk-radius-control: 4px;
+
+	/* Density */
+	--pmdk-content-gutter: 28px;
+
+	/* Neutral seeds (light DS preset). */
+	--pmdk-color-text: #202124;
+	--pmdk-color-bg: #ffffff;
+	--pmdk-color-canvas: #ffffff;
+	--pmdk-color-danger: #c72c41;
+	--pmdk-color-success: #16865c;
+	--pmdk-color-warning: #9a6b00;
+	--pmdk-color-info: #4f5bd5;
+
+	/* Tone weights: retune the whole derived surface in one move. */
+	--pmdk-tone-text-muted: 66%;
+	--pmdk-tone-text-soft: 48%;
+	--pmdk-tone-surface-subtle: 3%;
+	--pmdk-tone-surface-muted: 5%;
+	--pmdk-tone-avatar-surface: 5%;
+	--pmdk-tone-border: 9%;
+	--pmdk-tone-border-strong: 19%;
+	--pmdk-tone-accent-subtle: 6%;
+	--pmdk-tone-accent-soft: 11%;
+	--pmdk-tone-accent-border: 30%;
+
+	/* Opt the two overloaded literals into the engine so the DS neutral
+	   surface derives from seeds+weights here (core keeps its WP-native
+	   literals #e0e0e0 / #50575e for non-themed consumers). */
+	--pmdk-color-border: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-border ), var( --pmdk-color-surface ) );
+	--pmdk-color-text-muted: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-text-muted ), var( --pmdk-color-surface ) );
+}
+
+/*
+ * Dark preset. Set `data-pmdk-color-scheme="dark"` on the SAME element that
+ * carries `.pmdk-theme-app` (mirrors the mockup's `.ap-token-scope[
+ * data-ap-color-scheme=dark]` same-element switch). Only seeds + weights move;
+ * every derived role — declared on this element via tokens.css's
+ * `:root, .pmdk-theme-app` rule — recomputes against these values, and the
+ * resolved colors inherit to descendants.
+ */
+.pmdk-theme-app[ data-pmdk-color-scheme='dark' ] {
+	--pmdk-color-text: #f1f3f5;
+	--pmdk-color-bg: #1a1c21;
+	--pmdk-color-canvas: #111318;
+	--pmdk-tone-text-muted: 70%;
+	--pmdk-tone-text-soft: 52%;
+	--pmdk-tone-surface-subtle: 5%;
+	--pmdk-tone-surface-muted: 8%;
+	--pmdk-tone-avatar-surface: 7%;
+	--pmdk-tone-border: 10%;
+	--pmdk-tone-border-strong: 20%;
+	--pmdk-tone-accent-subtle: 18%;
+	--pmdk-tone-accent-soft: 24%;
+}
+
+
+/*# sourceMappingURL=app.css.map*/

@@ -27,9 +27,15 @@
 	--pmdk-color-border: #e0e0e0;
 	--pmdk-color-border-subtle: #f0f0f1;
 
-	/* State */
+	/* State
+	 * `danger` is the canonical semantic (P2 rename from `error`, aligning the
+	 * kit with the DS + the danger/success/warning/info family below).
+	 * `--pmdk-color-error` stays as a permanent back-compat alias so existing
+	 * consumers (Blocksify, Customify) keep resolving the identical value —
+	 * the default is unchanged. */
 	--pmdk-color-success: #00a32a;
-	--pmdk-color-error: #b91c1c;
+	--pmdk-color-danger: #b91c1c;
+	--pmdk-color-error: var( --pmdk-color-danger );
 
 	/* Shape */
 	--pmdk-radius-small: 4px;
@@ -123,4 +129,173 @@
 body.wp-admin,
 .pmdk-dashboard {
 	--pmdk-color-accent: var( --wp-admin-theme-color, #3858e9 );
+}
+
+/* =====================================================================
+ * DS token API (KIT-P2) — additive, non-breaking.
+ *
+ * Everything below is NEW surface introduced so kit primitives (extracted
+ * in KIT-P3) and the opt-in `themes/app.css` share one theming API. Defaults
+ * here stay WP-native (REVISED C 2026-07-18): the founder look — 16px type,
+ * 6px card radius, DS neutrals — is NOT the kit default; it ships in
+ * `.pmdk-theme-app`. Consumers that do not opt in see no visual change.
+ *
+ * The crown jewel is the tone-derivation engine ported from the Aponto
+ * mockup: a handful of `--pmdk-tone-*` weights drive ~25 derived roles via
+ * `color-mix()`, so a theme retones the whole surface by moving seeds +
+ * weights instead of hand-picking every shade. Browser floor for the kit
+ * rises to `:has()` + container queries + `color-mix()` (wp-admin 2026 ok;
+ * recorded in README/SPEC).
+ * ===================================================================== */
+:root {
+	/* --- Additional seed colors (neutral WP-native defaults) --------- */
+	--pmdk-color-on-accent: #ffffff; /* foreground on a filled accent */
+	--pmdk-color-canvas: #ffffff; /* deepest page plane behind surfaces */
+	--pmdk-color-warning: #996800;
+	--pmdk-color-info: #2271b1;
+	--pmdk-color-inverse-surface: #1e1e1e; /* tooltips / inverted chips */
+	--pmdk-color-on-inverse: #ffffff;
+
+	/* --- Tone weights: 10 seeds that drive the derived roles --------- */
+	--pmdk-tone-text-muted: 62%;
+	--pmdk-tone-text-soft: 55%;
+	--pmdk-tone-surface-subtle: 5%;
+	--pmdk-tone-surface-muted: 7%;
+	--pmdk-tone-avatar-surface: 6%;
+	--pmdk-tone-border: 14%;
+	--pmdk-tone-border-strong: 24%;
+	--pmdk-tone-accent-subtle: 10%;
+	--pmdk-tone-accent-soft: 16%;
+	--pmdk-tone-accent-border: 40%;
+
+	/* --- Type roles (WP-native scale; theme-app lifts to 16px body) -- */
+	--pmdk-font-size-badge: 11px;
+	--pmdk-font-size-micro: 11px;
+	--pmdk-font-size-caption: 12px;
+	--pmdk-font-size-meta: 12px;
+	--pmdk-font-size-control: 13px;
+	--pmdk-font-size-body: var( --pmdk-font-size-base );
+	--pmdk-font-size-item: 14px;
+	--pmdk-font-size-subheading: 16px;
+	--pmdk-font-size-heading: 20px;
+	--pmdk-font-size-field-label: 12px;
+	--pmdk-font-size-field-value: var( --pmdk-font-size-base );
+	--pmdk-font-weight-regular: 400;
+	--pmdk-font-weight-medium: 500;
+	--pmdk-font-weight-semibold: 600;
+	--pmdk-line-height-body: var( --pmdk-line-height-base );
+	--pmdk-line-height-compact: 1.3;
+	--pmdk-line-height-title: 1.25;
+	--pmdk-line-height-label: 1.3; /* dangling-token fix (`--ap-line-height-label`) */
+	--pmdk-letter-spacing-title: normal;
+
+	/* --- 4px spacing foundation (0–8) ------------------------------- */
+	--pmdk-space-0: 0;
+	--pmdk-space-1: 4px;
+	--pmdk-space-2: 8px;
+	--pmdk-space-3: 12px;
+	--pmdk-space-4: 16px;
+	--pmdk-space-5: 20px;
+	--pmdk-space-6: 24px;
+	--pmdk-space-8: 32px;
+
+	/* --- Control + icon geometry (choose by density, not component) -- */
+	--pmdk-radius-control: var( --pmdk-radius-small );
+	--pmdk-size-control-sm: 34px;
+	--pmdk-size-control-md: 40px;
+	--pmdk-size-control-lg: 44px;
+	--pmdk-size-field-compact: 56px;
+	--pmdk-size-field-relationship: 48px;
+	--pmdk-size-field-compact-notes: 72px;
+	--pmdk-size-hit-target: 44px;
+	--pmdk-size-icon-sm: 14px;
+	--pmdk-size-icon-md: 18px;
+	--pmdk-size-icon-lg: 20px;
+
+	/* --- Motion (VR disables animation; values still contract) ------- */
+	--pmdk-motion-standard: 170ms cubic-bezier( 0.2, 0.7, 0.3, 1 );
+	--pmdk-motion-duration-fast: 120ms; /* dangling-token fix (`--ap-duration-fast`) */
+	--pmdk-motion-ease-standard: cubic-bezier( 0.2, 0.7, 0.3, 1 ); /* fix (`--ap-ease-standard`) */
+
+	/* --- Component-tier scalars (promoted from mockup `--pd-*`) ------ */
+	--pmdk-content-gutter: 24px;
+	--pmdk-inspector-width: 360px;
+}
+
+/* ---------------------------------------------------------------------
+ * Tone-derivation engine — the derived roles.
+ *
+ * These are declared at BOTH `:root` AND `.pmdk-theme-app` on purpose. CSS
+ * substitutes a custom property's `var()`s at computed-value time against the
+ * element that CARRIES the declaration; a role declared only at `:root` freezes
+ * to the root seeds and ignores a descendant theme's seed/weight overrides.
+ * Re-declaring the same formulas at `.pmdk-theme-app` lets one scope-class
+ * retone the whole surface (see themes/app.css). Same pattern the Aponto
+ * mockup uses (base + same-element dark override).
+ * ------------------------------------------------------------------- */
+:root,
+.pmdk-theme-app {
+	--pmdk-color-heading: var( --pmdk-color-text );
+	/* DS-aligned alias for the existing surface token; follows the bg seed. */
+	--pmdk-color-surface: var( --pmdk-color-bg );
+
+	/* Neutral roles: one text seed + one surface seed. */
+	--pmdk-color-text-soft: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-text-soft ), var( --pmdk-color-surface ) );
+	--pmdk-color-surface-subtle: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-surface-subtle ), var( --pmdk-color-surface ) );
+	--pmdk-color-surface-muted: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-surface-muted ), var( --pmdk-color-surface ) );
+	--pmdk-color-avatar-surface: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-avatar-surface ), var( --pmdk-color-surface ) );
+	--pmdk-color-border-strong: color-mix( in srgb, var( --pmdk-color-text ) var( --pmdk-tone-border-strong ), var( --pmdk-color-surface ) );
+	--pmdk-color-row-hover: color-mix( in srgb, var( --pmdk-color-surface-subtle ) 50%, var( --pmdk-color-surface ) );
+
+	/* Semantic families: subtle / border / on-* per meaning. */
+	--pmdk-color-danger-subtle: color-mix( in srgb, var( --pmdk-color-danger ) 8%, var( --pmdk-color-surface ) );
+	--pmdk-color-danger-border: color-mix( in srgb, var( --pmdk-color-danger ) 24%, var( --pmdk-color-border ) );
+	--pmdk-color-on-danger: color-mix( in srgb, var( --pmdk-color-danger ) 82%, var( --pmdk-color-text ) );
+	--pmdk-color-warning-subtle: color-mix( in srgb, var( --pmdk-color-warning ) 9%, var( --pmdk-color-surface ) );
+	--pmdk-color-warning-border: color-mix( in srgb, var( --pmdk-color-warning ) 24%, var( --pmdk-color-border ) );
+	--pmdk-color-on-warning: color-mix( in srgb, var( --pmdk-color-warning ) 78%, var( --pmdk-color-text ) );
+	--pmdk-color-info-subtle: color-mix( in srgb, var( --pmdk-color-info ) 9%, var( --pmdk-color-surface ) );
+	--pmdk-color-info-border: color-mix( in srgb, var( --pmdk-color-info ) 24%, var( --pmdk-color-border ) );
+	--pmdk-color-on-info: color-mix( in srgb, var( --pmdk-color-info ) 78%, var( --pmdk-color-text ) );
+	--pmdk-color-success-subtle: color-mix( in srgb, var( --pmdk-color-success ) 9%, var( --pmdk-color-surface ) );
+	--pmdk-color-success-border: color-mix( in srgb, var( --pmdk-color-success ) 24%, var( --pmdk-color-border ) );
+	--pmdk-color-on-success: color-mix( in srgb, var( --pmdk-color-success ) 82%, var( --pmdk-color-text ) );
+	/* dangling-token fix (was silently no-op `--ap-color-success-soft`). */
+	--pmdk-color-success-soft: color-mix( in srgb, var( --pmdk-color-success ) 16%, var( --pmdk-color-surface ) );
+
+	/* Component-tier derived (promoted from mockup `--pd-*`). */
+	--pmdk-control-border-default: color-mix( in srgb, var( --pmdk-color-text ) 18%, var( --pmdk-color-surface ) );
+	--pmdk-control-border-hover: color-mix( in srgb, var( --pmdk-color-text ) 30%, var( --pmdk-color-surface ) );
+	--pmdk-data-border-strong: var( --pmdk-color-border-strong );
+	--pmdk-data-border-medium: color-mix( in srgb, var( --pmdk-color-border-strong ) 55%, var( --pmdk-color-border ) );
+	--pmdk-data-border-soft: color-mix( in srgb, var( --pmdk-color-border ) 72%, transparent );
+}
+
+/*
+ * Accent-derived roles MUST resolve at the same cascade level as
+ * `--pmdk-color-accent` (body-level, so they see `--wp-admin-theme-color` —
+ * see K-001). `.pmdk-theme-app` is included so a theme retones them too;
+ * apply the theme class on (or above) the dashboard root where accent lives.
+ */
+body.wp-admin,
+.pmdk-dashboard,
+.pmdk-theme-app {
+	--pmdk-color-accent-subtle: color-mix(
+		in srgb,
+		var( --pmdk-color-accent ) var( --pmdk-tone-accent-subtle ),
+		var( --pmdk-color-surface )
+	);
+	--pmdk-color-accent-soft: color-mix(
+		in srgb,
+		var( --pmdk-color-accent ) var( --pmdk-tone-accent-soft ),
+		var( --pmdk-color-surface )
+	);
+	--pmdk-color-accent-border: color-mix(
+		in srgb,
+		var( --pmdk-color-accent ) var( --pmdk-tone-accent-border ),
+		var( --pmdk-color-border )
+	);
+	/* Readable foreground for accent-tinted-on-surface text (mockup `--pd-color-accent-fg`). */
+	--pmdk-accent-fg: color-mix( in srgb, var( --pmdk-color-accent ) 62%, var( --pmdk-color-text ) );
+	--pmdk-control-border-active: var( --pmdk-color-accent );
 }

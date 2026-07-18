@@ -38,6 +38,24 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Token gate (GATE B) — bridge mapping + resolution check against the
+      # committed fixtures in tests/vr/fixtures/ (no aponto checkout needed).
+      # Platform-independent: it asserts computed values in a synthetic DOM,
+      # not screenshots. check-bridge-sync self-skips on CI (no aponto path).
+      #
+      # NOTE (deliberate): the pixel gate (GATE A — tests/vr/capture.mjs +
+      # compare.mjs vs tests/vr/baseline/) is NOT wired into CI. The baseline
+      # PNGs are rendered on the founder's macOS machine; font rendering and
+      # antialiasing differ per platform, so a Linux runner would diff every
+      # shot. Gate A runs locally — see tests/vr/README.md.
+      - name: Install Playwright Chromium (token gate)
+        run: npx playwright install --with-deps chromium
+
+      - name: Token gate (bridge mapping + resolution)
+        run: |
+          node tests/vr/verify-tokens.mjs
+          node tests/vr/check-bridge-sync.mjs
+
       - name: Bundle size
         run: npm run size
 

@@ -1936,7 +1936,8 @@ Kit ships these on `:root` (via the consumer's bundled `style.css` import) — o
 | `--pmdk-color-border` | `#e0e0e0` | Default borders |
 | `--pmdk-color-border-subtle` | `#f0f0f1` | Subtle dividers |
 | `--pmdk-color-success` | `#00a32a` | Success state |
-| `--pmdk-color-error` | `#b91c1c` | Error state |
+| `--pmdk-color-danger` | `#b91c1c` | Danger state (canonical; renamed from `error` in 0.2) |
+| `--pmdk-color-error` | `var(--pmdk-color-danger)` | **Deprecated alias** of `--pmdk-color-danger`; kept permanently for back-compat |
 | `--pmdk-radius-small` | `4px` | Default border-radius |
 | `--pmdk-radius-pill` | `9999px` | Pill / badge radius |
 | `--pmdk-font-size-base` | `14px` | Body font size |
@@ -1956,6 +1957,80 @@ Consumer override:
   --pmdk-radius-small: 6px;
 }
 ```
+
+**DS token API (added 0.2, KIT-P2).** Beyond the base tokens above, the kit ships a
+larger `--pmdk-*` surface distilled from the Aponto plugin-dashboard DS, so kit
+primitives and the opt-in app theme share one API. All defaults stay WP-native —
+adding these tokens changes nothing for existing consumers. Authoritative list:
+[`src/styles/tokens.css`](../src/styles/tokens.css). Families:
+
+- **Tone-derivation engine** — 10 `--pmdk-tone-*` weights (`-text-muted`,
+  `-text-soft`, `-surface-subtle`, `-surface-muted`, `-avatar-surface`, `-border`,
+  `-border-strong`, `-accent-subtle`, `-accent-soft`, `-accent-border`) drive ~30
+  derived roles via `color-mix()`: `--pmdk-color-{heading,surface,surface-subtle,
+  surface-muted,avatar-surface,text-soft,border-strong,row-hover,accent-subtle,
+  accent-soft,accent-border}` and the semantic families
+  `--pmdk-color-{danger,success,warning,info}-{subtle,border}` +
+  `--pmdk-color-on-{danger,success,warning,info}`. Move a few seeds/weights and the
+  whole surface retones. **These derived roles are declared at both `:root` and
+  `.pmdk-theme-app`** so a theme scope can retone them (CSS resolves a custom
+  property's `var()`s against the element carrying the declaration).
+- **Type roles** — `--pmdk-font-size-{badge,micro,caption,meta,control,body,item,
+  subheading,heading,field-label,field-value}`, `--pmdk-font-weight-{regular,medium,
+  semibold}`, `--pmdk-line-height-{body,compact,title,label}`,
+  `--pmdk-letter-spacing-title`. Default body = `--pmdk-font-size-base` (14px).
+- **Space** — `--pmdk-space-0..8` (4px foundation: 0/4/8/12/16/20/24/32).
+- **Geometry** — `--pmdk-radius-control`, `--pmdk-size-control-{sm,md,lg}` (34/40/44),
+  `--pmdk-size-field-{compact,relationship,compact-notes}`, `--pmdk-size-hit-target`,
+  `--pmdk-size-icon-{sm,md,lg}`.
+- **Motion** — `--pmdk-motion-standard`, `--pmdk-motion-duration-fast`,
+  `--pmdk-motion-ease-standard`.
+- **Component-tier** — `--pmdk-accent-fg`, `--pmdk-control-border-{default,hover,
+  active}`, `--pmdk-data-border-{strong,medium,soft}`, `--pmdk-content-gutter`,
+  `--pmdk-inspector-width`.
+
+`--pmdk-color-error` is now a permanent alias of the canonical `--pmdk-color-danger`
+(non-breaking rename). Each product binds its brand to this API through a thin
+bridge (`--pmdk-*: var(--brand-*)`) scoped to its dashboard wrapper — see the
+Aponto `.ap-admin` bridge.
+
+**Browser floor:** `color-mix()`, `:has()` and container queries are required by
+the P3 primitives and the opt-in app theme (tone engine, compact-field kit,
+in-flow inspector) — not by the 0.1-era core components/tokens, so consumers that
+don't adopt the new surfaces are unaffected. Fine for wp-admin in 2026; recorded
+in the README.
+
+### 16.1a App theme (opt-in, `.pmdk-theme-app`)
+
+The kit ships one packaged, versioned "app look" (16px readable type, 6px card
+radius, DS neutral tones) as an **opt-in** sheet — it is NOT the kit default, so
+Blocksify / Customify keep their WP-native look on a version bump (REVISED C,
+2026-07-18). Aponto + PressListing share this one theme.
+
+```js
+import '@pressmaximum/dashboard-kit/themes/app.css';
+```
+
+```html
+<div class="pmdk-dashboard pmdk-theme-app">…</div>
+<!-- dark: same element carries the switch -->
+<div class="pmdk-dashboard pmdk-theme-app" data-pmdk-color-scheme="dark">…</div>
+```
+
+The theme only moves seeds + tone weights + type + radius; every derived role
+recomputes through the engine. Apply `.pmdk-theme-app` on (or above) the dashboard
+root, and set `data-pmdk-color-scheme="dark"` on that same element for the dark
+preset. Brand accent is deliberately not set by the theme — it stays with the
+consumer bridge / WP admin scheme, so one theme serves multiple brands.
+
+> **Constraint:** the accent seed (`--pmdk-color-accent`) is declared only on
+> `body.wp-admin` / `.pmdk-dashboard`. If you put `.pmdk-theme-app` on an element
+> outside those (e.g. `<html>`) with no dashboard root beneath it, accent-derived
+> roles (`accent-subtle/-soft/-border`, `accent-fg`, `control-border-active`) have
+> no seed and will not resolve there — always keep a `body.wp-admin` or
+> `.pmdk-dashboard` element in the themed subtree.
+
+Detailed values are finalized over KIT-P3/P4.
 
 ### 16.2 Class targeting (stable, semver-locked)
 
@@ -2026,7 +2101,11 @@ Kit's defaults already do this; consumer only needs to override if branding dive
 
 ### 16.4 Dark mode
 
-Out of scope for 0.1.0. WP admin doesn't have native dark mode yet (Gutenberg discussion ongoing). Kit's CSS variables structured so dark mode can be added later via a single `@media (prefers-color-scheme: dark)` block that overrides the color vars.
+Kit **core** stays light-only (WP admin has no native dark mode yet). The opt-in
+**app theme** (§16.1a) ships a dark preset: set `data-pmdk-color-scheme="dark"` on
+the same element that carries `.pmdk-theme-app`. Because the tone engine derives
+every role from a few seeds + weights, the dark preset only re-declares those and
+the rest recomputes. Consumers not on the app theme are unaffected.
 
 ---
 

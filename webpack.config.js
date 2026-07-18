@@ -39,6 +39,41 @@ const externalsAsModules = Object.fromEntries(
 	WP_EXTERNALS.map( ( name ) => [ name, `module ${ name }` ] )
 );
 
+/**
+ * Webpack always emits a JS chunk for an entry, even a pure-CSS one. The
+ * `themes/app` entry exists only to have MiniCssExtract produce
+ * `build/themes/app.css`; this plugin deletes the meaningless JS stub (and its
+ * sourcemap) so nothing un-exported ships in `build/`.
+ */
+class RemoveCssEntryJsStubPlugin {
+	constructor( stubs ) {
+		this.stubs = stubs;
+	}
+	apply( compiler ) {
+		compiler.hooks.compilation.tap(
+			'RemoveCssEntryJsStubPlugin',
+			( compilation ) => {
+				compilation.hooks.processAssets.tap(
+					{
+						name: 'RemoveCssEntryJsStubPlugin',
+						stage: compiler.webpack.Compilation
+							.PROCESS_ASSETS_STAGE_SUMMARIZE,
+					},
+					() => {
+						for ( const name of this.stubs ) {
+							for ( const asset of [ name, `${ name }.map` ] ) {
+								if ( compilation.getAsset( asset ) ) {
+									compilation.deleteAsset( asset );
+								}
+							}
+						}
+					}
+				);
+			}
+		);
+	}
+}
+
 export default ( env, argv ) => {
 	const isProd = argv.mode === 'production';
 
@@ -55,6 +90,11 @@ export default ( env, argv ) => {
 				__dirname,
 				'src/editor-helpers/index.mjs'
 			),
+			// Opt-in app theme — pure-CSS entry. Emits `build/themes/app.css`
+			// only; the JS stub webpack generates for a CSS entry is dropped
+			// by RemoveCssEntryJsStubPlugin below (no JS export path exists
+			// for the theme — consumers import the .css directly).
+			'themes/app': path.resolve( __dirname, 'src/themes/app.css' ),
 		},
 		output: {
 			path: path.resolve( __dirname, 'build' ),
@@ -128,10 +168,17 @@ export default ( env, argv ) => {
 					if ( chunk.name === 'index' ) {
 						return 'style.css';
 					}
+					// The theme entry ships as a named file (`themes/app.css`),
+					// not the `<dir>/style.css` convention, so consumers import
+					// a self-describing path.
+					if ( chunk.name === 'themes/app' ) {
+						return 'themes/app.css';
+					}
 					const dir = chunk.name.replace( /\/index$/, '' );
 					return `${ dir }/style.css`;
 				},
 			} ),
+			new RemoveCssEntryJsStubPlugin( [ 'themes/app.mjs' ] ),
 		],
 		optimization: {
 			minimize: isProd,
