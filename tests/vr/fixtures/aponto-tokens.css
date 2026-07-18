@@ -29,9 +29,11 @@
   --ap-color-on-inverse: #ffffff;
   --ap-color-on-inverse-danger: #ffb4a8;
 
-  /* Internal tone weights. Presets may tune contrast without adding colors. */
-  --ap-tone-text-muted: 68%;
-  --ap-tone-text-soft: 52%;
+  /* Internal tone weights. Presets may tune contrast without adding colors.
+   * muted/soft darkened to WCAG AA (4.5:1 on surface): muted 68→72% (4.55→5.13),
+   * soft 52→70% (2.96→4.82). Deliberate pixel change (founder axe decision). */
+  --ap-tone-text-muted: 72%;
+  --ap-tone-text-soft: 70%;
   --ap-tone-surface-subtle: 5%;
   --ap-tone-surface-muted: 7%;
   --ap-tone-avatar-surface: 5%;
@@ -152,7 +154,8 @@
   --ap-color-canvas: var(--ap-color-surface);
   --ap-color-text: #e7eaef;
   --ap-tone-text-muted: 68%;
-  --ap-tone-text-soft: 46%;
+  /* Dark soft 46→54% (3.98→~4.9) — clears AA in dark too. */
+  --ap-tone-text-soft: 54%;
   --ap-tone-surface-subtle: 4%;
   --ap-tone-surface-muted: 6%;
   --ap-tone-avatar-surface: 7%;
@@ -177,8 +180,12 @@
   --ap-color-success: #16865c;
   --ap-color-warning: #9a6b00;
   --ap-color-info: #4f5bd5;
-  --ap-tone-text-muted: 66%;
-  --ap-tone-text-soft: 48%;
+  /* v2 muted/soft to WCAG AA on #fff (surface #fff, text #202124): muted 66→68%
+   * (5.24→5.58), soft 48→67% (3.03→5.35 calc). soft kept just under muted so the
+   * two-tier hierarchy survives; on the admin's pure-white surface AA forces them
+   * close. Founder axe decision (deliberate pixel change). */
+  --ap-tone-text-muted: 68%;
+  --ap-tone-text-soft: 67%;
   --ap-tone-surface-subtle: 3%;
   --ap-tone-surface-muted: 5%;
   --ap-tone-avatar-surface: 5%;
