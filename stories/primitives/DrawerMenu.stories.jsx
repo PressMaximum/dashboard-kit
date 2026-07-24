@@ -193,3 +193,154 @@ export const MenuFixedFloating = {
 		</Chassis>
 	),
 };
+
+/*
+ * K-021 — fixed mode inside a CSS containing block.
+ *
+ * `transform`, `filter`, `contain: layout` and friends make the ancestor the
+ * containing block for `position: fixed` descendants, so viewport coordinates
+ * land offset by its origin — before the fix these cases were off by hundreds
+ * of pixels. `container-type` is the interesting one: it implies layout
+ * containment, yet Chromium keeps fixed descendants on the viewport, which is
+ * why `createMenu` measures the engine instead of trusting the property.
+ *
+ * Each case auto-opens a fixed menu and measures the popover against its
+ * trigger. The contract is the same in EVERY case: the popover's end edge
+ * aligns with the trigger's (dx 0) and it sits 5px below it (dy 5).
+ */
+function AlignmentProbe( { label, wrapperStyle } ) {
+	const rootRef = useRef( null );
+	const [ delta, setDelta ] = useState( null );
+
+	useEffect( () => {
+		const root = rootRef.current;
+		if ( ! root ) {
+			return undefined;
+		}
+		const menu = createMenu( root, { position: 'fixed' } );
+		menu.open();
+		const frame = window.requestAnimationFrame( () => {
+			const triggerBox = root
+				.querySelector( '[data-menu-trigger]' )
+				.getBoundingClientRect();
+			const popoverBox = root
+				.querySelector( '[role="menu"]' )
+				.getBoundingClientRect();
+			setDelta( {
+				dx: Math.round( popoverBox.right - triggerBox.right ),
+				dy: Math.round( popoverBox.top - triggerBox.bottom ),
+			} );
+		} );
+		return () => {
+			window.cancelAnimationFrame( frame );
+			menu.destroy();
+		};
+	}, [] );
+
+	const aligned = delta && delta.dx === 0 && delta.dy === 5;
+
+	return (
+		<div
+			style={ {
+				border: '1px dashed var(--pmdk-color-border-strong)',
+				borderRadius: 8,
+				padding: 16,
+				minHeight: 150,
+				...wrapperStyle,
+			} }
+		>
+			<p
+				style={ {
+					margin: '0 0 12px',
+					fontSize: 'var(--pmdk-font-size-caption)',
+					color: 'var(--pmdk-color-text-muted)',
+				} }
+			>
+				{ label }
+			</p>
+			<div
+				className="pmdk-row-actions"
+				data-menu
+				ref={ rootRef }
+				style={ { justifyContent: 'flex-start' } }
+			>
+				<button
+					className="pmdk-row-action pmdk-row-action-icon"
+					data-menu-trigger
+					type="button"
+					aria-label={ `Record actions — ${ label }` }
+				>
+					{ defaultRenderIcon( 'moreVertical' ) }
+				</button>
+				<div
+					className="pmdk-row-action-menu"
+					role="menu"
+					aria-label={ `Record actions — ${ label }` }
+					hidden
+				>
+					<button type="button" role="menuitem" data-action="view">
+						{ defaultRenderIcon( 'list' ) }
+						<span>View details</span>
+					</button>
+					<button type="button" role="menuitem" data-action="export">
+						{ defaultRenderIcon( 'csv' ) }
+						<span>Export record</span>
+					</button>
+				</div>
+			</div>
+			<p
+				style={ {
+					margin: '96px 0 0',
+					fontSize: 'var(--pmdk-font-size-caption)',
+					color: aligned
+						? 'var(--pmdk-color-success)'
+						: 'var(--pmdk-color-danger)',
+				} }
+			>
+				{ delta
+					? `${ aligned ? 'aligned' : 'OFFSET' } — dx ${ delta.dx }px · dy ${ delta.dy }px`
+					: 'measuring…' }
+			</p>
+		</div>
+	);
+}
+
+export const MenuFixedInsideContainment = {
+	render: () => (
+		<Chassis>
+			<div
+				style={ {
+					display: 'grid',
+					gap: 16,
+					gridTemplateColumns:
+						'repeat( auto-fit, minmax( 240px, 1fr ) )',
+				} }
+			>
+				<AlignmentProbe label="No containment (baseline)" />
+				<AlignmentProbe
+					label="container-type: inline-size"
+					wrapperStyle={ { containerType: 'inline-size' } }
+				/>
+				<AlignmentProbe
+					label="transform: translateZ(0)"
+					wrapperStyle={ { transform: 'translateZ(0)' } }
+				/>
+				<AlignmentProbe
+					label="filter: saturate(1)"
+					wrapperStyle={ { filter: 'saturate(1)' } }
+				/>
+				<AlignmentProbe
+					label="contain: layout"
+					wrapperStyle={ { contain: 'layout' } }
+				/>
+				<AlignmentProbe
+					label="transform + overflow: hidden (clips)"
+					wrapperStyle={ {
+						transform: 'translateZ(0)',
+						overflow: 'hidden',
+					} }
+				/>
+			</div>
+		</Chassis>
+	),
+};

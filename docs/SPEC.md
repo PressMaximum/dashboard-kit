@@ -1269,6 +1269,37 @@ floating row-action mode (viewport-clamped `left/top`, `.is-floating`,
 scroll/resize tracking, RTL-aware). Controller: `open() / close({returnFocus})
 / toggle() / isOpen() / destroy()`.
 
+**Containing blocks (K-021).** `'fixed'` mode is safe under ancestors that
+reparent `position: fixed` descendants — `transform` / `translate` / `rotate`
+/ `scale` / `perspective`, `filter` / `backdrop-filter`, `contain:
+layout|paint|content|strict`, `content-visibility`, a matching `will-change`,
+and `container-type` (the kit's own `.pmdk-data-table` sets it). The menu
+nominates the nearest such ancestor from computed style, then probes the
+engine at three points — `left/top: 0` and both basis vectors, 100px along
+each axis separately — and subtracts the ancestor's padding-box origin only
+when **all** hold: the popover starts on that origin, and each axis moves N px
+for N px written (±1px). An affine map is fixed by exactly those three images,
+so only a pure translation is accepted. Everything else falls back to the
+uncorrected viewport coordinates, which is the pre-K-021 behavior, so no case
+gets worse:
+
+| Ancestor | Behavior |
+|---|---|
+| none | no probe, coordinates byte-identical to pre-K-021 |
+| `transform: translate*` / `filter` / `contain: layout` / … | origin subtracted, menu glued to its trigger |
+| `container-type` where the engine does not reparent (Chromium) | probe rejects, coordinates unchanged |
+| SCALED / ROTATED / SKEWED / perspective-projected ancestor | probe rejects — a subtraction cannot undo a bent coordinate system |
+| popover carrying its own `transform` | probe rejects |
+
+The popover is not moved into the top layer, so a paint-clipping ancestor
+(`overflow: hidden` + a containing block) can still clip it.
+
+**Realm.** Fixed-mode geometry and its scroll/resize listeners resolve through
+`root.ownerDocument.defaultView`, not the realm the kit script happens to be
+loaded in. A dashboard mounted inside an iframe is clamped against its own
+viewport and tracks its own scroller; same-realm consumers are unaffected
+(`defaultView === window`).
+
 #### `createInspectorResizer( workspace, options? )` → controller (slice 3)
 
 The in-flow inspector separator: pointer drag; ArrowLeft/ArrowRight in 16px

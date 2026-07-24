@@ -8,6 +8,45 @@ Pre-1.0 caveat: breaking changes are allowed in minor versions
 (see [docs/SPEC.md §12](docs/SPEC.md)). The 1.0 milestone locks the
 public API per the deprecation cycle in §12.2.
 
+## [Unreleased]
+
+### Fixed
+
+- **`createMenu` fixed-mode menus inside CSS containing blocks (K-021).**
+  `position: 'fixed'` popovers were positioned in viewport coordinates, so any
+  ancestor that is a containing block for fixed descendants (`transform`,
+  `filter`, `contain: layout`, …) offset every menu — measured 25px across and
+  282–534px down in Chromium. `src/primitives/menu.js` now nominates the
+  nearest such ancestor from computed style, then PROBES the engine at three
+  points — `left/top: 0` and both basis vectors, 100px along each axis — and
+  subtracts the ancestor's padding-box origin only when the popover starts on
+  that origin and each axis moves 1:1 with what is written. An affine map is
+  fixed by exactly those three images, so nothing but a pure translation is
+  accepted. Everything else falls back to the pre-fix coordinates, so no case
+  regresses: engines that do not reparent for `container-type` (Chromium,
+  despite the containment it implies) keep their correct placement, and a
+  scaled / rotated / skewed / perspective-projected ancestor is rejected
+  outright rather than half-corrected by a subtraction that cannot undo it.
+  Consumers can put `container-type` / `transform` / `contain` wrappers above
+  kit menus.
+  Public API, DOM contract and emitted types are unchanged, and an uncontained
+  popover writes byte-identical `left/top` (before/after browser measurement
+  plus unit assertions) — the zero-look-change gate holds, with the existing
+  Storybook VR matrix unchanged at 53/53 shots. New Storybook case
+  `Primitives/DrawerMenu → MenuFixedInsideContainment` measures trigger↔popover
+  alignment live in six containment scenarios; it is an interaction story and
+  is deliberately NOT part of the VR shot matrix.
+- **`createMenu` measures the menu's OWN realm (behavior change for iframed
+  dashboards).** Fixed-mode positioning read `window.innerWidth/innerHeight`
+  and attached its scroll/resize listeners to `window` — the realm the kit
+  script was loaded in, which is not necessarily the realm the menu lives in.
+  A dashboard mounted inside an iframe (site-editor-style handoffs) was
+  therefore clamped against the WRONG viewport and tracked the wrong
+  scroller. All of it now resolves through `root.ownerDocument.defaultView`,
+  matching the `getComputedStyle` call that already did. Same-realm consumers
+  — every current one — see no change whatsoever, since `defaultView ===
+  window` there.
+
 ## [0.2.0] — 2026-07-18 (tag pending founder gate)
 
 KIT-P2 (DS token API + opt-in app theme) + KIT-P3 slices 1–4 (primitives,

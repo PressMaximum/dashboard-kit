@@ -33,6 +33,11 @@
  *     the space below the trigger can't fit the popover (CSS anchors it),
  *   - `position: 'fixed'` ports the floating row-action mode: viewport-clamped
  *     `left/top` coordinates, `.is-floating` class, tracking scroll + resize.
+ *     Coordinates are translated into the popover's containing block when an
+ *     ancestor established one (K-021 — `transform` / `filter` / `contain`
+ *     and friends), so the menu stays glued to its trigger there; the block
+ *     is measured rather than assumed, and without one the translation is
+ *     skipped and the numbers match the pre-K-021 output exactly.
  *
  * @param {HTMLElement}                           root                    The element containing trigger + popover.
  * @param {Object}                                [options]
