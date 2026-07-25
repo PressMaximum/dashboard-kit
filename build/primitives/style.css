@@ -631,7 +631,7 @@
 .pmdk-dashboard[dir=rtl] .pmdk-col-action {
   box-shadow:1px 0 0 var(--pmdk-color-border)
 }
-/* An open row-action menu has to escape its own cell (K-024).
+/* An open row-action menu has to escape its own cell (K-028).
    `position: sticky` + `z-index` makes EVERY action cell a stacking context, so
    the menu inside one (z-index 18 anchored, 120 floating) is trapped at the
    CELL's level: the opaque sticky action cells of LATER rows paint over its
