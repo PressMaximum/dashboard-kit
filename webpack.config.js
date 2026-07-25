@@ -8,6 +8,17 @@
  *    don't import it never pull @wordpress/dataviews into their bundle.
  *  - @wordpress/* + react + react-dom are externalized — WordPress already
  *    ships them on window.wp.*; double-bundling would inflate consumers.
+ *  - `react/jsx-runtime` is externalized too (K-019). Bundling it inlines
+ *    whichever runtime matches the KIT's build mode: a production
+ *    `jsx-runtime` where `jsx === jsxs`, so static children arrays lose the
+ *    dev-runtime's static marker and a consumer running a DEV React
+ *    re-validates them as dynamic arrays — a "unique key" warning on every
+ *    kit list, against correct source. External means the consumer's own
+ *    runtime is used (wp-scripts maps it to the `react-jsx-runtime`
+ *    handle), so dev builds get the dev runtime and prod builds the prod one.
+ *  - @tanstack/react-table + @dnd-kit/* are externalized as OPTIONAL peers
+ *    (K-019). Bundling them shipped a second private copy to any consumer
+ *    that also uses them, and pinned the kit's version over the consumer's.
  *  - CSS is extracted with sideEffects:true on the rule so that webpack's
  *    tree-shake keeps `import './editor.css'` statements alive (the
  *    Surfaces spike hit a bug where DataViews's "sideEffects": false in
@@ -33,6 +44,20 @@ const WP_EXTERNALS = [
 	'@wordpress/url',
 	'react',
 	'react-dom',
+	// K-019: the JSX runtime belongs to the consumer's React, not ours.
+	// wp-scripts' DependencyExtractionWebpackPlugin maps these onto the
+	// `react-jsx-runtime` script handle; other bundlers resolve them from
+	// the `react` peer. `jsx-dev-runtime` is listed for the case where a
+	// consumer (or a future kit dev build) compiles with
+	// `@babel/preset-react { development: true }`.
+	'react/jsx-runtime',
+	'react/jsx-dev-runtime',
+	// K-019: optional peers of the `table` sub-entry. Externalizing them
+	// stops the double-bundle and lets the consumer own the version.
+	'@tanstack/react-table',
+	'@dnd-kit/core',
+	'@dnd-kit/sortable',
+	'@dnd-kit/utilities',
 ];
 
 const externalsAsModules = Object.fromEntries(
@@ -98,11 +123,12 @@ export default ( env, argv ) => {
 				__dirname,
 				'src/primitives/index.mjs'
 			),
-			// KIT-P3 data-table component (<PMDKDataTable>). Bundles
-			// @tanstack/react-table + @dnd-kit/* (NOT externalized) so consumers
-			// import `@pressmaximum/dashboard-kit/table` with zero extra install;
-			// react/react-dom/@wordpress/* stay external. Opt-in + separate from
-			// core, so Blocksify/Customify never pull this weight.
+			// KIT-P3 data-table component (<PMDKDataTable>). Its
+			// @tanstack/react-table + @dnd-kit/* imports are EXTERNAL optional
+			// peers since 0.2.1 (K-019) — consumers install them alongside the
+			// kit and own the version, instead of receiving a second private
+			// copy. Still its own entry so Blocksify/Customify, which never
+			// import it, don't pull the table tier at all.
 			'table/index': path.resolve( __dirname, 'src/table/index.mjs' ),
 			// KIT-P3 module card (<PMDKModuleCard>, K-018). Own entry (mirrors
 			// `table/`) so the React-free contract of `primitives/` holds; zero

@@ -8,6 +8,91 @@ Pre-1.0 caveat: breaking changes are allowed in minor versions
 (see [docs/SPEC.md §12](docs/SPEC.md)). The 1.0 milestone locks the
 public API per the deprecation cycle in §12.2.
 
+## [Unreleased]
+
+### Changed — consumer contract (read before bumping)
+
+- **The `table` sub-entry's third-party deps are now OPTIONAL PEERS, not
+  bundled copies (K-019).** A consumer importing
+  `@pressmaximum/dashboard-kit/table` must install them itself:
+
+  ```bash
+  npm install @tanstack/react-table@^8.21.3 @dnd-kit/core@^6.3.1 \
+    @dnd-kit/sortable@^8.0.0 @dnd-kit/utilities@^3.2.2
+  ```
+
+  They are declared `optional` in `peerDependenciesMeta`, so consumers that
+  never import `./table` (Blocksify, Customify Theme) install nothing new and
+  get no warning. In exchange, a consumer that already uses TanStack or dnd-kit
+  stops receiving a second private copy, and owns the version itself.
+- **`react/jsx-runtime` is externalized (K-019).** Every built entry now
+  imports it instead of embedding one. Bundlers that follow the WordPress
+  convention (wp-scripts' `DependencyExtractionWebpackPlugin`) map it to the
+  `react-jsx-runtime` script handle automatically; anything else resolves it
+  from the existing `react` peer. No consumer action needed.
+
+### Fixed
+
+- **Prebuilt entries no longer ship a production JSX runtime or duplicate
+  TanStack/dnd-kit (K-019).** All four React entries (`index`, `datasets`,
+  `table`, `module-card`) inlined a **production** `react/jsx-runtime`, where
+  `jsx` and `jsxs` are the same function. Kit elements therefore never carried
+  the dev runtime's static-children marker, and a consumer running a DEV React
+  (WP `SCRIPT_DEBUG`) re-validated them as dynamic arrays — a "unique key"
+  warning on every kit list, pointing at correct markup. With the runtime
+  external the consumer's own React decides, so dev builds get the dev runtime.
+  Table entry drops 127,256 → 26,020 raw bytes (37.9 → 8.49 KB gzip); core,
+  datasets and module-card each shed ~0.55 KB gzip of embedded runtime. New
+  `tests/integration/prebuilt-entries.test.jsx` asserts the contract against
+  the committed artifacts. Consumers can drop build-level workarounds that
+  aliased the kit's `table`/`module-card` entries to `src/`.
+- **`aria-prohibited-attr` on the compare cells and filter chrome (K-020).**
+  `.pmdk-compare__check-yes` / `__check-no` carried `aria-label` on a bare
+  `<span>` and `.pmdk-active-filters` on a bare `<div>` — role `generic`, which
+  prohibits naming, so screen readers dropped the label entirely (~25 serious
+  axe findings on a real consumer admin). The cells now carry `role="img"`
+  (glyphs standing in for a word; `img` permits naming and its children are
+  presentational) and the filter containers `role="group"` (named sets of
+  filter widgets — the idiom `<SchemaForm>` already used).
+  `.pmdk-filter-builder` had the same defect, reachable only with the panel
+  open, and is fixed with it. Attribute-only change: no DOM, CSS or visual
+  change (VR 53/53 zero diff); real-browser axe on the affected stories goes
+  18 → 0 for that rule.
+- **`createMenu` fixed-mode menus inside CSS containing blocks (K-021).**
+  `position: 'fixed'` popovers were positioned in viewport coordinates, so any
+  ancestor that is a containing block for fixed descendants (`transform`,
+  `filter`, `contain: layout`, …) offset every menu — measured 25px across and
+  282–534px down in Chromium. `src/primitives/menu.js` now nominates the
+  nearest such ancestor from computed style, then PROBES the engine at three
+  points — `left/top: 0` and both basis vectors, 100px along each axis — and
+  subtracts the ancestor's padding-box origin only when the popover starts on
+  that origin and each axis moves 1:1 with what is written. An affine map is
+  fixed by exactly those three images, so nothing but a pure translation is
+  accepted. Everything else falls back to the pre-fix coordinates, so no case
+  regresses: engines that do not reparent for `container-type` (Chromium,
+  despite the containment it implies) keep their correct placement, and a
+  scaled / rotated / skewed / perspective-projected ancestor is rejected
+  outright rather than half-corrected by a subtraction that cannot undo it.
+  Consumers can put `container-type` / `transform` / `contain` wrappers above
+  kit menus.
+  Public API, DOM contract and emitted types are unchanged, and an uncontained
+  popover writes byte-identical `left/top` (before/after browser measurement
+  plus unit assertions) — the zero-look-change gate holds, with the existing
+  Storybook VR matrix unchanged at 53/53 shots. New Storybook case
+  `Primitives/DrawerMenu → MenuFixedInsideContainment` measures trigger↔popover
+  alignment live in six containment scenarios; it is an interaction story and
+  is deliberately NOT part of the VR shot matrix.
+- **`createMenu` measures the menu's OWN realm (behavior change for iframed
+  dashboards).** Fixed-mode positioning read `window.innerWidth/innerHeight`
+  and attached its scroll/resize listeners to `window` — the realm the kit
+  script was loaded in, which is not necessarily the realm the menu lives in.
+  A dashboard mounted inside an iframe (site-editor-style handoffs) was
+  therefore clamped against the WRONG viewport and tracked the wrong
+  scroller. All of it now resolves through `root.ownerDocument.defaultView`,
+  matching the `getComputedStyle` call that already did. Same-realm consumers
+  — every current one — see no change whatsoever, since `defaultView ===
+  window` there.
+
 ## [0.2.0] — 2026-07-18 (tag pending founder gate)
 
 KIT-P2 (DS token API + opt-in app theme) + KIT-P3 slices 1–4 (primitives,

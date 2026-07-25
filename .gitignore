@@ -50,3 +50,4 @@ _ref/
 .vitest-cache/
 .phpunit.result.cache
 _ref/
+.worktrees/

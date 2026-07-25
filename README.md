@@ -6,6 +6,8 @@
 
 ## Reading map for new consumers
 
+**New plugin adopting the kit? Start with [docs/ADOPTING.md](docs/ADOPTING.md)** — the end-to-end adoption guide: prerequisites, import surfaces, enqueue + shell boilerplate, brand bridge, page-at-a-time migration, and the gotchas. It ships two copy-pasteable templates ([`admin-page-sample.php`](docs/templates/admin-page-sample.php), [`brand-bridge-template.css`](docs/templates/brand-bridge-template.css)) and needs no other product's source.
+
 The kit's full SPEC is long (2000+ lines) — most consumers only need three or four sections. Pick the row that matches your shape and read in this order:
 
 | Your consumer | Read first | Then |
@@ -17,7 +19,7 @@ The kit's full SPEC is long (2000+ lines) — most consumers only need three or 
 
 Before you integrate: skim [KIT_ISSUES.md](KIT_ISSUES.md). It tracks known bugs in the kit's public surface plus the workarounds existing consumers ship. The list is short, but catching a current bug there saves debugging time.
 
-After integration: [§16 Theming guide](docs/SPEC.md#16-theming-guide-consumer-reference) for the CSS-token + locked-class surface you can target.
+After integration: [§16 Theming guide](docs/SPEC.md#16-theming-guide-consumer-reference) for the CSS-token + locked-class surface you can target, and [ADOPTING §4](docs/ADOPTING.md#4-branding-via-bridge) for the bridge/load-order recipe.
 
 ---
 
@@ -79,9 +81,28 @@ That's the entire integration. ~30 lines of consumer JS + ~30 lines of PHP for a
 - `@pressmaximum/dashboard-kit` — core (router, shell, layouts, settings, welcome, helpers). ~10-15 KB gzip.
 - `@pressmaximum/dashboard-kit/datasets` — DataViews-heavy list pages (opt-in; pulls `@wordpress/dataviews`). ~50 KB gzip extra. Legacy tier — kept for existing consumers.
 - `@pressmaximum/dashboard-kit/primitives` (+ `primitives/style.css`) — headless DS behaviors (combobox) + the `.pmdk-*` component chrome extracted from the Aponto DS (0.2, opt-in). See [docs/SPEC.md §5.12/§16.5](docs/SPEC.md).
-- `@pressmaximum/dashboard-kit/table` — `<PMDKDataTable>`: shared TanStack v8 data table (sorting, search/filter wiring, selection + bulk bar, column manager with drag order, pagination, five states, server-mode callbacks, view persistence). Bundles TanStack + dnd-kit in this entry only (~37 KB gzip).
+- `@pressmaximum/dashboard-kit/table` — `<PMDKDataTable>`: shared TanStack v8 data table (sorting, search/filter wiring, selection + bulk bar, column manager with drag order, pagination, five states, server-mode callbacks, view persistence). ~8.5 KB gzip; TanStack + dnd-kit are **optional peers you provide** (see below).
+- `@pressmaximum/dashboard-kit/module-card` — `<PMDKModuleCard>`: module/integration card (K-018). ~1.3 KB gzip, no third-party deps.
 
 Importing nothing from a sub-entry means webpack never traverses it. See [docs/SPEC.md §7](docs/SPEC.md).
+
+### Optional peers for the `table` entry
+
+Since 0.2.1 the table entry **imports** TanStack + dnd-kit instead of bundling
+its own copies (K-019), so a consumer that already uses them no longer gets a
+second private copy and owns the version itself. Importing
+`@pressmaximum/dashboard-kit/table` therefore means installing:
+
+```bash
+npm install @tanstack/react-table@^8.21.3 @dnd-kit/core@^6.3.1 \
+  @dnd-kit/sortable@^8.0.0 @dnd-kit/utilities@^3.2.2
+```
+
+They are declared `optional` in `peerDependenciesMeta`, so consumers that never
+import `./table` install nothing extra and get no npm warning. `./module-card`
+and every other entry have no third-party deps at all. `react/jsx-runtime` is
+external too — wp-scripts maps it to the `react-jsx-runtime` handle
+automatically, so no consumer action is needed for that one.
 
 ## Theming
 

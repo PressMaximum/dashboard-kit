@@ -90,6 +90,10 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@tanstack/react-table": "^8.21.3",
     "@wordpress/components": ">=29.0.0",
     "@wordpress/data": ">=10.0.0",
     "@wordpress/dataviews": ">=14.0.0",
@@ -104,18 +108,35 @@
   "peerDependenciesMeta": {
     "@wordpress/dataviews": {
       "optional": true
+    },
+    "@tanstack/react-table": {
+      "optional": true
+    },
+    "@dnd-kit/core": {
+      "optional": true
+    },
+    "@dnd-kit/sortable": {
+      "optional": true
+    },
+    "@dnd-kit/utilities": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-react": "^7.24.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@size-limit/preset-small-lib": "^11.1.0",
     "@storybook/react-vite": "^8.3.0",
+    "@tanstack/react-table": "^8.21.3",
     "@vitejs/plugin-react": "^4.3.0",
     "@wordpress/dataviews": "^14.0.0",
     "@wordpress/eslint-plugin": "^21.0.0",
     "@wordpress/prettier-config": "^4.0.0",
+    "axe-core": "^4.12.1",
     "babel-loader": "^9.1.0",
     "css-loader": "^7.1.0",
     "eslint": "^8.57.0",
@@ -190,11 +211,5 @@
       "limit": "2 KB",
       "gzip": true
     }
-  ],
-  "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^8.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@tanstack/react-table": "^8.21.3"
-  }
+  ]
 }

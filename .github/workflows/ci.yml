@@ -32,11 +32,26 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Build BEFORE test on purpose (K-019 follow-up). Some suites assert the
+      # contract of the shipped artifacts — tests/integration/prebuilt-entries
+      # imports `build/*.mjs` — so running tests first would check the
+      # COMMITTED build against the CURRENT source and pass on stale output.
+      - name: Build
+        run: npm run build
+
       - name: Test
         run: npm run test
 
-      - name: Build
-        run: npm run build
+      # Advisory: is the committed build/ in sync with src/? Non-blocking
+      # because it also compares minifier output across the runner's Node and
+      # whatever built the committed artifact, which has not been proven
+      # byte-stable yet (sourcemaps are portable — `webpack://` paths, no
+      # absolute paths — and rebuilds ARE byte-identical on one machine). Flip
+      # `continue-on-error` off once a few runs come back clean. See
+      # KIT_ISSUES.md "Process notes".
+      - name: Committed build/ is up to date (advisory)
+        continue-on-error: true
+        run: git diff --stat --exit-code -- build/
 
       # Token gate (GATE B) — bridge mapping + resolution check against the
       # committed fixtures in tests/vr/fixtures/ (no aponto checkout needed).
