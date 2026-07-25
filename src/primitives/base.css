@@ -37,6 +37,15 @@
  * this token; the indeterminate dash already reads `--pmdk-color-on-accent`.
  * DESIGN-SYSTEM: "do not assume the check is always white." */
 .pmdk-dashboard {
+	/* K-030 direction lock. Runs that must stay LTR in an RTL document (money,
+	   times, dates, ids) read `direction: var( --pmdk-dir-lock )`. A literal
+	   `direction: ltr` cannot be used: rtlcss rewrites the VALUE, so an RTL
+	   build would flip the very runs the rule exists to pin — but it never
+	   touches custom-property DECLARATIONS, which is the escape hatch. Declared
+	   here as well as in core `tokens.css` because `var()` FALLBACKS are
+	   rewritten too (`var( --x, ltr )` -> `var( --x, rtl )`), so this sheet
+	   cannot rely on core being loaded. */
+	--pmdk-dir-lock: ltr;
 	--pmdk-checkbox-check-image: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3.5 8.1 2.7 2.7 6.3-6.3' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" );
 }
 

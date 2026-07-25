@@ -26,9 +26,6 @@
 .pmdk-dashboard .pmdk-row-action-menu.is-floating {
   position:fixed;z-index:120;right:auto;bottom:auto
 }
-.pmdk-dashboard[dir=rtl] .pmdk-row-action-menu {
-  right:auto;left:0
-}
 .pmdk-dashboard .pmdk-row-actions.opens-up .pmdk-row-action-menu {
   top:auto;bottom:calc(100% + 5px)
 }

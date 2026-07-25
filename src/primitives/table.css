@@ -17,7 +17,7 @@
 .pmdk-dashboard .pmdk-amount,
 .pmdk-dashboard .pmdk-cell-numeric,
 .pmdk-dashboard .pmdk-cell-id {
-	direction: ltr;
+	direction: var( --pmdk-dir-lock );
 	unicode-bidi: isolate;
 	font-variant-numeric: tabular-nums;
 }
@@ -115,9 +115,6 @@
 .pmdk-dashboard .pmdk-col-action {
   position:sticky;inset-inline-end:0;z-index:3;box-shadow:-1px 0 0 var(--pmdk-color-border)
 }
-.pmdk-dashboard[dir=rtl] .pmdk-col-action {
-  box-shadow:1px 0 0 var(--pmdk-color-border)
-}
 /* An open row-action menu has to escape its own cell (K-028).
    `position: sticky` + `z-index` makes EVERY action cell a stacking context, so
    the menu inside one (z-index 18 anchored, 120 floating) is trapped at the
@@ -150,6 +147,9 @@
 .pmdk-dashboard .pmdk-sort-button.is-active svg {
   opacity:.9
 }
+/* 180deg is symmetric, so rtlcss rewriting this to `rotate(-180deg)` in an RTL
+   build renders identically. Any OTHER angle here must move to the individual
+   `rotate:` property, which rtlcss does not touch (K-030). */
 .pmdk-dashboard .pmdk-sort-button.is-asc svg {
   transform:rotate(180deg)
 }
@@ -161,7 +161,7 @@
 }
 .pmdk-dashboard .pmdk-time-cell,
 .pmdk-dashboard .pmdk-table td[data-column=date] {
-  direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums
+  direction:var(--pmdk-dir-lock);unicode-bidi:isolate;font-variant-numeric:tabular-nums
 }
 .pmdk-dashboard .pmdk-mobile-list {
   display:none
@@ -301,9 +301,6 @@
 .pmdk-dashboard .pmdk-table tbody tr.is-inspected td:first-child {
   box-shadow:inset 2px 0 0 var(--pmdk-color-accent)
 }
-.pmdk-dashboard[dir=rtl] .pmdk-table tbody tr.is-inspected td:first-child {
-  box-shadow:inset -2px 0 0 var(--pmdk-color-accent)
-}
 .pmdk-dashboard .pmdk-table-checkbox {
   -webkit-appearance:none;appearance:none;width:16px;height:16px;min-width:16px;display:block;margin:auto;border:1px solid color-mix(in srgb,var(--pmdk-color-text) 42%,transparent);border-radius:5px;background-color:var(--pmdk-color-surface);background-position:center;background-repeat:no-repeat;background-size:11px 11px;opacity:1;box-shadow:none;transition:border-color var(--pmdk-motion-standard),background-color var(--pmdk-motion-standard)
 }
@@ -390,8 +387,7 @@
 .pmdk-dashboard .pmdk-data-list .pmdk-table tbody tr:last-child td {
   border-bottom:0
 }
-.pmdk-dashboard .pmdk-data-list .pmdk-col-action,
-.pmdk-dashboard[dir=rtl] .pmdk-data-list .pmdk-col-action {
+.pmdk-dashboard .pmdk-data-list .pmdk-col-action {
   box-shadow:none
 }
 .pmdk-dashboard .pmdk-data-list .pmdk-table .pmdk-bulk-row>th {

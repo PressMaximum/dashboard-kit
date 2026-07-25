@@ -10,6 +10,45 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+### Fixed
+
+- **RTL builds double-flipped kit chrome and un-pinned LTR text runs (K-030).**
+  The kit ships LTR stylesheets only; consumers' builds run rtlcss over them to
+  emit `*-rtl.css`. Two constructs broke that pass:
+  - **6 rules keyed on `.pmdk-dashboard[dir=rtl]`** (drawer slide-in and shadow,
+    sticky action-cell divider, inspected-row accent bar, row-action menu edge,
+    plus a redundant selector) were dead — direction comes from
+    `<html dir="rtl">`, the app root has no `dir` attribute — and rtlcss mirrored
+    their declarations a second time, so if the scope ever gained the attribute
+    they would render LTR inside an RTL page. All deleted; the base rules rtlcss
+    already flips were doing the work, verified per-rule as byte-identical RTL
+    output before and after.
+  - **5 `direction: ltr` rules** pinning money / time / date / id runs became
+    `direction: rtl` in the RTL build — flipping exactly what they exist to pin.
+    They now read `direction: var( --pmdk-dir-lock )`.
+
+  Measured with rtlcss 4.3.0 over the built sheets: `direction: rtl` in the RTL
+  build 5 → 0, kit-scoped `[dir=rtl]` rules 6 → 0, LTR output unchanged
+  (VR 53/53 zero diff). Guarded by `tests/unit/rtlSafety.test.js`.
+
+  Note this only fixes the *content* of the RTL stylesheet. Consumers enqueuing
+  through the kit's `AssetEnqueue` still never serve it — see the open K-029.
+
+### Added
+
+- **`--pmdk-dir-lock` token** (default `ltr`, declared on `.pmdk-dashboard` in
+  both `style.css` and `primitives/style.css`). Use
+  `direction: var( --pmdk-dir-lock )` for any run that must stay LTR in an RTL
+  document; a literal `direction: ltr` cannot survive rtlcss, and neither can a
+  `var()` fallback — rtlcss rewrites `var( --x, ltr )` to `var( --x, rtl )`,
+  which is why the declaration ships in every sheet that uses it. Override it to
+  `rtl` only if a whole surface should follow the document direction.
+
+### Changed
+
+- `rtlcss` added as a devDependency so the kit can verify its own RTL output
+  instead of discovering flips in a consumer's build.
+
 ## [0.2.2] — 2026-07-25
 
 ### Added

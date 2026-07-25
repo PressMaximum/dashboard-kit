@@ -150,6 +150,12 @@
 	/* --pmdk-size-hit-target: 44px; */
 	/* --pmdk-size-icon-sm (14px) / -md (18px) / -lg (20px) */
 
+	/* Direction lock — leave as `ltr` unless a whole surface should follow the
+	   document. Rules that must stay LTR in an RTL page use
+	   `direction: var( --pmdk-dir-lock )`; never a literal `direction: ltr` and
+	   never a var() fallback, because rtlcss rewrites both (K-030). */
+	/* --pmdk-dir-lock: ltr; */
+
 	/* Motion. `--pmdk-motion-standard` is the shorthand used by transitions. */
 	/* --pmdk-motion-duration-fast: 120ms; */
 	/* --pmdk-motion-ease-standard: cubic-bezier( 0.2, 0.7, 0.3, 1 ); */
