@@ -195,6 +195,26 @@ export const NonToggleableIntegration = {
 					onToggle={ () => {} }
 					tier={ { label: 'Premium', variant: 'premium' } }
 				/>
+				{ /* K-035: an icon from a FOREIGN renderer — the product's own
+				     wrapper class, not the kit's `.pmdk-react-icon`. Before the
+				     fix the <svg> carried only a viewBox, so the grid cell
+				     collapsed it to 0x0 and the icon was invisible. It must now
+				     match the kit-wrapped glyphs above, pixel for pixel. */ }
+				<PMDKModuleCard
+					icon={
+						<span className="my-plugin-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+								<rect x="3" y="3" width="18" height="18" rx="4" />
+								<path d="M8 12h8M12 8v8" />
+							</svg>
+						</span>
+					}
+					meta="Payments · Integration"
+					title="Foreign icon wrapper"
+					description="Icon wrapped by the product, not by defaultRenderIcon."
+					state="enabled"
+					onToggle={ () => {} }
+				/>
 				{ /* K-025: the opt-in free variant — the green tier badge that
 				     shipped in the chrome but nothing could reach. Consumers
 				     that pass `{ label: 'Free' }` with no variant keep the bare
