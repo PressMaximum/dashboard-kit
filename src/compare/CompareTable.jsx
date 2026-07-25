@@ -23,8 +23,8 @@
  *   headFeature  'Feature'
  *   headFree     'Free'                (SPEC §5.10b: headColumnFree)
  *   headPro      'Pro'                 (SPEC §5.10b: headColumnPro)
- *   cellYes      'Included'            (sr-only)
- *   cellNo       'Not included'        (sr-only)
+ *   cellYes      'Included'            (accessible name of the check glyph)
+ *   cellNo       'Not included'        (accessible name of the dash glyph)
  */
 
 import { Button, Icon } from '@wordpress/components';
@@ -42,11 +42,20 @@ const DEFAULT_LABELS = {
 	cellNo: 'Not included',
 };
 
+/*
+ * K-020: the boolean cells are glyphs standing in for a word, so they carry
+ * `role="img"` with the word as their accessible name. A bare <span> maps to
+ * `role="generic"`, which PROHIBITS aria-label (axe `aria-prohibited-attr`) —
+ * screen readers dropped the name and announced a bare check mark, or
+ * nothing. `img` permits naming and its children are presentational, so the
+ * inner icon / em dash can't be announced on top of the label.
+ */
 function Cell( { value, labels } ) {
 	if ( value === true ) {
 		return (
 			<span
 				className="pmdk-compare__check-yes"
+				role="img"
 				aria-label={ labels.cellYes }
 			>
 				<Icon icon={ checkIcon } size={ 16 } />
@@ -57,6 +66,7 @@ function Cell( { value, labels } ) {
 		return (
 			<span
 				className="pmdk-compare__check-no"
+				role="img"
 				aria-label={ labels.cellNo }
 			>
 				−

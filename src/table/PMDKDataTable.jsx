@@ -1052,9 +1052,16 @@ export function PMDKDataTable( {
 						: primaryAction ) || null }
 				</div>
 			</div>
+			{ /*
+			   K-020: both containers are named sets of filter widgets, so they
+			   carry `role="group"` — a bare <div> maps to `role="generic"`,
+			   which PROHIBITS aria-label (axe `aria-prohibited-attr`, and the
+			   name is dropped or announced inconsistently). Same idiom the
+			   kit already uses in <SchemaForm>. */ }
 			{ activeChips && ! filtersOpen ? (
 				<div
 					className="pmdk-active-filters"
+					role="group"
 					aria-label={ labels.filtersTitle }
 				>
 					{ activeChips }
@@ -1064,6 +1071,7 @@ export function PMDKDataTable( {
 				<div
 					className="pmdk-filter-builder"
 					id={ filterBuilderId.current }
+					role="group"
 					aria-label={ labels.filtersTitle }
 				>
 					{ renderSlot( filterBuilder, {
