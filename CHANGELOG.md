@@ -10,6 +10,8 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.2.3] — 2026-07-25
+
 ### Fixed
 
 - **RTL builds double-flipped kit chrome and un-pinned LTR text runs (K-030).**
