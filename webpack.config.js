@@ -14,7 +14,7 @@
  *    dev-runtime's static marker and a consumer running a DEV React
  *    re-validates them as dynamic arrays — a "unique key" warning on every
  *    kit list, against correct source. External means the consumer's own
- *    runtime is used (wp-scripts maps it to the `wp-react-jsx-runtime`
+ *    runtime is used (wp-scripts maps it to the `react-jsx-runtime`
  *    handle), so dev builds get the dev runtime and prod builds the prod one.
  *  - @tanstack/react-table + @dnd-kit/* are externalized as OPTIONAL peers
  *    (K-019). Bundling them shipped a second private copy to any consumer
@@ -46,7 +46,7 @@ const WP_EXTERNALS = [
 	'react-dom',
 	// K-019: the JSX runtime belongs to the consumer's React, not ours.
 	// wp-scripts' DependencyExtractionWebpackPlugin maps these onto the
-	// `wp-react-jsx-runtime` script handle; other bundlers resolve them from
+	// `react-jsx-runtime` script handle; other bundlers resolve them from
 	// the `react` peer. `jsx-dev-runtime` is listed for the case where a
 	// consumer (or a future kit dev build) compiles with
 	// `@babel/preset-react { development: true }`.

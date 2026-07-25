@@ -6,6 +6,8 @@
 
 ## Reading map for new consumers
 
+**New plugin adopting the kit? Start with [docs/ADOPTING.md](docs/ADOPTING.md)** — the end-to-end adoption guide: prerequisites, import surfaces, enqueue + shell boilerplate, brand bridge, page-at-a-time migration, and the gotchas. It ships two copy-pasteable templates ([`admin-page-sample.php`](docs/templates/admin-page-sample.php), [`brand-bridge-template.css`](docs/templates/brand-bridge-template.css)) and needs no other product's source.
+
 The kit's full SPEC is long (2000+ lines) — most consumers only need three or four sections. Pick the row that matches your shape and read in this order:
 
 | Your consumer | Read first | Then |
@@ -17,7 +19,7 @@ The kit's full SPEC is long (2000+ lines) — most consumers only need three or 
 
 Before you integrate: skim [KIT_ISSUES.md](KIT_ISSUES.md). It tracks known bugs in the kit's public surface plus the workarounds existing consumers ship. The list is short, but catching a current bug there saves debugging time.
 
-After integration: [§16 Theming guide](docs/SPEC.md#16-theming-guide-consumer-reference) for the CSS-token + locked-class surface you can target.
+After integration: [§16 Theming guide](docs/SPEC.md#16-theming-guide-consumer-reference) for the CSS-token + locked-class surface you can target, and [ADOPTING §4](docs/ADOPTING.md#4-branding-via-bridge) for the bridge/load-order recipe.
 
 ---
 
@@ -99,7 +101,7 @@ npm install @tanstack/react-table@^8.21.3 @dnd-kit/core@^6.3.1 \
 They are declared `optional` in `peerDependenciesMeta`, so consumers that never
 import `./table` install nothing extra and get no npm warning. `./module-card`
 and every other entry have no third-party deps at all. `react/jsx-runtime` is
-external too — wp-scripts maps it to the `wp-react-jsx-runtime` handle
+external too — wp-scripts maps it to the `react-jsx-runtime` handle
 automatically, so no consumer action is needed for that one.
 
 ## Theming

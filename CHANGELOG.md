@@ -28,7 +28,7 @@ public API per the deprecation cycle in §12.2.
 - **`react/jsx-runtime` is externalized (K-019).** Every built entry now
   imports it instead of embedding one. Bundlers that follow the WordPress
   convention (wp-scripts' `DependencyExtractionWebpackPlugin`) map it to the
-  `wp-react-jsx-runtime` script handle automatically; anything else resolves it
+  `react-jsx-runtime` script handle automatically; anything else resolves it
   from the existing `react` peer. No consumer action needed.
 
 ### Fixed
