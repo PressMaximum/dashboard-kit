@@ -10,6 +10,8 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-07-25
+
 ### Changed — consumer contract (read before bumping)
 
 - **The `table` sub-entry's third-party deps are now OPTIONAL PEERS, not
