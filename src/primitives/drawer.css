@@ -132,12 +132,6 @@
     animation:none;transition:none
   }
 }
-.pmdk-dashboard[dir=rtl] .pmdk-drawer {
-  transform:translateX(-104%);box-shadow:10px 0 30px color-mix(in srgb,var(--pmdk-color-inverse-surface) 9%,transparent)
-}
-.pmdk-dashboard[dir=rtl] .pmdk-drawer.open {
-  transform:translateX(0)
-}
 .pmdk-dashboard .pmdk-drawer-foot .pmdk-button {
   height:var(--pmdk-size-control-md);padding-inline:12px
 }

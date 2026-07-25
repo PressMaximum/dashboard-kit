@@ -2270,6 +2270,17 @@ adding these tokens changes nothing for existing consumers. Authoritative list:
   `--pmdk-size-icon-{sm,md,lg}`.
 - **Motion** — `--pmdk-motion-standard`, `--pmdk-motion-duration-fast`,
   `--pmdk-motion-ease-standard`.
+- **Direction** — `--pmdk-dir-lock` (default `ltr`). Any run that must render
+  LTR inside an RTL document (money, times, dates, ids) uses
+  `direction: var( --pmdk-dir-lock )`, never a literal `direction: ltr`: the kit
+  ships LTR stylesheets and consumers' builds run rtlcss over them, which
+  rewrites the VALUE `ltr` → `rtl` and would flip exactly those runs (K-030).
+  Custom-property declarations are the one thing rtlcss leaves alone. It is
+  declared on `.pmdk-dashboard` in BOTH `style.css` and `primitives/style.css`
+  because `var()` FALLBACKS are rewritten too (`var( --x, ltr )` →
+  `var( --x, rtl )`), so no sheet may rely on another being loaded — and for the
+  same reason consumers must not add a fallback when using it. Set it to `rtl`
+  to make a whole surface follow the document instead.
 - **Component-tier** — `--pmdk-accent-fg`, `--pmdk-control-border-{default,hover,
   active}`, `--pmdk-data-border-{strong,medium,soft}`, `--pmdk-content-gutter`,
   `--pmdk-inspector-width`. Component-level tokens from the K-007 tier also

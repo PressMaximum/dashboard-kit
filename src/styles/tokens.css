@@ -135,6 +135,20 @@ body.wp-admin,
 	--pmdk-color-accent: var( --wp-admin-theme-color, #3858e9 );
 }
 
+/*
+ * Direction lock (K-030). Text runs that must render LTR even in an RTL
+ * document — money, times, dates, ids — declare `direction:
+ * var( --pmdk-dir-lock )` instead of `direction: ltr`, because rtlcss (the
+ * RTL stylesheet generator wp-scripts runs over kit CSS) rewrites the VALUE
+ * `ltr` -> `rtl` and would flip exactly the runs the rule pins. Custom-property
+ * declarations are the one thing rtlcss leaves alone. Consumers can use the
+ * same token in their own rules; override it to `rtl` only if a whole surface
+ * should follow the document instead.
+ */
+.pmdk-dashboard {
+	--pmdk-dir-lock: ltr;
+}
+
 /* =====================================================================
  * DS token API (KIT-P2) — additive, non-breaking.
  *

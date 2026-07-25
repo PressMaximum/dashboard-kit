@@ -9,7 +9,7 @@
  */
 
 .pmdk-dashboard .pmdk-money-field {
-  direction:ltr
+  direction:var(--pmdk-dir-lock)
 }
 .pmdk-dashboard .pmdk-money-field>input {
   padding-inline-start:25px
