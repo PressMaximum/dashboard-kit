@@ -10,6 +10,8 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-07-25
+
 ### Added
 
 - **`<PMDKModuleCard toggle={ false } statusLabel=… >` for non-toggleable
