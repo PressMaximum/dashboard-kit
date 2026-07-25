@@ -118,6 +118,21 @@
 .pmdk-dashboard[dir=rtl] .pmdk-col-action {
   box-shadow:1px 0 0 var(--pmdk-color-border)
 }
+/* An open row-action menu has to escape its own cell (K-024).
+   `position: sticky` + `z-index` makes EVERY action cell a stacking context, so
+   the menu inside one (z-index 18 anchored, 120 floating) is trapped at the
+   CELL's level: the opaque sticky action cells of LATER rows paint over its
+   trailing edge and truncate item labels ("Duplicate a…"). Raising the one cell
+   that owns the open menu lifts its whole stacking context above its siblings
+   (3) and the sticky header (4); 35 matches the `.pmdk-status-picker.is-open`
+   idiom and stays below the drawer (70) and floating menus (120).
+   `aria-expanded` is the state hook because `createMenu` sets it and the
+   documented consumer pattern does too. Closed cells keep z-index 3, so nothing
+   moves at rest. `:has()` is in the kit's browser floor (§16.1) and already
+   used above. */
+.pmdk-dashboard .pmdk-col-action:has( [aria-expanded='true'] ) {
+	z-index: 35;
+}
 .pmdk-dashboard .pmdk-table thead .pmdk-col-select,
 .pmdk-dashboard .pmdk-table thead .pmdk-col-action {
   z-index:4

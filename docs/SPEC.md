@@ -1281,22 +1281,31 @@ reparent `position: fixed` descendants — `transform` / `translate` / `rotate`
 / `scale` / `perspective`, `filter` / `backdrop-filter`, `contain:
 layout|paint|content|strict`, `content-visibility`, a matching `will-change`,
 and `container-type` (the kit's own `.pmdk-data-table` sets it). The menu
-nominates the nearest such ancestor from computed style, then probes the
-engine at three points — `left/top: 0` and both basis vectors, 100px along
-each axis separately — and subtracts the ancestor's padding-box origin only
-when **all** hold: the popover starts on that origin, and each axis moves N px
-for N px written (±1px). An affine map is fixed by exactly those three images,
-so only a pure translation is accepted. Everything else falls back to the
-uncorrected viewport coordinates, which is the pre-K-021 behavior, so no case
-gets worse:
+nominates such ancestors from computed style — the nomination list is a
+SUPERSET, so it walks the whole chain rather than trusting the innermost hit —
+and probes the engine at three points: `left/top: 0` and both basis vectors,
+100px along each axis separately. It subtracts a candidate's padding-box origin
+only when **all** hold: the popover starts on that origin, and each axis moves
+N px for N px written (±1px). An affine map is fixed by exactly those three
+images, so only a pure translation is accepted. Everything else falls back to
+the uncorrected viewport coordinates, which is the pre-K-021 behavior, so no
+case gets worse:
 
-| Ancestor | Behavior |
+| Ancestor chain | Behavior |
 |---|---|
-| none | no probe, coordinates byte-identical to pre-K-021 |
+| no candidate | no probe, coordinates byte-identical to pre-K-021 |
 | `transform: translate*` / `filter` / `contain: layout` / … | origin subtracted, menu glued to its trigger |
-| `container-type` where the engine does not reparent (Chromium) | probe rejects, coordinates unchanged |
-| SCALED / ROTATED / SKEWED / perspective-projected ancestor | probe rejects — a subtraction cannot undo a bent coordinate system |
-| popover carrying its own `transform` | probe rejects |
+| `container-type` where the engine does not reparent (Chromium) | candidate rejected, coordinates unchanged |
+| **`container-type` BELOW a `transform` ancestor** | inner candidate rejected, walk resumes, the transform ancestor is confirmed and used (0.2.2 — the 0.2.1 search stopped at the inner one and corrected nothing) |
+| several candidates, engine matches an outer one | innermost-first; the first candidate the engine confirms wins |
+| no candidate in the chain matches | all rejected, coordinates unchanged |
+| SCALED / ROTATED / SKEWED / perspective-projected ancestor | rejected for the whole chain — a subtraction cannot undo a bent coordinate system |
+| popover carrying its own `transform` | rejected (matches no candidate's origin) |
+
+Cost: the probe measures where the popover LANDS, so it is
+candidate-independent and runs at most once per open however long the chain is;
+walking past a rejected candidate costs one `getComputedStyle` +
+one `getBoundingClientRect` and stops at the first match.
 
 The popover is not moved into the top layer, so a paint-clipping ancestor
 (`overflow: hidden` + a containing block) can still clip it.
