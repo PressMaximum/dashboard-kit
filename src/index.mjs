@@ -98,4 +98,4 @@ export { default as CategoryBadge } from './changelog/CategoryBadge.jsx';
  * package.json + PHP Bootstrap::VERSION by hand at release prep (0.2.0:
  * synced in KIT-P4 — closes the "runtime reads 0.0.0" caveat).
  * ------------------------------------------------------------------------ */
-export const __KIT_VERSION__ = '0.2.3';
+export const __KIT_VERSION__ = '0.2.4';

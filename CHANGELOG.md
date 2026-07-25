@@ -10,6 +10,8 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-07-26
+
 ### Fixed
 
 - **Module-card icons vanished unless wrapped in the kit's own class (K-035).**
