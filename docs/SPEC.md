@@ -1231,9 +1231,16 @@ import '@pressmaximum/dashboard-kit/primitives/style.css'; // chrome for both
 
 - `primitives` — framework-agnostic headless behaviors (no React). Slice 1
   ships the combobox; tablist / resizer / preferences land in later slices.
-- `table` — React. Bundles `@tanstack/react-table` + `@dnd-kit/*` (≈37 kB gzip
-  total entry); `react`, `react-dom`, `@wordpress/*` stay external. Q13
-  decision: shipping the wiring once beats copy-per-product.
+- `table` — React. `@tanstack/react-table` + `@dnd-kit/core|sortable|utilities`
+  are **optional peer dependencies the consumer installs**, not bundled copies
+  (K-019, 0.2.1): a consumer already using TanStack/dnd-kit no longer receives
+  a second private copy, and owns the version. Entry drops to ≈8.5 kB gzip.
+  `react`, `react-dom`, `react/jsx-runtime` and `@wordpress/*` stay external
+  as before — the JSX runtime must come from the consumer's React so a
+  `SCRIPT_DEBUG` build gets the dev runtime. Q13 still holds: shipping the
+  wiring once beats copy-per-product; only the dep copies moved out.
+  Consumers that never import `./table` install nothing new (`optional` in
+  `peerDependenciesMeta`); `./module-card` has no third-party deps.
 - `primitives/style.css` — the `.pmdk-*` chrome for slices 1–2, scoped under
   `.pmdk-dashboard` (§16.5). Requires the §16.1 browser floor
   (`color-mix()`, `:has()`, container queries).
