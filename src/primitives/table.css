@@ -149,7 +149,7 @@
 }
 /* 180deg is symmetric, so rtlcss rewriting this to `rotate(-180deg)` in an RTL
    build renders identically. Any OTHER angle here must move to the individual
-   `rotate:` property, which rtlcss does not touch (K-030). */
+   `rotate:` property, which rtlcss does not touch (K-031). */
 .pmdk-dashboard .pmdk-sort-button.is-asc svg {
   transform:rotate(180deg)
 }

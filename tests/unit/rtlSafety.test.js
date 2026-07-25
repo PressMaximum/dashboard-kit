@@ -1,5 +1,5 @@
 /**
- * K-030 — the kit's CSS must survive a consumer-side rtlcss pass.
+ * K-031 — the kit's CSS must survive a consumer-side rtlcss pass.
  *
  * The kit ships LTR stylesheets only; every consumer's build (wp-scripts) runs
  * rtlcss over them to emit `*-rtl.css`. Two constructs are booby traps there,
@@ -43,7 +43,7 @@ const FILES = cssFiles( SRC ).map( ( full ) => ( {
 	css: readFileSync( full, 'utf8' ).replace( /\/\*[\s\S]*?\*\//g, '' ),
 } ) );
 
-describe( 'K-030 rtlcss safety of the kit stylesheets', () => {
+describe( 'K-031 rtlcss safety of the kit stylesheets', () => {
 	it( 'finds stylesheets to check', () => {
 		expect( FILES.length ).toBeGreaterThan( 10 );
 	} );

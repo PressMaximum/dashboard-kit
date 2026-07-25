@@ -14,7 +14,7 @@ public API per the deprecation cycle in §12.2.
 
 ### Fixed
 
-- **RTL builds double-flipped kit chrome and un-pinned LTR text runs (K-030).**
+- **RTL builds double-flipped kit chrome and un-pinned LTR text runs (K-031).**
   The kit ships LTR stylesheets only; consumers' builds run rtlcss over them to
   emit `*-rtl.css`. Two constructs broke that pass:
   - **6 rules keyed on `.pmdk-dashboard[dir=rtl]`** (drawer slide-in and shadow,

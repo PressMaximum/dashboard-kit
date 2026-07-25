@@ -136,7 +136,7 @@ body.wp-admin,
 }
 
 /*
- * Direction lock (K-030). Text runs that must render LTR even in an RTL
+ * Direction lock (K-031). Text runs that must render LTR even in an RTL
  * document — money, times, dates, ids — declare `direction:
  * var( --pmdk-dir-lock )` instead of `direction: ltr`, because rtlcss (the
  * RTL stylesheet generator wp-scripts runs over kit CSS) rewrites the VALUE

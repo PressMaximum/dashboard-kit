@@ -2274,7 +2274,7 @@ adding these tokens changes nothing for existing consumers. Authoritative list:
   LTR inside an RTL document (money, times, dates, ids) uses
   `direction: var( --pmdk-dir-lock )`, never a literal `direction: ltr`: the kit
   ships LTR stylesheets and consumers' builds run rtlcss over them, which
-  rewrites the VALUE `ltr` → `rtl` and would flip exactly those runs (K-030).
+  rewrites the VALUE `ltr` → `rtl` and would flip exactly those runs (K-031).
   Custom-property declarations are the one thing rtlcss leaves alone. It is
   declared on `.pmdk-dashboard` in BOTH `style.css` and `primitives/style.css`
   because `var()` FALLBACKS are rewritten too (`var( --x, ltr )` →

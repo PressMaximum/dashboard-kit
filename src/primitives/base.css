@@ -37,7 +37,7 @@
  * this token; the indeterminate dash already reads `--pmdk-color-on-accent`.
  * DESIGN-SYSTEM: "do not assume the check is always white." */
 .pmdk-dashboard {
-	/* K-030 direction lock. Runs that must stay LTR in an RTL document (money,
+	/* K-031 direction lock. Runs that must stay LTR in an RTL document (money,
 	   times, dates, ids) read `direction: var( --pmdk-dir-lock )`. A literal
 	   `direction: ltr` cannot be used: rtlcss rewrites the VALUE, so an RTL
 	   build would flip the very runs the rule exists to pin — but it never
