@@ -16,6 +16,7 @@ let root;
 let trigger;
 let popover;
 let shell;
+let inner;
 let selections;
 
 const flushFrames = () =>
@@ -26,18 +27,21 @@ const flushFrames = () =>
 /**
  * Mounts the fixture.
  *
- * The menu always sits inside a `.pmdk-shell` wrapper so the containing-block
- * walk has an ancestor to inspect; `shellStyle` turns that wrapper into a
- * fixed-position containing block (K-021).
+ * Two nested wrappers, `.pmdk-shell` > `.pmdk-inner`, so a test can put
+ * containment on the OUTER, the INNER, or both — the two-ancestor case is
+ * where a single-candidate search goes wrong (K-021 round 2). `innerStyle`
+ * defaults to nothing, which leaves the earlier single-wrapper behaviour.
  *
  * @param {Object} options    createMenu options.
- * @param {string} shellStyle Inline style for the wrapper ('' = uncontained).
+ * @param {string} shellStyle Inline style for the outer wrapper ('' = none).
+ * @param {string} innerStyle Inline style for the inner wrapper ('' = none).
  */
-function mount( options = {}, shellStyle = '' ) {
+function mount( options = {}, shellStyle = '', innerStyle = '' ) {
 	host = document.createElement( 'div' );
 	document.body.appendChild( host );
 	host.innerHTML = `
 		<div class="pmdk-shell" style="${ shellStyle }">
+		<div class="pmdk-inner" style="${ innerStyle }">
 		<div data-menu>
 			<button data-menu-trigger type="button">Actions</button>
 			<div class="pmdk-row-action-menu" role="menu" aria-label="Actions" hidden>
@@ -47,8 +51,10 @@ function mount( options = {}, shellStyle = '' ) {
 				<button role="menuitem" type="button" data-id="delete" class="is-danger">Delete</button>
 			</div>
 		</div>
+		</div>
 		</div>`;
 	shell = host.querySelector( '.pmdk-shell' );
+	inner = host.querySelector( '.pmdk-inner' );
 	root = host.querySelector( '[data-menu]' );
 	trigger = root.querySelector( '[data-menu-trigger]' );
 	popover = root.querySelector( '[role="menu"]' );
@@ -60,10 +66,10 @@ function mount( options = {}, shellStyle = '' ) {
 }
 
 /* Remount helper for the cases that need a different fixture mid-test. */
-function remount( options = {}, shellStyle = '' ) {
+function remount( options = {}, shellStyle = '', innerStyle = '' ) {
 	controller.destroy();
 	host.remove();
-	mount( options, shellStyle );
+	mount( options, shellStyle, innerStyle );
 }
 
 const rect = ( top, left, height, width ) => () => ( {
@@ -322,6 +328,9 @@ describe( 'createMenu', () => {
 describe( 'createMenu — fixed mode inside a containing block', () => {
 	const TRIGGER = rect( 100, 500, 34, 60 );
 	const SHELL = rect( 60, 120, 640, 880 );
+	/* The inner wrapper sits INSIDE the shell, at a different origin — that
+	   difference is what makes the two-ancestor case falsifiable. */
+	const INNER = rect( 200, 300, 400, 600 );
 
 	/**
 	 * Teaches the fixture where a `position: fixed` popover actually lands.
@@ -383,14 +392,16 @@ describe( 'createMenu — fixed mode inside a containing block', () => {
 	/**
 	 * Opens the fixed menu against the standard fixture.
 	 *
-	 * @param {string} shellStyle Inline style for the wrapper.
-	 * @param {Object} [setup]    `engine` (see simulateEngine) + rect overrides.
+	 * @param {string} shellStyle Inline style for the outer wrapper.
+	 * @param {Object} [setup]    `engine` (see simulateEngine), `innerStyle`,
+	 *                            `popoverStyle` + rect overrides.
 	 * @return {{top:number, left:number}} Written popover coordinates (px).
 	 */
 	function openFixedIn( shellStyle, setup = {} ) {
-		remount( { position: 'fixed' }, shellStyle );
+		remount( { position: 'fixed' }, shellStyle, setup.innerStyle || '' );
 		trigger.getBoundingClientRect = setup.trigger || TRIGGER;
 		shell.getBoundingClientRect = setup.shell || SHELL;
+		inner.getBoundingClientRect = setup.inner || INNER;
 		if ( setup.popoverStyle ) {
 			popover.setAttribute( 'style', setup.popoverStyle );
 		}
@@ -432,6 +443,89 @@ describe( 'createMenu — fixed mode inside a containing block', () => {
 				engine: REPARENTED,
 			} ),
 		).toEqual( { top: 79, left: 244 } );
+	} );
+
+	/*
+	 * K-021 round 2 — the two-ancestor chain, proven in Aponto's adoption run.
+	 *
+	 * Real DOM: a fixed row-action menu inside `.pmdk-data-table`
+	 * (`container-type: inline-size`, which Chromium does NOT reparent for),
+	 * inside a shell wrapper carrying `transform: translateY(5px)` (which it
+	 * DOES). The innermost candidate is the table; the actual containing block
+	 * is the shell above it. A search that stopped at the first candidate
+	 * rejected the table's origin and applied no correction at all, leaving
+	 * every menu off by the transform ancestor's origin.
+	 */
+	it( 'skips a nominated ancestor the engine did NOT reparent to, and keeps walking', () => {
+		expect(
+			openFixedIn( 'transform: translateY(5px);', {
+				innerStyle: 'container-type: inline-size;',
+				// The engine reparented onto the SHELL (120, 60), not the
+				// inner container-query wrapper at (300, 200).
+				engine: REPARENTED,
+			} ),
+		).toEqual( { top: 79, left: 244 } );
+	} );
+
+	it( 'adopts the INNER candidate when that is the one the engine used', () => {
+		// Mirror image: both ancestors nominate, but the engine reparented onto
+		// the inner one, so innermost-first must win rather than the outer.
+		expect(
+			openFixedIn( 'transform: translateY(5px);', {
+				innerStyle: 'transform: translateZ(0);',
+				engine: { originX: 300, originY: 200 },
+			} ),
+		).toEqual( { top: 139 - 200, left: 364 - 300 } );
+	} );
+
+	it( 'still gives up when NO candidate in the chain matches', () => {
+		// Two nominated ancestors, engine origin belongs to neither (a popover
+		// carrying its own transform looks like this) — fall back, don't guess.
+		expect(
+			openFixedIn( 'transform: translateY(5px);', {
+				innerStyle: 'container-type: inline-size;',
+				engine: { originX: 777, originY: 555 },
+			} ),
+		).toEqual( { top: 139, left: 364 } );
+	} );
+
+	it( 'probes once for the whole chain, not once per candidate', () => {
+		// The probe measures where the popover LANDS, so it is
+		// candidate-independent: two nominated ancestors must still cost a
+		// single probe. Counted via the transition suppression that wraps each
+		// probeFixedFrame() call exactly once (the three probe points
+		// themselves write `left: 0px` twice, so those are not a clean proxy).
+		remount( { position: 'fixed' }, 'transform: translateY(5px);', 'container-type: inline-size;' );
+		trigger.getBoundingClientRect = TRIGGER;
+		shell.getBoundingClientRect = SHELL;
+		inner.getBoundingClientRect = INNER;
+		simulateEngine( REPARENTED );
+		let probes = 0;
+		const style = popover.style;
+		const originalSetProperty = style.setProperty.bind( style );
+		Object.defineProperty( popover, 'style', {
+			configurable: true,
+			value: new Proxy( style, {
+				set( target, prop, value ) {
+					if ( prop === 'transition' && value === 'none' ) {
+						probes++;
+					}
+					target[ prop ] = value;
+					return true;
+				},
+				get( target, prop ) {
+					if ( prop === 'setProperty' ) {
+						return originalSetProperty;
+					}
+					const value = target[ prop ];
+					return typeof value === 'function'
+						? value.bind( target )
+						: value;
+				},
+			} ),
+		} );
+		pointerClick( trigger );
+		expect( probes ).toBe( 1 );
 	} );
 
 	it( 'the popover lands at the SAME viewport position, contained or not', () => {

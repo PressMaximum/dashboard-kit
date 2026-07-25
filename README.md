@@ -94,8 +94,7 @@ second private copy and owns the version itself. Importing
 `@pressmaximum/dashboard-kit/table` therefore means installing:
 
 ```bash
-npm install @tanstack/react-table@^8.21.3 @dnd-kit/core@^6.3.1 \
-  @dnd-kit/sortable@^8.0.0 @dnd-kit/utilities@^3.2.2
+npm install @tanstack/react-table @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
 ```
 
 They are declared `optional` in `peerDependenciesMeta`, so consumers that never

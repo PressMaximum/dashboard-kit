@@ -10,6 +10,46 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+### Changed — consumer contract
+
+- **Optional peer ranges widened (K-027).** `@dnd-kit/sortable` `^8.0.0` →
+  `>=8 <11`, `@dnd-kit/core` `^6.3.1` → `>=6 <7`, `@dnd-kit/utilities` `^3.2.2`
+  → `>=3 <4`, `@tanstack/react-table` `^8.21.3` → `>=8 <9`. npm enforces peer
+  ranges even for `optional` peers once the package is present, so the old pins
+  pushed any consumer on a newer dnd-kit major into `overrides`. The ranges were
+  checked against the registry and the kit's actual API surface: the five
+  `@dnd-kit/sortable` symbols the table uses are unchanged across 8, 9 and 10
+  (the only published majors), 6.x/3.x are the newest `@dnd-kit/core` /
+  `@dnd-kit/utilities` majors, and `@tanstack/react-table` has no v9.
+  **Consumers can delete their `overrides` / `resolutions` entries** for these
+  packages. `@dnd-kit/sortable` still carries its own peer on `@dnd-kit/core`
+  (v10 wants `^6.3.0`), which constrains that pairing independently of the kit.
+
+### Fixed
+
+- **`createMenu` gave up after one containing-block candidate (K-021, round
+  2).** The 0.2.1 search returned the FIRST ancestor whose computed style could
+  contain fixed descendants and abandoned the correction if the engine did not
+  confirm it. Since the nomination list is a superset, a real chain —
+  `container-type` table (which Chromium does NOT reparent for) inside a
+  `transform`ed shell (which it does) — nominated the table, failed the origin
+  check, and applied NO correction while the engine had in fact reparented onto
+  the shell. Consumers saw every row menu offset by the transform ancestor's
+  origin, which is exactly the bug K-021 set out to fix. The walk now resumes
+  past a rejected candidate and adopts the first one the engine confirms,
+  innermost-first, falling back to uncorrected coordinates only once the chain is
+  exhausted. The probe is candidate-independent, so this still costs at most one
+  probe per open.
+- **An open row-action menu was painted over by the rows below it (K-028).**
+  `.pmdk-col-action` is `position: sticky; z-index: 3`, which makes every action
+  cell a stacking context — so a menu inside one was confined to its cell's level
+  in the paint order and the opaque sticky cells of later rows covered its
+  trailing edge, truncating item labels. The cell owning the open menu is now
+  raised (`:has( [aria-expanded='true'] ) { z-index: 35 }`), above sibling cells
+  and the sticky header, below the drawer and floating-menu tiers. Attribute-
+  keyed, so it follows the menu state with no JS change; cells at rest keep
+  `z-index: 3`, so nothing moves when every menu is closed.
+
 ## [0.2.1] — 2026-07-25
 
 ### Changed — consumer contract (read before bumping)
