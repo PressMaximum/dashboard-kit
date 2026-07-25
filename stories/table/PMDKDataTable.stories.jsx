@@ -240,7 +240,7 @@ export const ThemeAppDark = {
 };
 
 /*
- * K-024 — an open row-action menu vs the sticky action column.
+ * K-028 — an open row-action menu vs the sticky action column.
  *
  * `.pmdk-col-action` is `position: sticky; z-index: 3`, which makes every action
  * cell a stacking context. Before the fix the menu inside one was trapped at

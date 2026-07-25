@@ -1,7 +1,8 @@
-export function PMDKModuleCard({ icon, meta, title, description, tier, badges, state, integrationState, connected, action, plannedLabel, onToggle, toggleDisabled, labels: labelOverrides, headingLevel, className, }: {
+export function PMDKModuleCard({ icon, meta, title, titleText, description, tier, badges, state, integrationState, connected, action, plannedLabel, statusLabel, toggle, onToggle, toggleDisabled, labels: labelOverrides, headingLevel, className, }: {
     icon: any;
     meta: any;
     title: any;
+    titleText: any;
     description: any;
     tier: any;
     badges: any;
@@ -10,6 +11,8 @@ export function PMDKModuleCard({ icon, meta, title, description, tier, badges, s
     connected?: boolean;
     action: any;
     plannedLabel: any;
+    statusLabel: any;
+    toggle?: boolean;
     onToggle: any;
     toggleDisabled?: boolean;
     labels: any;

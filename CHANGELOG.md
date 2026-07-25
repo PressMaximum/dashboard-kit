@@ -10,6 +10,38 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+### Added
+
+- **`<PMDKModuleCard toggle={ false } statusLabel=… >` for non-toggleable
+  integrations (K-023).** Outside the `planned` state the card always shipped a
+  toggle, so an integration whose on/off state the kit does not own got a
+  tab-reachable checkbox that did nothing. `toggle` defaults to `true`, so no
+  existing consumer changes; `false` renders the footer action slot plus the new
+  optional `statusLabel` — the footer shape `planned` already produced — and no
+  control at all. Independent of `state`, so a connected integration keeps its
+  `is-enabled` chrome and its place in the product's counts.
+- **`titleText` for the toggle's accessible name (K-024).** `title` is typed
+  `node`; a node title used to stringify into `"Disable [object Object]"`.
+  `toggleAria` now prefers `titleText`, falls back to `title` only when that is
+  already a string, and omits the name rather than stringifying — so the worst
+  case degrades to `"Disable"`. `labels.toggleAria( name, enabled )` receives
+  the resolved string, so consumer overrides are safe too.
+- **`tier.variant: 'free' | 'premium'` (K-025).** Makes the shipped-but-
+  unreachable `.pmdk-module-license.is-free` badge chrome selectable.
+  `isPremium: true` stays a synonym for `variant: 'premium'`, and a tier with no
+  `variant` renders the bare badge exactly as before — inferring `is-free` from
+  a falsy `isPremium` would have restyled every shipped consumer's badge on a
+  patch bump (measured: 4 diverged VR shots), so it is opt-in.
+
+### Changed
+
+- **Primitives entry `size-limit` 5 KB → 5.5 KB.** A deliberate, authorized
+  raise, not a ratchet slip: the K-021 containing-block chain walk took the
+  entry to 4.99 KB gzip and left ~10 bytes of headroom, so the next change to
+  any primitive would have failed the budget for reasons unrelated to it. 5.5 KB
+  restores meaningful room while keeping the limit tight enough to catch a real
+  regression. Entry is 4.99 KB at this release.
+
 ### Changed — consumer contract
 
 - **Optional peer ranges widened (K-027).** `@dnd-kit/sortable` `^8.0.0` →

@@ -1346,16 +1346,19 @@ kit ships behavior + chrome + slots, product keeps data + copy.
 
 | Prop | Type / default | Contract |
 |---|---|---|
-| `title` | `node` (required) | Card title (`headingLevel` = `2` picks h2/h3/h4) |
+| `title` | `node` (required) | Card title (`headingLevel` = `2` picks h2/h3/h4). A non-string title needs `titleText` for the toggle's accessible name (K-024) |
+| `titleText` | `string` | Plain-text title used for the toggle's accessible name; preferred over `title` whenever given. Required when `title` is a node — without it the name degrades to the bare verb ("Disable") rather than stringifying the node |
 | `icon` | `node` | Icon slot (product glyph, 30px box) |
 | `meta` | `node` | Meta line — product copy, e.g. `"{Category} · {Module\|Integration}"` |
 | `description` | `node` | One-sentence description |
-| `tier` | `{ label: node, isPremium?: bool }` | TIER badge — kit chrome (`.pmdk-module-license`), product label. Entitlement signal, visually distinct from runtime status |
+| `tier` | `{ label: node, variant?: 'free'│'premium', isPremium?: bool }` | TIER badge — kit chrome (`.pmdk-module-license`), product label. Entitlement signal, visually distinct from runtime status. `variant` picks the badge chrome: `'premium'` → `is-premium`, `'free'` → `is-free`, omitted → bare badge. `isPremium: true` remains a synonym for `variant: 'premium'`. Opt-in on purpose (K-025): inferring `is-free` from a falsy `isPremium` would restyle every shipped consumer's badge |
 | `badges` | `node` | Extra badge slot (phase etc. — compose `.pmdk-module-phase`) |
 | `state` | `'enabled'│'disabled'│'planned'` = `'disabled'` | Stamped `is-enabled` / `is-disabled` / `is-planned` |
 | `integrationState` / `connected` | `node` / `bool` | Optional integration-state line (`.pmdk-module-connection`, `is-connected` tint) |
 | `action` | `node` | Footer action slot (Configure / deep link / View roadmap) |
 | `plannedLabel` | `node` | Static footer label for `planned` — which renders NO toggle |
+| `toggle` | `bool` = `true` | `false` renders NO toggle: footer keeps the `action` slot plus `statusLabel`, the same shape `planned` produces (K-023). Use for an integration whose on/off state is not the kit's to own — configuration lives behind the action. Independent of `state`, so an `enabled` integration keeps `is-enabled` chrome and its place in the product's on/available counts |
+| `statusLabel` | `node` | Static footer label when `toggle` is `false` (the `planned` state uses `plannedLabel` instead) |
 | `onToggle` | `(next: bool) => void` | The toggle is the canonical activation control; controlled by `state` |
 | `toggleDisabled` | `bool` = `false` | Gated module: toggle stays disabled (pair with an upgrade `action`) |
 | `labels` | `{ toggleOn, toggleOff, toggleAria(title, enabled) }` | i18n overrides (English defaults per §5.13 Tier-2 rules) |
@@ -2460,7 +2463,7 @@ the mockup `DESIGN-SYSTEM.md`):
 | Five states | `.pmdk-state-panel`, `.pmdk-state-icon` (+ `is-error`), `.pmdk-state-loading`, `.pmdk-state-skeleton-head` / `-grid`, `.pmdk-skeleton`, `.pmdk-empty`, `.pmdk-inline-empty` | Ready / Loading / Empty / Error / Permission |
 | In-flow inspector (slice 3) | `.pmdk-inflow-workspace` (+ `is-inspecting` / `is-resizing` / `is-closing`), `.pmdk-inflow-main`, `.pmdk-inflow-resizer`, `.pmdk-inflow-inspector` (+ `-head`) | Workspace plane: open pushes main narrower, no backdrop. Width via `--pmdk-inflow-inspector-width` (defaults to the token `--pmdk-inspector-width`); behavior via `createInspectorResizer`. Aponto `data-panel-kind` domain variants were NOT extracted |
 | Drawer + panel content (slice 3) | `.pmdk-drawer` (+ `open`, `[data-panel-kind=detail]` mode), `.pmdk-drawer-head` / `-body` / `-foot` / `-hero` (+ `-hero-copy`) / `-title-group` / `-title-copy` / `-title-leading` / `-primary-actions` / `-confirm` / `-confirm-foot` / `-confirm-actions`, `.pmdk-panel-section` / `-hero` / `-footer` / `-drawer-foot`, `.pmdk-mini-stats` | Overlay-plane drawer + shared panel content conventions; `.pmdk-mini-stats` is the compact metric strip |
-| Module card (slice 4 + K-018) | `.pmdk-module-grid` (+ `is-revealing`), `.pmdk-module-card` (+ `is-enabled` / `is-disabled` / `is-planned`), `.pmdk-module-card-head` / `-foot`, `.pmdk-module-icon`, `.pmdk-module-copy` / `-meta` / `-description` / `-badges` / `-card-action` / `-connection-line` (K-018 anatomy), `.pmdk-module-license` (+ `is-premium` — the TIER badge; source name kept), `.pmdk-module-phase`, `.pmdk-module-connection` (+ `is-connected`), `.pmdk-module-toggle` (+ `-label`), `.pmdk-toggle-track` | DESIGN-SYSTEM anatomy: icon, tier badge, title, description, status, toggle. Component: `<PMDKModuleCard>` (§5.12) |
+| Module card (slice 4 + K-018) | `.pmdk-module-grid` (+ `is-revealing`), `.pmdk-module-card` (+ `is-enabled` / `is-disabled` / `is-planned`), `.pmdk-module-card-head` / `-foot`, `.pmdk-module-icon`, `.pmdk-module-copy` / `-meta` / `-description` / `-badges` / `-card-action` / `-connection-line` (K-018 anatomy), `.pmdk-module-license` (+ `is-premium` / `is-free` — the TIER badge, selected by `tier.variant`; source name kept), `.pmdk-module-phase`, `.pmdk-module-connection` (+ `is-connected`), `.pmdk-module-toggle` (+ `-label`), `.pmdk-toggle-track` | DESIGN-SYSTEM anatomy: icon, tier badge, title, description, status, toggle. Component: `<PMDKModuleCard>` (§5.12) |
 | Avatar (slice 4) | `.pmdk-avatar` (+ `is-large`) | One uppercase letter, one shared quiet tint — no per-record colour cycling |
 | Tabs (slice 4) | `.pmdk-section-tabs` | Peer views within a route; underline active, optional count badge span; behavior via `createTablist` |
 | Toast (slice 4) | `.pmdk-toast` (+ `show`) | Transient confirmation anchored to the workspace corner |

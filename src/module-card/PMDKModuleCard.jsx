@@ -29,15 +29,47 @@
 const DEFAULT_LABELS = {
 	toggleOn: 'Enabled',
 	toggleOff: 'Disabled',
-	toggleAria: ( title, enabled ) =>
-		`${ enabled ? 'Disable' : 'Enable' } ${ title }`,
+	/*
+	 * `name` is the resolved accessible name (K-024): `titleText` when given,
+	 * else `title` if it is already a string. A node title with no `titleText`
+	 * yields '' rather than "[object Object]", so the name degrades to the bare
+	 * verb instead of announcing garbage.
+	 */
+	toggleAria: ( name, enabled ) =>
+		`${ enabled ? 'Disable' : 'Enable' }${ name ? ` ${ name }` : '' }`,
 };
+
+/**
+ * Tier-badge variant class (K-025).
+ *
+ * `.pmdk-module-license.is-free` shipped in the chrome but nothing could reach
+ * it, because only `is-premium` was ever emitted. It is now reachable through
+ * an explicit `tier.variant`, NOT by treating "not premium" as "free":
+ * `{ label: 'Free' }` renders a bare badge in every shipped consumer, and
+ * inferring `is-free` from a falsy `isPremium` restyles all of them (green
+ * tint, green border, green text) on a patch bump — measured as 4 diverged
+ * baseline shots, 144–310 diff px. Opting in keeps the zero-look-change
+ * promise and still retires the dead CSS.
+ *
+ * @param {{isPremium?: boolean, variant?: 'free'|'premium'}} tier Tier descriptor.
+ * @return {string} Class suffix — ' is-premium', ' is-free' or ''.
+ */
+function tierVariantClass( tier ) {
+	if ( tier.variant === 'premium' || tier.isPremium ) {
+		return ' is-premium';
+	}
+	if ( tier.variant === 'free' ) {
+		return ' is-free';
+	}
+	return '';
+}
 
 export function PMDKModuleCard( {
 	/* identity (product copy) */
 	icon,
 	meta,
 	title,
+	titleText,
 	description,
 	/* badges — tier gets kit chrome, extras are a free slot */
 	tier,
@@ -49,7 +81,9 @@ export function PMDKModuleCard( {
 	/* footer */
 	action,
 	plannedLabel,
+	statusLabel,
 	/* toggle */
+	toggle = true,
 	onToggle,
 	toggleDisabled = false,
 	labels: labelOverrides,
@@ -61,6 +95,16 @@ export function PMDKModuleCard( {
 	const isEnabled = state === 'enabled';
 	const isPlanned = state === 'planned';
 	const Heading = `h${ headingLevel }`;
+	/*
+	 * K-023: `toggle: false` renders the planned footer SHAPE (action + static
+	 * label) without the planned STATE, so a connected-but-not-toggleable
+	 * integration keeps its `is-enabled` chrome and its place in the on/available
+	 * counts. Default `true` keeps every existing consumer unchanged.
+	 */
+	const showToggle = toggle && ! isPlanned;
+	/* K-024: never interpolate a node into the accessible name. */
+	const toggleName =
+		titleText ?? ( typeof title === 'string' ? title : '' );
 
 	let stateClass = ' is-disabled';
 	if ( isEnabled ) {
@@ -104,9 +148,9 @@ export function PMDKModuleCard( {
 				<span className="pmdk-module-badges">
 					{ tier ? (
 						<span
-							className={ `pmdk-module-license${
-								tier.isPremium ? ' is-premium' : ''
-							}` }
+							className={ `pmdk-module-license${ tierVariantClass(
+								tier,
+							) }` }
 						>
 							{ tier.label }
 						</span>
@@ -118,11 +162,7 @@ export function PMDKModuleCard( {
 				<span className="pmdk-module-card-action">
 					{ action || null }
 				</span>
-				{ isPlanned ? (
-					<span className="pmdk-module-toggle-label">
-						{ plannedLabel || null }
-					</span>
-				) : (
+				{ showToggle ? (
 					<label className="pmdk-module-toggle">
 						<span className="pmdk-module-toggle-label">
 							{ isEnabled
@@ -134,7 +174,7 @@ export function PMDKModuleCard( {
 							checked={ isEnabled }
 							disabled={ toggleDisabled }
 							aria-label={ labels.toggleAria(
-								title,
+								toggleName,
 								isEnabled,
 							) }
 							onChange={ ( event ) =>
@@ -148,6 +188,10 @@ export function PMDKModuleCard( {
 							<span />
 						</span>
 					</label>
+				) : (
+					<span className="pmdk-module-toggle-label">
+						{ ( isPlanned ? plannedLabel : statusLabel ) || null }
+					</span>
 				) }
 			</div>
 		</article>

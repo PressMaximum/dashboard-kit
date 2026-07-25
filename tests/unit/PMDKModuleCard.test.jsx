@@ -228,4 +228,133 @@ describe( 'PMDKModuleCard', () => {
 				.getAttribute( 'aria-label' ),
 		).toBe( 'Tắt Notifications' );
 	} );
+	/* K-023 — a non-toggleable integration (PressListing's `stripe` row). */
+	it( 'toggle={false} renders no control, keeping the enabled chrome', () => {
+		const onToggle = vi.fn();
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				state="enabled"
+				toggle={ false }
+				statusLabel="Connected"
+				action={ <button type="button">Configure</button> }
+				onToggle={ onToggle }
+			/>,
+		);
+		// No control at all — not a hidden-but-focusable one.
+		expect( host.querySelector( '.pmdk-module-toggle' ) ).toBeNull();
+		expect( host.querySelector( 'input' ) ).toBeNull();
+		// The planned FOOTER shape, without the planned STATE.
+		expect(
+			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
+		).toBe( 'Connected' );
+		expect( host.querySelector( '.pmdk-module-card' ).className ).toContain(
+			'is-enabled',
+		);
+		expect(
+			host.querySelector( '.pmdk-module-card' ).className,
+		).not.toContain( 'is-planned' );
+		// The footer action slot still renders.
+		expect(
+			host.querySelector( '.pmdk-module-card-action' ).textContent,
+		).toBe( 'Configure' );
+	} );
+
+	it( 'toggle defaults to true — existing consumers are unchanged', () => {
+		render( <PMDKModuleCard { ...BASE } state="enabled" /> );
+		expect( host.querySelector( '.pmdk-module-toggle input' ) ).not.toBeNull();
+	} );
+
+	it( 'toggle={false} on a planned module still uses plannedLabel', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				state="planned"
+				toggle={ false }
+				plannedLabel="Planned"
+				statusLabel="ignored"
+			/>,
+		);
+		expect(
+			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
+		).toBe( 'Planned' );
+	} );
+
+	/* K-024 — a node title must never reach the accessible name. */
+	it( 'node title: the accessible name comes from titleText', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				title={
+					<>
+						Stripe <em>beta</em>
+					</>
+				}
+				titleText="Stripe"
+				state="enabled"
+				onToggle={ () => {} }
+			/>,
+		);
+		expect(
+			host
+				.querySelector( '.pmdk-module-toggle input' )
+				.getAttribute( 'aria-label' ),
+		).toBe( 'Disable Stripe' );
+	} );
+
+	it( 'node title without titleText degrades to the bare verb, never [object Object]', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				title={ <span>Stripe</span> }
+				state="disabled"
+				onToggle={ () => {} }
+			/>,
+		);
+		const name = host
+			.querySelector( '.pmdk-module-toggle input' )
+			.getAttribute( 'aria-label' );
+		expect( name ).not.toContain( '[object Object]' );
+		expect( name ).toBe( 'Enable' );
+	} );
+
+	it( 'titleText also wins for a string title', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				title="Notifications (beta)"
+				titleText="Notifications"
+				state="enabled"
+				onToggle={ () => {} }
+			/>,
+		);
+		expect(
+			host
+				.querySelector( '.pmdk-module-toggle input' )
+				.getAttribute( 'aria-label' ),
+		).toBe( 'Disable Notifications' );
+	} );
+
+	/* K-025 — the tier badge variant is opt-in, so nobody is restyled. */
+	it( 'tier variant: free / premium / unset map to the documented classes', () => {
+		const classOf = ( tier ) => {
+			render( <PMDKModuleCard { ...BASE } tier={ tier } /> );
+			const cls = host.querySelector( '.pmdk-module-license' ).className;
+			act( () => root.unmount() );
+			root = null;
+			return cls;
+		};
+		expect( classOf( { label: 'Free', variant: 'free' } ) ).toBe(
+			'pmdk-module-license is-free',
+		);
+		expect( classOf( { label: 'Premium', variant: 'premium' } ) ).toBe(
+			'pmdk-module-license is-premium',
+		);
+		expect( classOf( { label: 'Premium', isPremium: true } ) ).toBe(
+			'pmdk-module-license is-premium',
+		);
+		// Unset stays BARE — this is the zero-look-change guarantee for the
+		// consumers that shipped `{ label: 'Free' }` against 0.2.1.
+		expect( classOf( { label: 'Free' } ) ).toBe( 'pmdk-module-license' );
+	} );
 } );
