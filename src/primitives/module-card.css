@@ -51,6 +51,19 @@
 .pmdk-dashboard .pmdk-module-icon {
   width:34px;height:34px;margin-top:1px;display:grid;place-items:center;color:var(--pmdk-color-text-muted)
 }
+/* Size the GLYPH, not just the box (K-035). The box is a 34px grid cell; the
+   glyph got its size only from `.pmdk-react-icon > svg { width: 1em }`, i.e.
+   only when the consumer's `icon` node happened to carry the kit's own wrapper
+   class. Any other wrapper — a product's own icon component — left the <svg>
+   with nothing but a viewBox, and a viewBox-only SVG in a grid cell collapses
+   to 0x0: the icon simply vanished. These two selectors give every direct
+   child the same 1em treatment, so the glyph no longer depends on the wrapper
+   class. `.pmdk-react-icon` resolves to the identical 1em, so consumers already
+   passing it are byte-identical. */
+.pmdk-dashboard .pmdk-module-icon > svg,
+.pmdk-dashboard .pmdk-module-icon > * > svg {
+  width:1em;height:1em
+}
 .pmdk-dashboard .pmdk-module-card.is-enabled .pmdk-module-icon {
   color:var(--pmdk-accent-fg,var(--pmdk-color-accent))
 }

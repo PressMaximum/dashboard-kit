@@ -10,6 +10,24 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Module-card icons vanished unless wrapped in the kit's own class (K-035).**
+  `.pmdk-module-icon` sized its 34px box but never the glyph inside — the only
+  rule sizing the `<svg>` was `.pmdk-react-icon > svg { width: 1em }`, which
+  applies solely when the consumer's `icon` node carries the kit wrapper class
+  that `defaultRenderIcon` emits. A product with its own icon renderer passed an
+  `<svg>` carrying nothing but a `viewBox`, and a viewBox-only SVG in a
+  `place-items: center` grid cell computes to **0x0**: no icon at all.
+  `.pmdk-module-icon > svg` and `.pmdk-module-icon > * > svg` now apply the same
+  1em sizing, so the glyph no longer depends on the wrapper class. Measured in a
+  browser: foreign wrapper 0x0 → 14x14, kit wrapper 14x14 → **14x14 unchanged**
+  (VR 53/53 zero diff).
+
+  Known gap, unchanged here: the v4 mockup intends a 31px glyph in this 34px
+  box; the kit renders 14px for every wrapper. Closing that is a look change for
+  a minor release — tracked on the K-035 row.
+
 ## [0.2.3] — 2026-07-25
 
 ### Fixed
