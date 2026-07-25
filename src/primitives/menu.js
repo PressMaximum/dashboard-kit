@@ -117,17 +117,22 @@ function establishesFixedContainingBlock( style ) {
 }
 
 /**
- * Walks up from `el` to the first ancestor that may contain fixed descendants.
+ * Next ancestor ABOVE `from` that may contain fixed descendants.
  *
- * @param {HTMLElement} el   The element that will be `position: fixed`.
+ * Deliberately resumable rather than "find the one candidate": the nomination
+ * list is a superset, so the innermost candidate is often NOT the element the
+ * engine reparented to. `container-type` on a table inside a `transform`ed
+ * shell is the real-world case (K-021 round 2, found in Aponto adoption) —
+ * Chromium ignores the table and uses the shell, so a search that stopped at
+ * the table would reject it and give up while the engine really did reparent.
+ * The caller keeps calling this until one candidate's origin is confirmed.
+ *
+ * @param {HTMLElement} from The element to search above (exclusive).
  * @param {Window}      view The window whose `getComputedStyle` to use.
- * @return {HTMLElement|null} The containing block, or null for the viewport.
+ * @return {HTMLElement|null} The next candidate, or null when the chain ends.
  */
-function findFixedContainingBlock( el, view ) {
-	if ( typeof view?.getComputedStyle !== 'function' ) {
-		return null;
-	}
-	let node = el.parentElement;
+function nextFixedContainingBlock( from, view ) {
+	let node = from.parentElement;
 	while ( node ) {
 		if ( establishesFixedContainingBlock( view.getComputedStyle( node ) ) ) {
 			return node;
@@ -273,47 +278,65 @@ export function createMenu( root, options = {} ) {
 		};
 	}
 
-	/* Nominate a containing block, then let the engine confirm or reject it. */
+	/*
+	 * Walk the ancestor chain and hand the engine's measured origin to each
+	 * candidate in turn; adopt the first one it confirms.
+	 *
+	 * Cost: the probe is candidate-INDEPENDENT (it measures where the popover
+	 * actually lands, not where a given ancestor is), so it runs at most ONCE
+	 * per open no matter how long the chain is, and not at all when the chain
+	 * has no candidate. Walking past a rejected candidate costs one
+	 * `getComputedStyle` + one `getBoundingClientRect` each, and stops at the
+	 * first match — so the common single-candidate case is unchanged.
+	 */
 	function resolveContainingBlock() {
 		containingBlock = null;
-		const el = findFixedContainingBlock( popover, view );
-		if ( ! el ) {
+		if ( typeof view?.getComputedStyle !== 'function' ) {
 			return;
 		}
-		const style = view.getComputedStyle( el );
-		const borderLeft = cssLength( style, 'border-left-width' );
-		const borderTop = cssLength( style, 'border-top-width' );
-		const box = el.getBoundingClientRect();
-		const popoverStyle = view.getComputedStyle( popover );
-		const frame = probeFixedFrame();
-		/*
-		 * Two engine-truthful rejections, both falling back to the pre-K-021
-		 * coordinates — no correction beats a wrong one:
-		 *
-		 * 1. the mapping isn't a pure translation (scaled / rotated / 3D
-		 *    containing block), so subtracting an origin cannot undo it;
-		 * 2. the origin isn't the candidate's padding box — Chromium does NOT
-		 *    reparent for `container-type`, and a popover carrying its own
-		 *    transform lands somewhere we can't attribute to the candidate.
-		 */
-		if (
-			! frame.translational ||
-			Math.abs(
-				frame.x -
-					box.left -
-					borderLeft -
-					cssLength( popoverStyle, 'margin-left' ),
-			) > PROBE_TOLERANCE ||
-			Math.abs(
-				frame.y -
-					box.top -
-					borderTop -
-					cssLength( popoverStyle, 'margin-top' ),
-			) > PROBE_TOLERANCE
-		) {
-			return;
+		let frame = null;
+		let marginLeft = 0;
+		let marginTop = 0;
+		let candidate = nextFixedContainingBlock( popover, view );
+		while ( candidate ) {
+			if ( ! frame ) {
+				frame = probeFixedFrame();
+				/*
+				 * A non-translational mapping (scaled / rotated / skewed / 3D)
+				 * cannot be undone by subtracting an origin, whichever ancestor
+				 * owns it — so this rejects the whole chain, not one candidate.
+				 */
+				if ( ! frame.translational ) {
+					return;
+				}
+				const popoverStyle = view.getComputedStyle( popover );
+				marginLeft = cssLength( popoverStyle, 'margin-left' );
+				marginTop = cssLength( popoverStyle, 'margin-top' );
+			}
+			const style = view.getComputedStyle( candidate );
+			const borderLeft = cssLength( style, 'border-left-width' );
+			const borderTop = cssLength( style, 'border-top-width' );
+			const box = candidate.getBoundingClientRect();
+			/*
+			 * Confirmed when the popover's measured origin IS this candidate's
+			 * padding-box origin. A miss only rules out THIS candidate — e.g.
+			 * Chromium does not reparent for `container-type`, so a
+			 * container-query table gets skipped and the transformed shell
+			 * above it is tested next. Exhausting the chain (or a popover
+			 * carrying its own transform, which matches nobody) falls back to
+			 * the pre-K-021 coordinates: no correction beats a wrong one.
+			 */
+			if (
+				Math.abs( frame.x - box.left - borderLeft - marginLeft ) <=
+					PROBE_TOLERANCE &&
+				Math.abs( frame.y - box.top - borderTop - marginTop ) <=
+					PROBE_TOLERANCE
+			) {
+				containingBlock = { el: candidate, borderLeft, borderTop };
+				return;
+			}
+			candidate = nextFixedContainingBlock( candidate, view );
 		}
-		containingBlock = { el, borderLeft, borderTop };
 	}
 
 	const isOpen = () => ! popover.hidden;

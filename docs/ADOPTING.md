@@ -75,12 +75,25 @@ private copies (K-019), so a consumer already using them stops shipping two and
 owns the version:
 
 ```bash
-npm install @tanstack/react-table@^8.21.3 @dnd-kit/core@^6.3.1 \
-  @dnd-kit/sortable@^8.0.0 @dnd-kit/utilities@^3.2.2
+npm install @tanstack/react-table @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
 ```
 
 They are `optional` in `peerDependenciesMeta`, so if you never import `./table`
 you install nothing and npm stays quiet. No other entry has third-party deps.
+
+The accepted ranges are deliberately wide, because npm raises `ERESOLVE` on an
+out-of-range peer even when it is optional — a narrow range would force you into
+`overrides`:
+
+| Peer | Kit range | Why |
+| --- | --- | --- |
+| `@dnd-kit/core` | `>=6 <7` | 6.x is the newest major; the kit only uses `DndContext`, `closestCenter`, `PointerSensor`, `KeyboardSensor`, `useSensor(s)` |
+| `@dnd-kit/sortable` | `>=8 <11` | `SortableContext`, `useSortable`, `arrayMove`, `sortableKeyboardCoordinates`, `verticalListSortingStrategy` are unchanged across 8, 9 and 10 |
+| `@dnd-kit/utilities` | `>=3 <4` | 3.x is the newest major; only `CSS` is used |
+| `@tanstack/react-table` | `>=8 <9` | No v9 exists; the kit uses the v8 core surface (`useReactTable`, `flexRender`, `getCoreRowModel`, `getFilteredRowModel`, `getSortedRowModel`, `getPaginationRowModel`) |
+
+Note that `@dnd-kit/sortable` carries its own peer on `@dnd-kit/core` (v10
+requires `^6.3.0`), so that pairing constrains you regardless of the kit.
 
 ### Never import the barrel in a consumer bundle
 

@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import '../../src/primitives/style.css';
 import '../../src/themes/app.css';
-import { PMDKDataTable } from '../../src/table/index.mjs';
+import { PMDKDataTable, defaultRenderIcon } from '../../src/table/index.mjs';
 import { Chassis } from '../helpers/Chassis.jsx';
 import { makeRecords, makeColumns } from '../helpers/recordsFixture.jsx';
 
@@ -237,4 +237,93 @@ export const ThemeAppDark = {
 			<PMDKDataTable { ...baseProps } />
 		</Chassis>
 	),
+};
+
+/*
+ * K-024 — an open row-action menu vs the sticky action column.
+ *
+ * `.pmdk-col-action` is `position: sticky; z-index: 3`, which makes every action
+ * cell a stacking context. Before the fix the menu inside one was trapped at
+ * the CELL's level, so the opaque sticky cells of the rows BELOW painted over
+ * its trailing edge and clipped the labels ("Duplicate a…"). The menu opens on
+ * row 1 of several on purpose — with only one row there is nothing to paint
+ * over it and the bug is invisible.
+ *
+ * Interaction-only, so deliberately NOT in the VR matrix: the shots capture
+ * closed triggers, and asserting paint order needs a live browser (the unit
+ * test pins the z-index contract instead).
+ */
+function StackingRowActions( { record, openRowId } ) {
+	const open = String( record.id ) === String( openRowId );
+	return (
+		<div
+			className={ `pmdk-row-actions${ open ? ' is-open' : '' }` }
+			data-menu
+		>
+			<button
+				className="pmdk-row-action pmdk-row-action-icon"
+				data-menu-trigger
+				type="button"
+				aria-haspopup="menu"
+				aria-expanded={ open }
+				aria-label={ `Actions for ${ record.title }` }
+			>
+				{ defaultRenderIcon( 'moreVertical' ) }
+			</button>
+			<div
+				className="pmdk-row-action-menu"
+				role="menu"
+				aria-label={ `Actions for ${ record.title }` }
+				hidden={ ! open }
+			>
+				<button type="button" role="menuitem">
+					{ defaultRenderIcon( 'list' ) }
+					<span>View details</span>
+				</button>
+				<button type="button" role="menuitem">
+					{ defaultRenderIcon( 'csv' ) }
+					<span>Duplicate a record</span>
+				</button>
+				<div
+					className="pmdk-row-action-separator"
+					role="separator"
+				/>
+				<button className="is-danger" type="button" role="menuitem">
+					{ defaultRenderIcon( 'close' ) }
+					<span>Delete record</span>
+				</button>
+			</div>
+		</div>
+	);
+}
+
+export const StickyActionMenuStacking = {
+	render: () => {
+		const openRowId = records[ 0 ].id;
+		return (
+			<Chassis>
+				<PMDKDataTable
+					{ ...baseProps }
+					data={ records.slice( 0, 6 ) }
+					columns={ [
+						...columns,
+						{
+							id: 'action',
+							header: '',
+							size: 60,
+							enableHiding: false,
+							enableSorting: false,
+							meta: { label: 'Actions', sticky: 'end' },
+							cell: ( info ) => (
+								<StackingRowActions
+									record={ info.row.original }
+									openRowId={ openRowId }
+								/>
+							),
+						},
+					] }
+				/>
+			</Chassis>
+		);
+	},
 };
