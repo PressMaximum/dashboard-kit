@@ -10,6 +10,8 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-07-26
+
 ### Added
 
 - **New sub-entry `@pressmaximum/dashboard-kit/settings-shell` — the
