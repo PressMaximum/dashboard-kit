@@ -62,6 +62,7 @@ your bundler never traverses it.
 | `@pressmaximum/dashboard-kit/primitives` | Headless DOM behaviours, **React-free**: `createCombobox` + `buildComboboxMarkup`, `createMenu`, `createInspectorResizer`, `createTablist` | none |
 | `@pressmaximum/dashboard-kit/table` | `PMDKDataTable`, `normalizeColumnOrder`, `defaultRenderIcon`, `useTablePersistence`, `readTablePrefs`, `writeTablePrefs` | **yes — see below** |
 | `@pressmaximum/dashboard-kit/module-card` | `PMDKModuleCard` | none |
+| `@pressmaximum/dashboard-kit/settings-shell` | `SettingsShell`, `SettingsNav`, `createSettingsTree` | none |
 | `@pressmaximum/dashboard-kit/datasets` | DataViews list pages: `EntityListPage`, `EntityPreviewFrame`, `ViewPersistence`, `filterTrashByDefault`. Legacy tier — kept for existing consumers | `@wordpress/dataviews` (optional peer) |
 | `@pressmaximum/dashboard-kit/editor-helpers` | Fullscreen-editor handoff: `rewireBackButton`, `forceFullscreenMode`, `registerSubmenuActive` | none |
 

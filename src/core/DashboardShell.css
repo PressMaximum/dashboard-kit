@@ -32,6 +32,33 @@
 	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
 }
 
+/* K-042 — utility (end-aligned) tab run.
+   `1fr auto 1fr` sizes the centre track to its content, so no amount of
+   auto-margin inside the nav can push a second run to the right edge:
+   the TRACK has to widen. `<DashboardShell>` stamps `data-utility-tabs`
+   on the root only when a tab carries `align: 'end'`, so this template
+   swap is unreachable for every consumer that passes nothing new. The
+   brand and header-right tracks become content-sized and the nav takes
+   the remaining span, which is what lets `justify-content: space-between`
+   (TabStrip.css) separate the two runs. */
+.pmdk-dashboard[ data-utility-tabs ] .pmdk-dashboard__header {
+	grid-template-columns: auto minmax( 0, 1fr ) auto;
+	column-gap: 16px;
+}
+
+/* K-034 (partial) — below WP admin's own 782px responsive breakpoint the
+   header row outgrew the viewport instead of adapting. Same template swap
+   as above, unconditionally: the tabs track becomes bounded, so the nav
+   scrolls inside it (TabStrip.css) rather than pushing the page wider.
+   Above 782px nothing changes, which is why the VR matrix (fixed 1280px
+   viewport) is unaffected. */
+@media ( max-width: 782px ) {
+	.pmdk-dashboard__header {
+		grid-template-columns: auto minmax( 0, 1fr ) auto;
+		column-gap: 12px;
+	}
+}
+
 .pmdk-dashboard__brand {
 	display: inline-flex;
 	align-items: center;
@@ -173,6 +200,18 @@
 	max-width: none;
 	margin: 0;
 	padding: 24px var( --pmdk-header-gutter, 24px );
+}
+
+/* `flush` (K-043) — full bleed: no cap, no margin, NO GUTTER. For a
+   surface that owns its own padding and needs to touch the content-area
+   edge, e.g. `<SettingsShell>`, whose rail divider runs to the edge and
+   whose two columns pad themselves. Purely additive: an unrecognised
+   `containerWidth` still resolves to `narrow`, so this clause is
+   unreachable unless a consumer asks for it by name. */
+.pmdk-dashboard[ data-container-width='flush' ] .pmdk-dashboard__main {
+	max-width: none;
+	margin: 0;
+	padding: 0;
 }
 
 /* Suppress the focus ring on `.pmdk-dashboard__main` (K-016). The element

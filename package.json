@@ -50,6 +50,10 @@
       "import": "./build/module-card/index.mjs",
       "types": "./build/module-card/index.d.mts"
     },
+    "./settings-shell": {
+      "import": "./build/settings-shell/index.mjs",
+      "types": "./build/settings-shell/index.d.mts"
+    },
     "./style.css": "./build/style.css",
     "./datasets/style.css": "./build/datasets/style.css",
     "./themes/app.css": "./build/themes/app.css",
@@ -210,6 +214,12 @@
       "name": "Module card entry (gzip)",
       "path": "build/module-card/index.mjs",
       "limit": "2 KB",
+      "gzip": true
+    },
+    {
+      "name": "Settings shell entry (gzip)",
+      "path": "build/settings-shell/index.mjs",
+      "limit": "3 KB",
       "gzip": true
     }
   ]

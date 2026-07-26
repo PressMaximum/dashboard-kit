@@ -78,6 +78,19 @@ export const STORY_IDS = [
 	'core-themeappcore--editor-header-theme-app-dark',
 	'primitives-feedbackshell--save-bar-unified-component',
 	'primitives-feedbackshell--save-bar-unified-component-dark',
+	// K-042 — the opt-in split nav (primary run + end-aligned utility run)
+	// and the dropdown tabs' CLOSED chrome. `core-tabstrip--default` above
+	// is the zero-diff lock proving the flat strip did not move.
+	'core-tabstrip--split-nav',
+	'core-tabstrip--utility-dropdown',
+	// K-043 — the settings shell: the rail state matrix (default + both
+	// theme scopes) and the consumer-recipe page in its three shapes.
+	'settingsshell-settingsnav--states',
+	'settingsshell-settingsnav--theme-app',
+	'settingsshell-settingsnav--theme-app-dark',
+	'settingsshell-settingspage--branch-section',
+	'settingsshell-settingspage--leaf-section',
+	'settingsshell-settingspage--theme-app-dark',
 ];
 
 export const VIEWPORT = { width: 1280, height: 900 };

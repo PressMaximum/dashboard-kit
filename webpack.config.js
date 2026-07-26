@@ -137,6 +137,15 @@ export default ( env, argv ) => {
 				__dirname,
 				'src/module-card/index.mjs'
 			),
+			// K-043 settings shell (<SettingsShell>, <SettingsNav>,
+			// createSettingsTree). Own entry for the same reason as
+			// `module-card/`: it imports React, so it cannot live in the
+			// React-free `primitives/` chunk, and a consumer with no settings
+			// screen should never traverse it. Zero third-party deps.
+			'settings-shell/index': path.resolve(
+				__dirname,
+				'src/settings-shell/index.mjs'
+			),
 			// Opt-in app theme — pure-CSS entry. Emits `build/themes/app.css`
 			// only; the JS stub webpack generates for a CSS entry is dropped
 			// by RemoveCssEntryJsStubPlugin below (no JS export path exists

@@ -423,3 +423,78 @@
 .pmdk-theme-app .pmdk-save-bar__status {
 	font-size: var( --pmdk-font-size-meta );
 }
+
+/* --- TabStrip: utility run + dropdown tabs (K-042) -------------------- */
+
+/* Every rule here is descendant-form (`.pmdk-theme-app …`) like the 56
+   that precede it (K-036) and reaches DOM that only exists when the
+   consumer opts into `align: 'end'` / `children`, so a themed consumer
+   that passes neither renders exactly as before. */
+.pmdk-theme-app .pmdk-dashboard__tabs[ data-has-end ] {
+	gap: var( --pmdk-space-5 );
+}
+
+/* Utility surfaces are a quieter tier than the primary destinations —
+   the DS separates them by weight, not by a rule or a second bar. */
+.pmdk-theme-app
+	.pmdk-dashboard__tab-group[ data-tab-group='end' ]
+	.pmdk-dashboard__tab {
+	color: var( --pmdk-color-text-soft );
+}
+
+.pmdk-theme-app
+	.pmdk-dashboard__tab-group[ data-tab-group='end' ]
+	.pmdk-dashboard__tab:hover {
+	color: var( --pmdk-color-text );
+}
+
+/* The active utility tab drops back onto the shared accent voice so the
+   two runs read as one nav, not two. */
+.pmdk-theme-app
+	.pmdk-dashboard__tab-group[ data-tab-group='end' ]
+	.pmdk-dashboard__tab.is-active {
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab-caret {
+	color: var( --pmdk-color-text-soft );
+}
+
+/* Menu surface at the DS card radius, on the surface role rather than a
+   hard white, so the dark preset retones it for free. */
+.pmdk-theme-app .pmdk-dashboard__tab-menu-popover .components-popover__content {
+	border-color: var( --pmdk-color-border );
+	border-radius: var( --pmdk-radius-card );
+	background: var( --pmdk-color-surface );
+	box-shadow: 0 12px 30px
+		color-mix( in srgb, var( --pmdk-color-inverse-surface ) 10%, transparent );
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab-menu-item {
+	border-radius: var( --pmdk-radius-control );
+	color: var( --pmdk-color-text );
+}
+
+/* DS menu rows hover with the neutral row wash; the label keeps full text
+   colour (accent stays a selected-state voice) — same contract as the
+   HelpPanel rows above. */
+.pmdk-theme-app .pmdk-dashboard__tab-menu-item:hover,
+.pmdk-theme-app .pmdk-dashboard__tab-menu-item:focus-visible {
+	background: var( --pmdk-color-row-hover );
+	color: var( --pmdk-color-text );
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab-menu-item[ aria-current='page' ] {
+	background: var( --pmdk-color-row-hover );
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab-menu-label {
+	font-size: var( --pmdk-font-size-meta );
+	font-weight: var( --pmdk-font-weight-medium );
+}
+
+.pmdk-theme-app .pmdk-dashboard__tab-menu-description {
+	color: var( --pmdk-color-text-soft );
+	font-size: var( --pmdk-font-size-caption );
+}

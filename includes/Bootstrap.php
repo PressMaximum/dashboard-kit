@@ -32,9 +32,12 @@ final class Bootstrap {
 	 * rewrites both package.json + this constant in one pass — lands with
 	 * P9). Until that tooling exists, keep this + `__KIT_VERSION__`
 	 * (src/index.mjs) in sync with package.json by hand at release prep
-	 * (0.2.0: synced in KIT-P4 — closes the "runtime reads 0.0.0" caveat).
+	 * (0.2.0: synced in KIT-P4 — closes the "runtime reads 0.0.0" caveat;
+	 * 0.2.4: the by-hand step was missed for 0.2.1–0.2.4, so this constant
+	 * reported 0.2.0 to every PHP-side consumer while the JS half reported
+	 * the truth — resynced in the K-042/K-043 round).
 	 */
-	public const VERSION = '0.2.0';
+	public const VERSION = '0.2.4';
 
 	/**
 	 * Bootstrap is purely a namespace anchor — never instantiate.

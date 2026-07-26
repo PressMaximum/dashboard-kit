@@ -52,3 +52,9 @@
 @import './tabs.css';
 @import './toast.css';
 @import './save-bar.css';
+
+/* --- settings shell (K-043) ------------------------------------------------
+   Last in the cascade contract, like every later slice: it only adds
+   specificity over the tiers above (it composes the save bar, never fights
+   it). Component: `@pressmaximum/dashboard-kit/settings-shell`. */
+@import './settings-shell.css';
