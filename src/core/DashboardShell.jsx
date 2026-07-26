@@ -21,6 +21,10 @@
  * Plus non-locked styling hooks:
  *   .pmdk-dashboard__brand-icon, __brand-text, __brand-link,
  *   __header-right, .pmdk-dashboard__version
+ * And two root-level data markers, both emitted by this component:
+ *   [data-container-width]  narrow | wide | flush   (§5.1)
+ *   [data-utility-tabs]     present only when a tab carries
+ *                           `align: 'end'` (K-042)
  */
 
 import { activeTabId, useNavigate, useRoute } from './HashRouter';
@@ -86,6 +90,15 @@ export default function DashboardShell( {
 	const safeContainerWidth =
 		containerWidth === 'wide' ? 'wide' : 'narrow';
 
+	// K-042: the header grid is `1fr auto 1fr` with a CONTENT-SIZED centre
+	// track, so an end-aligned tab run cannot be produced by auto margins
+	// inside the nav — the track has to widen. The shell publishes the fact
+	// that a utility run exists as a root-level marker and
+	// DashboardShell.css changes the template behind it, so a consumer
+	// passing no `align: 'end'` keeps the original three-track geometry.
+	const hasUtilityTabs =
+		Array.isArray( tabs ) && tabs.some( ( tab ) => tab?.align === 'end' );
+
 	// Inner content of the `<h1>` brand cluster. Reused twice so the
 	// linked + static variants don't duplicate the icon/text markup.
 	const brandContent = (
@@ -111,6 +124,7 @@ export default function DashboardShell( {
 		<div
 			className="pmdk-dashboard"
 			data-container-width={ safeContainerWidth }
+			{ ...( hasUtilityTabs ? { 'data-utility-tabs': 'true' } : {} ) }
 		>
 			<header className="pmdk-dashboard__header">
 				<h1 className="pmdk-dashboard__brand">
@@ -131,6 +145,7 @@ export default function DashboardShell( {
 				<TabStrip
 					items={ tabs }
 					activeId={ activeId }
+					activeRoute={ route }
 					ariaLabel={ tabsAriaLabel }
 				/>
 

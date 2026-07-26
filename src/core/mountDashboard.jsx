@@ -28,7 +28,16 @@ import { confirmDiscardAny } from '../settings/useDirtyState.js';
 /**
  * Normalize a tab entry to the shape `TabStrip` expects. Accepts a
  * string id (treated as `{ id, label: id, hash: '#'+id }`) or a partial
- * object. `hash` is derived from `id` when omitted.
+ * object. Every other field — including K-042's `align` and `children` —
+ * passes through the spread untouched.
+ *
+ * `hash` is derived from `id` when OMITTED, but an explicit empty string
+ * survives: a dropdown tab with no destination of its own
+ * (`{ id, label, hash: '', children }`) is how a consumer asks for the
+ * click-toggle button trigger instead of the link trigger (SPEC §5.1).
+ * Deriving `'#' + id` there would have made that form unreachable from
+ * `mountDashboard` — the only tab shape the old `||` fallback ever
+ * rewrote in practice.
  *
  * @param {string | { id: string, label?: string, hash?: string }} tab Raw tab entry.
  * @return {{ id: string, label: string, hash: string }} Normalized tab.
@@ -39,7 +48,7 @@ function toTabShape( tab ) {
 	}
 	return {
 		...tab,
-		hash: tab.hash || '#' + tab.id,
+		hash: tab.hash === '' ? '' : tab.hash || '#' + tab.id,
 	};
 }
 

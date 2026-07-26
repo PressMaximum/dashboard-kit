@@ -461,7 +461,26 @@ type MountConfig = {
 type TabDefinition = {
   id: string;                          // route key without '#'
   label: string;                       // already-translated
+  hash?: string;                       // destination; derived as '#'+id when OMITTED.
+                                       // An explicit '' survives normalization and means
+                                       // "no destination of its own" (see `children`).
   proFeature?: string;                 // when set, render as locked Pro tab with promo
+
+  // Split nav (K-042, added 0.3) ──────────────────────────────────────
+  align?: 'start' | 'end';             // 'end' moves the tab into a second, end-aligned
+                                       // run (utility surfaces: Modules · Settings).
+                                       // Default 'start'. Both runs render inside the
+                                       // SAME <nav> landmark, so active-sync, a11y and
+                                       // theming stay in the kit.
+  children?: TabChild[];               // present ⇒ the tab renders as a dropdown
+};
+
+type TabChild = {
+  id: string;                          // used for active-sync when the child is its own
+                                       //   top-level route; also the React key
+  label: string;                       // already-translated
+  description?: string;                // optional second line in the menu row
+  href?: string;                       // destination; defaults to '#'+id
 };
 
 type RouteEntry = {
@@ -473,6 +492,43 @@ type RouteEntry = {
 ```
 
 The kit applies `applyFilters('{filterNamespace}.dashboard.tabs', baseTabs)` and `applyFilters('{filterNamespace}.dashboard.routes', baseRoutes)` at mount time, so Pro plugins (or any consumer of the consumer) extend by `addFilter` before mount.
+
+**Split nav + dropdown tabs (K-042, additive).** Everything below is opt-in;
+a consumer that passes neither `align` nor `children` gets the flat strip it
+always had, in the same DOM (no group wrappers, no marker attributes) and
+therefore the same geometry.
+
+- **`align: 'end'`** partitions the strip into a start run and an end run.
+  `TabStrip` marks the nav `data-has-end`, `DashboardShell` marks its root
+  `data-utility-tabs`, and the header grid template changes behind that root
+  marker — necessary because the default `1fr auto 1fr` header sizes the
+  centre track to its content, so no auto-margin inside the nav can reach the
+  right edge.
+- **`children`** turns a tab into a dropdown built on `@wordpress/components`
+  `<Dropdown>` (the `HelpPanel` precedent — focus management, click-outside
+  and Escape for free). The tab's own `hash` decides the trigger's shape:
+  - a hash present ⇒ a real **link** trigger (point it at the default child to
+    reproduce Aponto's `Settings ▾`) that ALSO discloses the menu on hover and
+    focus, and never click-toggles;
+  - `hash: ''` ⇒ a **click-toggle button** trigger for a pure menu.
+
+  ARIA: `aria-haspopup="menu"` + `aria-expanded` on the trigger, `role="menu"`
+  on the panel, `role="menuitem"` on the rows, `aria-current="page"` on the
+  active child AND on the parent trigger. Keyboard: Arrow Down/Up from the
+  trigger opens and lands on the first row; Arrow Up/Down + Home/End rove
+  inside the panel; Escape closes and restores focus to the trigger. Open
+  state is driven by React state only — there is deliberately no CSS
+  hover-paint of the panel, so the DOM and the ARIA can never disagree.
+- **Active-sync.** `activeTabId(route)` (first hash segment) lights an end tab
+  whose id matches with no extra wiring. A dropdown child lights up — and
+  lights its parent trigger — when its id matches that segment, or when its
+  `href` matches the resolved route. `DashboardShell` passes the resolved
+  route to `TabStrip` as `activeRoute`; standalone `<TabStrip>` users can pass
+  it themselves.
+
+`TabStrip` remains a Tier-1 primitive (§5.13): the dropdown introduces **no**
+kit-owned translatable string — the menu takes its accessible name from its own
+trigger via `aria-labelledby`.
 
 ### 5.2 `createFilterNamespace(prefix)`
 
@@ -1027,6 +1083,15 @@ MenuHelpers::printSubmenuActiveSync([
 |---|---|---|
 | `__` (required) | Translator function bound to consumer text domain | none |
 | (consumer-provided baseTabs labels) | Tab strip labels | — |
+
+**`<TabStrip>`** — Tier 1, **no kit-owned strings**, including the K-042
+dropdown tabs. Trigger and row copy come from `TabDefinition.label` /
+`TabChild.label` / `.description`, the nav's `aria-label` from `tabsAriaLabel`,
+and the dropdown panel takes its accessible name from its own trigger
+(`aria-labelledby`) rather than a kit default — so the feature adds **zero**
+strings to the consumer's translation burden. Listed here explicitly because
+"a new interactive surface with no `labels` prop" is otherwise easy to read as
+an omission.
 
 **`<SaveBar>` props**
 
@@ -2328,7 +2393,12 @@ component-level rules that put the CORE components in the founder look**:
   text seed.
 - **TabStrip** — the mockup nav-button language: 15px medium muted labels,
   hover to full text color, active = accent + semibold + 2px underline inset
-  10px (`::after`, overlapping the header divider).
+  10px (`::after`, overlapping the header divider). Since K-042 the theme also
+  covers the opt-in split nav + dropdown tabs: the end (utility) run reads one
+  step quieter than the primary run and returns to the shared accent voice when
+  active, and the menu surface takes the card radius, the `surface` role and the
+  neutral row-hover (accent stays a selected-state voice, as in HelpPanel).
+  Inert for consumers that pass no `align: 'end'` / `children`.
 - **HelpPanel** — 44px square icon-button trigger (row-hover wash), popover at
   the 6px card radius, caption-soft heading, 15px menu rows with the neutral
   row-hover (accent stays a selected-state voice).
@@ -2412,6 +2482,18 @@ through the theme) and the `Core/ThemeAppCore` stories.
 Only the classes enumerated in the table above carry the semver lock. Any other `.pmdk-{block}__{element}` BEM subpart shipped by the kit (e.g. `.pmdk-dashboard__brand-icon`, `.pmdk-editor-page-header__back`, `.pmdk-hero__content`, `.pmdk-release-block__item-text`) is consumer-targetable but **NOT** locked — kit may rename or drop these subparts in any release without a major-version bump. Consumers that depend on a subpart for styling should either (a) request its addition to the locked table via a PR before relying on it, or (b) accept that their selector may break.
 
 Modifier states (`.is-active`, `.is-complete`, etc.) that decorate a locked class are themselves locked when explicitly listed (e.g. `.pmdk-dashboard__tab.is-active`); otherwise they follow the same non-locked rule.
+
+**K-042 subparts (non-locked).** The split nav + dropdown tabs ship on new,
+deliberately UNLOCKED subparts, so the locked `.pmdk-dashboard__tabs` /
+`__tab` surface is unchanged: `.pmdk-dashboard__tab-group` (one alignment
+run; carries `data-tab-group="start|end"`), `__tab-menu-wrap`,
+`__tab-trigger` (also a `__tab`), `__tab-caret`, `__tab-menu-popover`,
+`__tab-menu`, `__tab-menu-item`, `__tab-menu-label`, `__tab-menu-description`.
+Two data markers pair with them — `data-has-end` on the nav and
+`data-utility-tabs` on `.pmdk-dashboard` — and both are emitted ONLY when a
+tab carries `align: 'end'`; every layout rule the feature adds is keyed on
+one of them. A consumer may target these subparts under the §16.2 lock-scope
+rule (targetable, may change without a major bump).
 
 DOM ids generated by exported helpers like `panelHeadingId(id)` are part of the **function's** public API (SPEC §5.4) — consumers consume the id by calling the function, not by hardcoding the string format. The format may change without breaking that contract.
 

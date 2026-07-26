@@ -10,6 +10,64 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+### Added
+
+- **`TabStrip` can split primary from utility navigation, and a tab can be a
+  dropdown (K-042).** `TabDefinition` gains two optional fields:
+  - `align: 'start' | 'end'` — `'end'` moves the tab into a second,
+    end-aligned run (Aponto's `Modules · Settings` cluster). Both runs render
+    inside the **same** `<nav>` landmark, so the kit keeps owning active-sync,
+    a11y and theming instead of the consumer rebuilding the header.
+  - `children: [{ id, label, description?, href? }]` — turns the tab into a
+    dropdown built on `@wordpress/components` `<Dropdown>` (the `HelpPanel`
+    precedent). The tab's own `hash` picks the trigger: a hash present ⇒ a
+    real **link** (point it at the default child) that also discloses the menu
+    on hover/focus and never click-toggles; `hash: ''` ⇒ a **click-toggle
+    button**. `aria-haspopup="menu"` + `aria-expanded` on the trigger,
+    `role="menu"` / `role="menuitem"` in the panel, `aria-current="page"` on
+    the active child **and** its parent trigger; Arrow Down/Up from the trigger
+    opens onto the first row, Arrow/Home/End rove inside it, Escape closes and
+    restores focus to the trigger.
+
+  Open state is React state ONLY — the promoted Aponto source also painted the
+  panel from CSS (`:hover / :focus-within { display: block !important }`),
+  which is why its Escape had to move focus out before closing or the surface
+  stayed on screen with `aria-expanded="false"`. Hover and focus here feed the
+  same state the click path uses.
+
+  **Additive and pixel-neutral.** With no `align: 'end'` and no `children`,
+  `TabStrip` emits the markup it always did — no group wrappers, no marker
+  attributes — so nothing in the default cascade or geometry moves: VR
+  **53/53 story shots and 50/50 mockup Gate-A shots zero-diff**, and 19 new
+  unit cases in `tests/unit/TabStrip.test.jsx` pin both the unchanged flat
+  render and the new behaviour. `TabStrip` stays Tier-1: the feature adds
+  **zero** translatable strings (the menu is named by its own trigger via
+  `aria-labelledby`). SPEC §5.1 · §5.10b · §16.1a · §16.2; stories
+  `Core/TabStrip → SplitNav | UtilityDropdown`.
+
+### Changed
+
+- **`mountDashboard` keeps an explicitly empty tab `hash`.** `toTabShape`
+  derived `'#' + id` for any falsy hash, which made K-042's button-trigger
+  dropdown (`hash: ''` — a tab that is a menu and nothing else) unreachable
+  from `mountDashboard`. An OMITTED hash is still derived exactly as before;
+  only the literal `''` now survives, and no shipped tab shape passes one.
+- **The header grid adapts below 782px (partial K-034).** The three-column
+  header sized its centre track to content, so with ≥5 tabs the row pushed its
+  own width out (measured `scrollWidth` 780 vs `clientWidth` 768) and the nav
+  ran off-screen with no affordance. Under `@media (max-width: 782px)` — WP
+  admin's own responsive breakpoint — the tabs track is now bounded and the
+  nav scrolls inside it. Nothing changes above 782px, which is why the fixed
+  1280px VR matrix stays zero-diff. This is a mitigation, not the whole of
+  K-034: the fade / priority-collapse strategy on that row is still open.
+
+### Fixed
+
+- **`Bootstrap::VERSION` reported `0.2.0` (drift).** The by-hand version sync
+  documented on the constant was missed for 0.2.1–0.2.4, so PHP-side consumers
+  read a version four patches stale while `__KIT_VERSION__` reported the truth.
+  Now `0.2.4`, matching `package.json` and `src/index.mjs`.
+
 ## [0.2.4] — 2026-07-26
 
 ### Fixed

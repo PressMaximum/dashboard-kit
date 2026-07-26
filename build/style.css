@@ -329,6 +329,20 @@ body.wp-admin,
  *   .pmdk-dashboard__tabs
  *   .pmdk-dashboard__tab
  *   .pmdk-dashboard__tab.is-active
+ *
+ * K-042 adds NON-LOCKED subparts for the split nav + dropdown tabs:
+ *   .pmdk-dashboard__tab-group          one alignment run (start | end)
+ *   .pmdk-dashboard__tab-menu-wrap      dropdown tab wrapper
+ *   .pmdk-dashboard__tab-trigger        dropdown trigger (also a __tab)
+ *   .pmdk-dashboard__tab-caret          disclosure chevron
+ *   .pmdk-dashboard__tab-menu           role="menu" panel
+ *   .pmdk-dashboard__tab-menu-item      role="menuitem" row
+ *   .pmdk-dashboard__tab-menu-label / -description
+ *
+ * None of them exist in the DOM unless the consumer opts in via
+ * `TabDefinition.align` / `.children`, and every rule keyed on the
+ * `data-has-end` marker is inert without an end run — the flat strip's
+ * selector chain and geometry are untouched.
  */
 
 .pmdk-dashboard__tabs {
@@ -379,6 +393,165 @@ body.wp-admin,
 		var( --wp-admin-theme-color, #2271b1 )
 	);
 	font-weight: 600;
+}
+
+/* =====================================================================
+   K-042 — end-aligned utility group
+   ===================================================================== */
+
+/* One `<nav>` landmark, two runs. The `data-has-end` marker is emitted by
+   `TabStrip` ONLY when at least one tab carries `align: 'end'`, so this
+   rule (and the header grid change it pairs with in DashboardShell.css)
+   can never reach a consumer that passes nothing new. */
+.pmdk-dashboard__tabs[ data-has-end ] {
+	justify-self: stretch;
+	justify-content: space-between;
+	gap: var( --pmdk-tab-group-gap, 16px );
+}
+
+.pmdk-dashboard__tab-group {
+	display: flex;
+	align-items: stretch;
+	gap: 4px;
+}
+
+/* =====================================================================
+   K-042 — dropdown tabs
+   ===================================================================== */
+
+/* `position: relative` anchors the inline-rendered popover (the panel is
+   a DOM descendant, not a body portal — see TabStrip.jsx). Both the
+   wrapper and `<Dropdown>`'s own container stretch so the trigger keeps
+   the full header height, and with it the active underline. */
+.pmdk-dashboard__tab-menu-wrap,
+.pmdk-dashboard__tab-menu-wrap > .components-dropdown {
+	position: relative;
+	display: flex;
+	align-items: stretch;
+}
+
+/* The button variant of the trigger is a `<button>`, so it needs the
+   pointer + font reset an `<a>` gets for free. */
+.pmdk-dashboard__tab-trigger {
+	cursor: pointer;
+	font-family: inherit;
+	appearance: none;
+}
+
+.pmdk-dashboard__tab-caret {
+	display: inline-flex;
+	align-items: center;
+	transition: rotate 0.15s ease;
+}
+
+.pmdk-dashboard__tab-caret svg {
+	display: block;
+}
+
+/* Open state points the caret up. The individual `rotate` property is
+   used instead of `transform: rotate()` because rtlcss negates rotations
+   inside `transform` (K-031) but leaves `rotate` alone. */
+.pmdk-dashboard__tab-trigger[ aria-expanded='true' ]
+	.pmdk-dashboard__tab-caret {
+	rotate: 180deg;
+}
+
+/* Panel surface. The kit paints its own chrome here rather than leaning
+   on `@wordpress/components`' popover stylesheet, so the menu is legible
+   in any host that renders the shell without that sheet. */
+.pmdk-dashboard__tab-menu-popover .components-popover__content {
+	width: 260px;
+	padding: 6px;
+	border: 1px solid var( --pmdk-color-border, #e0e0e0 );
+	border-radius: var( --pmdk-radius-control, 4px );
+	background: var( --pmdk-color-surface, #fff );
+	box-shadow: 0 12px 30px rgba( 0, 0, 0, 0.1 );
+}
+
+.pmdk-dashboard__tab-menu {
+	display: flex;
+	flex-direction: column;
+}
+
+.pmdk-dashboard__tab-menu-item {
+	display: block;
+	padding: 8px 10px;
+	border-radius: var( --pmdk-radius-control, 4px );
+	color: var( --pmdk-color-text, #1e1e1e );
+	text-decoration: none;
+}
+
+.pmdk-dashboard__tab-menu-item:hover,
+.pmdk-dashboard__tab-menu-item:focus-visible {
+	background: var( --pmdk-color-row-hover, #f6f7f7 );
+	color: var( --pmdk-color-text, #1e1e1e );
+}
+
+/* Same reasoning as `.pmdk-dashboard__tab`: a click-induced focus ring
+   left on a menu row reads as "selected" after the menu has closed. */
+.pmdk-dashboard__tab-menu-item:focus,
+.pmdk-dashboard__tab-menu-item:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.pmdk-dashboard__tab-menu-item[ aria-current='page' ] {
+	background: var( --pmdk-color-row-hover, #f6f7f7 );
+	color: var( --pmdk-color-accent, var( --wp-admin-theme-color, #2271b1 ) );
+}
+
+/* Two-line row: label over an optional description (Aponto's
+   `.pd-nav-dropdown strong` + `em`, re-expressed on kit classes). Both
+   truncate — the panel is a fixed 260px and a wrapped menu row breaks
+   the scan rhythm. */
+.pmdk-dashboard__tab-menu-label,
+.pmdk-dashboard__tab-menu-description {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-style: normal;
+}
+
+.pmdk-dashboard__tab-menu-label {
+	font-size: var( --pmdk-font-size-base, 14px );
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.pmdk-dashboard__tab-menu-description {
+	margin-top: 3px;
+	color: var( --pmdk-color-text-soft, #757575 );
+	font-size: var( --pmdk-font-size-caption, 12px );
+	line-height: 1.4;
+}
+
+/* =====================================================================
+   K-034 (partial) — narrow-viewport scroll affordance
+   =====================================================================
+
+   Below WP admin's own 782px responsive breakpoint the header row used to
+   push its own width out (`scrollWidth` 780 vs `clientWidth` 768 with six
+   tabs) and the nav ran off-screen with no affordance. Constraining the
+   tabs track (DashboardShell.css) and scrolling the nav inside it is the
+   minimal additive answer: the strip stays reachable, nothing above 782px
+   moves. `overflow-y: hidden` keeps the active tab's -1px underline
+   overlap from spawning a vertical scrollbar.
+
+   Not the whole of K-034 — a fade/priority-collapse strategy is still
+   open on that row. */
+@media ( max-width: 782px ) {
+	.pmdk-dashboard__tabs {
+		justify-self: stretch;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: thin;
+	}
+
+	.pmdk-dashboard__tab,
+	.pmdk-dashboard__tab-group {
+		flex: 0 0 auto;
+	}
 }
 
 /*
@@ -523,6 +696,33 @@ body.wp-admin,
 	padding: 0 var( --pmdk-header-gutter, 24px );
 	background: var( --pmdk-color-bg, #fff );
 	border-bottom: 1px solid var( --pmdk-color-border, #e0e0e0 );
+}
+
+/* K-042 — utility (end-aligned) tab run.
+   `1fr auto 1fr` sizes the centre track to its content, so no amount of
+   auto-margin inside the nav can push a second run to the right edge:
+   the TRACK has to widen. `<DashboardShell>` stamps `data-utility-tabs`
+   on the root only when a tab carries `align: 'end'`, so this template
+   swap is unreachable for every consumer that passes nothing new. The
+   brand and header-right tracks become content-sized and the nav takes
+   the remaining span, which is what lets `justify-content: space-between`
+   (TabStrip.css) separate the two runs. */
+.pmdk-dashboard[ data-utility-tabs ] .pmdk-dashboard__header {
+	grid-template-columns: auto minmax( 0, 1fr ) auto;
+	column-gap: 16px;
+}
+
+/* K-034 (partial) — below WP admin's own 782px responsive breakpoint the
+   header row outgrew the viewport instead of adapting. Same template swap
+   as above, unconditionally: the tabs track becomes bounded, so the nav
+   scrolls inside it (TabStrip.css) rather than pushing the page wider.
+   Above 782px nothing changes, which is why the VR matrix (fixed 1280px
+   viewport) is unaffected. */
+@media ( max-width: 782px ) {
+	.pmdk-dashboard__header {
+		grid-template-columns: auto minmax( 0, 1fr ) auto;
+		column-gap: 12px;
+	}
 }
 
 .pmdk-dashboard__brand {
