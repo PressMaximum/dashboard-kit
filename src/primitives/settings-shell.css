@@ -1,0 +1,247 @@
+/*
+ * @pressmaximum/dashboard-kit — settings shell chrome (K-043)
+ *
+ * Extracted from the Aponto plugin-dashboard composition
+ * (`styles/admin-extra.css` §"Settings route", itself a port of the v4
+ * mockup's `.pd-settings-screen / -sidebar / -content`) and neutralised:
+ * `.ap-settings-*` -> `.pmdk-settings-*`, `.ap-admin` -> `.pmdk-dashboard`
+ * chassis, every brand `--ap-*` value routed through the `--pmdk-*` token
+ * API. Ships in the opt-in `primitives/style.css` export, consistent with
+ * the save bar this shell composes with.
+ *
+ * Geometry mirrors the source: 240px rail, `24px 14px 36px` rail padding,
+ * `24px 28px 40px` content padding, a border rather than a grid gap, and
+ * an 876px content cap (the mockup's 820px panel plus its 28px inline
+ * padding, so the readable box matches).
+ *
+ * Three knobs, all overridable inline via `<SettingsShell>` props or from
+ * a consumer stylesheet:
+ *   --pmdk-settings-chrome        host chrome to subtract from 100dvh (96px)
+ *   --pmdk-settings-rail-width    rail track (240px)
+ *   --pmdk-settings-content-max   content column cap (876px)
+ */
+
+/* The shell is the QUERY CONTAINER; the grid is its child. An element
+   cannot answer its own container query, and K-033 is the cautionary
+   tale — `.pmdk-module-grid`'s responsive rules never matched because no
+   ancestor established a container. Declaring it here means the grid
+   below (and any container-query'd primitive composed inside, e.g. the
+   save bar's ≤620px stack) measures the shell's own width, not the
+   viewport a wp-admin sidebar has already eaten into. */
+.pmdk-dashboard .pmdk-settings-shell {
+	container-type: inline-size;
+	min-height: calc( 100dvh - var( --pmdk-settings-chrome, 96px ) );
+}
+
+.pmdk-dashboard .pmdk-settings-shell__grid {
+	display: grid;
+	grid-template-columns: var( --pmdk-settings-rail-width, 240px ) minmax(
+			0,
+			1fr
+		);
+	align-items: stretch;
+	min-height: inherit;
+}
+
+/* --- rail ----------------------------------------------------------- */
+
+.pmdk-dashboard .pmdk-settings-nav {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 24px 14px 36px;
+	border-inline-end: 1px solid var( --pmdk-color-border );
+}
+
+.pmdk-dashboard .pmdk-settings-nav__branch {
+	display: flex;
+	flex-direction: column;
+}
+
+/* 44px icon-decorated row: [icon] [label] [caret]. A leaf drops the caret
+   track rather than reserving an empty one. */
+.pmdk-dashboard .pmdk-settings-nav__node {
+	display: grid;
+	grid-template-columns: 18px minmax( 0, 1fr ) auto;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	min-height: 44px;
+	padding: 0 10px;
+	border: 1px solid transparent;
+	border-radius: var( --pmdk-radius-control );
+	background: transparent;
+	color: var( --pmdk-color-text-muted );
+	font: inherit;
+	font-size: var( --pmdk-font-size-meta );
+	font-weight: var( --pmdk-font-weight-medium );
+	text-align: start;
+	cursor: pointer;
+}
+
+.pmdk-dashboard .pmdk-settings-nav__node.is-leaf {
+	grid-template-columns: 18px minmax( 0, 1fr );
+}
+
+/* Every node emits the icon cell so labels align down the rail whether or
+   not a given node has a glyph. When NO node in the tree has one, the
+   track would just be a dead 28px gutter — drop it for the whole rail. */
+.pmdk-dashboard .pmdk-settings-nav.is-iconless .pmdk-settings-nav__node {
+	grid-template-columns: minmax( 0, 1fr ) auto;
+}
+
+.pmdk-dashboard
+	.pmdk-settings-nav.is-iconless
+	.pmdk-settings-nav__node.is-leaf {
+	grid-template-columns: minmax( 0, 1fr );
+}
+
+.pmdk-dashboard .pmdk-settings-nav.is-iconless .pmdk-settings-nav__icon {
+	display: none;
+}
+
+.pmdk-dashboard .pmdk-settings-nav__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var( --pmdk-size-icon-md );
+}
+
+.pmdk-dashboard .pmdk-settings-nav__icon svg {
+	display: block;
+	width: 1em;
+	height: 1em;
+}
+
+.pmdk-dashboard .pmdk-settings-nav__label {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* Caret: a CSS-drawn chevron so the sub-entry ships no icon dependency.
+   The individual `rotate` property carries the state instead of
+   `transform: rotate()` because rtlcss NEGATES rotations inside
+   `transform` (it left Aponto's open caret pointing up in
+   `admin-rtl.css`) but does not touch `rotate` — the K-031 escape hatch.
+     -45deg  closed, points inline-end (LTR)
+      45deg  open, points down
+     135deg  closed, points inline-end (RTL) */
+.pmdk-dashboard .pmdk-settings-nav__caret {
+	width: 6px;
+	height: 6px;
+	border-right: 1.5px solid currentColor;
+	border-bottom: 1.5px solid currentColor;
+	color: var( --pmdk-color-text-soft );
+	rotate: -45deg;
+	transition: rotate var( --pmdk-motion-standard, 150ms ease );
+}
+
+.pmdk-dashboard
+	.pmdk-settings-nav__branch.is-open
+	> .pmdk-settings-nav__node
+	> .pmdk-settings-nav__caret {
+	rotate: 45deg;
+}
+
+/* RTL mirrors CLOSED branches only — the open state already points down,
+   which is direction-neutral, and re-mirroring it would turn the caret
+   up. Scoped on `<html dir="rtl">`: the app root never carries `dir`
+   (K-031), and a `rotate` value is safe to state here because rtlcss
+   leaves the property alone in both emitted sheets. */
+[ dir='rtl' ]
+	.pmdk-dashboard
+	.pmdk-settings-nav__branch:not( .is-open )
+	> .pmdk-settings-nav__node
+	> .pmdk-settings-nav__caret {
+	rotate: 135deg;
+}
+
+.pmdk-dashboard .pmdk-settings-nav__node:hover {
+	background: var( --pmdk-color-row-hover );
+	color: var( --pmdk-color-text );
+}
+
+/* The open branch's parent takes the accent voice without the wash — the
+   wash marks the SELECTED leaf, and a parent click always lands on one. */
+.pmdk-dashboard
+	.pmdk-settings-nav__branch.is-open
+	> .pmdk-settings-nav__node {
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+	font-weight: var( --pmdk-font-weight-semibold );
+}
+
+/* accent-fg (accent mixed toward the text seed) clears AA on
+   accent-subtle; the raw accent seed on accent-subtle is 4.33:1. */
+.pmdk-dashboard .pmdk-settings-nav__node[ aria-current='page' ] {
+	background: var( --pmdk-color-accent-subtle );
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+	font-weight: var( --pmdk-font-weight-semibold );
+}
+
+.pmdk-dashboard .pmdk-settings-nav__children {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	margin: 2px 0 8px;
+	padding-inline-start: 28px;
+}
+
+.pmdk-dashboard .pmdk-settings-nav__child {
+	width: 100%;
+	min-height: 40px;
+	padding: 0 12px;
+	border: 0;
+	border-radius: var( --pmdk-radius-control );
+	background: transparent;
+	color: var( --pmdk-color-text-muted );
+	font: inherit;
+	font-size: var( --pmdk-font-size-meta );
+	font-weight: var( --pmdk-font-weight-medium );
+	text-align: start;
+	cursor: pointer;
+}
+
+.pmdk-dashboard .pmdk-settings-nav__child:hover {
+	background: var( --pmdk-color-row-hover );
+	color: var( --pmdk-color-text );
+}
+
+.pmdk-dashboard .pmdk-settings-nav__child[ aria-current='page' ] {
+	background: var( --pmdk-color-accent-subtle );
+	color: var( --pmdk-accent-fg, var( --pmdk-color-accent ) );
+	font-weight: var( --pmdk-font-weight-semibold );
+}
+
+/* --- content column -------------------------------------------------- */
+
+.pmdk-dashboard .pmdk-settings-shell__content {
+	min-width: 0;
+	max-width: var( --pmdk-settings-content-max, 876px );
+	padding: 24px 28px 40px;
+}
+
+/* --- collapse -------------------------------------------------------- */
+
+/* The mockup collapses at its 820px CONTAINER breakpoint, and so does
+   this: the query measures the shell, so a wp-admin sidebar narrowing the
+   app does not have to be guessed at from the viewport. The rail stays a
+   COLUMN — a wrapped row cannot carry the child group of an open branch. */
+@container ( max-width: 820px ) {
+	.pmdk-dashboard .pmdk-settings-shell__grid {
+		grid-template-columns: minmax( 0, 1fr );
+		min-height: 0;
+	}
+
+	.pmdk-dashboard .pmdk-settings-nav {
+		max-width: 360px;
+		padding: 18px 20px;
+		border-inline-end: 0;
+		border-block-end: 1px solid var( --pmdk-color-border );
+	}
+
+	.pmdk-dashboard .pmdk-settings-shell__content {
+		max-width: none;
+		padding: 20px;
+	}
+}

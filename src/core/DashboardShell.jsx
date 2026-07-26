@@ -35,6 +35,9 @@ import SnackbarSlot from './SnackbarSlot';
 
 import './DashboardShell.css';
 
+/** Accepted `containerWidth` modes (SPEC §5.1). Anything else ⇒ `narrow`. */
+const CONTAINER_WIDTHS = [ 'narrow', 'wide', 'flush' ];
+
 function renderMain( { ActiveComponent, NotFound, route, params, entry, fallback } ) {
 	if ( ActiveComponent ) {
 		return (
@@ -58,7 +61,9 @@ export default function DashboardShell( {
 	initialRoute = '#welcome',
 	// Layout — `'narrow'` (default) caps the reading column at 1100px;
 	// `'wide'` removes the cap so DataViews-heavy pages can fill the
-	// viewport. SPEC §5.1 + §11 hack #3. See DashboardShell.css.
+	// viewport; `'flush'` also removes the gutter for a full-bleed surface
+	// that owns its own padding (K-043). SPEC §5.1 + §11 hack #3. See
+	// DashboardShell.css.
 	containerWidth = 'narrow',
 	// Optional version anchor
 	versionLabel,
@@ -87,8 +92,13 @@ export default function DashboardShell( {
 	const brandHref = brand?.href;
 	const brandAriaLabel = brand?.ariaLabel;
 
-	const safeContainerWidth =
-		containerWidth === 'wide' ? 'wide' : 'narrow';
+	// `flush` (K-043) joins `narrow` / `wide` as a third mode: no cap, no
+	// margin and NO PADDING, so a full-bleed surface (the settings shell's
+	// rail sitting against the content-area edge) owns its own gutters.
+	// Unknown values still fall back to `narrow`, exactly as before.
+	const safeContainerWidth = CONTAINER_WIDTHS.includes( containerWidth )
+		? containerWidth
+		: 'narrow';
 
 	// K-042: the header grid is `1fr auto 1fr` with a CONTENT-SIZED centre
 	// track, so an end-aligned tab run cannot be produced by auto margins

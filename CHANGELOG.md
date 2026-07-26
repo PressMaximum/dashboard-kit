@@ -12,6 +12,55 @@ public API per the deprecation cycle in §12.2.
 
 ### Added
 
+- **New sub-entry `@pressmaximum/dashboard-kit/settings-shell` — the
+  grouped-rail Settings layout (K-043).** The founder-look Settings screen
+  existed only as Aponto-local `pd-*`/`ap-*` composition; the kit's
+  `SchemaForm` renders one vertical column and `SubNav` a flat rail, so a
+  second consumer could not follow the look without rebuilding the whole
+  shell. Promoted, generic-ized, and split the K-018 way — kit ships the
+  chassis, product keeps the data and copy:
+  - **`<SettingsShell>`** — grid (rail + padded content column), a named
+    `role="region"` for the section body, `header` / `children` slots, and
+    three geometry knobs published as CSS custom properties
+    (`chromeOffset` 96px, `railWidth` 240px, `contentMaxWidth` 876px).
+    `<SchemaForm>` and `<SaveBar>` compose in with **zero edits** — the
+    sticky DS chrome already ships in `primitives/save-bar.css`.
+  - **`<SettingsNav>`** — new `.pmdk-settings-nav*` family (`.pmdk-subnav*`
+    is untouched, locked classes and the "<2 items ⇒ null" rule included).
+    Aponto's interaction contract is promoted verbatim: a parent click
+    SELECTS ITS FIRST CHILD (one interaction, never expand-vs-select),
+    arrows move FOCUS and not selection, `aria-controls` points at the child
+    group only while it exists, and the caret uses the individual `rotate`
+    property because rtlcss negates rotations inside `transform` (K-031).
+  - **`createSettingsTree( tree, options? )`** — the pure resolvers behind
+    both (`resolve` / `resolveHash` / `path` / `defaultChild` / `section` /
+    `subline`), every one of them total: an unknown parent, an unknown
+    child, a stale third segment or a garbage list all land on a real
+    section, which is what lets a bookmark, a menu row and a Back button
+    share one function.
+  - **Collapse done right (K-033 lesson):** the shell establishes the query
+    container and the GRID is its child, so the ≤820px rule has something to
+    match — no orphan `@container` block. Any container-queried primitive
+    composed inside gets a container for free.
+
+  ~2.2 KB gzip, no third-party deps, own chunk so `./primitives` stays
+  React-free and consumers without a settings screen never traverse it.
+  49 unit cases across `SettingsShell` / `SettingsNav` / `createSettingsTree`
+  (the tree cases ported from the Aponto suite this was promoted from), plus
+  a prebuilt-entry contract row. SPEC §5.14 · §5.10b · §16.2 · §16.5 · §4.1.
+
+  Deliberate scope cuts, documented in §5.14: **no** `rows: 'horizontal'`
+  `SchemaForm` variant (Aponto production never renders label-left rows —
+  mockup-only; deferred until a consumer designs it) and **no**
+  `SchemaBuilder` PHP change (in v1 the tree is consumer-declared JS
+  config; schema-driven grouping is noted as future work).
+
+- **`containerWidth: 'flush'`** — a third `mountDashboard` /
+  `<DashboardShell>` mode: no cap, no margin, no gutter, so a full-bleed
+  surface such as `<SettingsShell>` can run its rail divider to the
+  content-area edge. Additive: `narrow` / `wide` / unknown values resolve
+  exactly as before.
+
 - **`TabStrip` can split primary from utility navigation, and a tab can be a
   dropdown (K-042).** `TabDefinition` gains two optional fields:
   - `align: 'start' | 'end'` — `'end'` moves the tab into a second,

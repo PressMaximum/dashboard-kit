@@ -83,6 +83,7 @@ That's the entire integration. ~30 lines of consumer JS + ~30 lines of PHP for a
 - `@pressmaximum/dashboard-kit/primitives` (+ `primitives/style.css`) — headless DS behaviors (combobox) + the `.pmdk-*` component chrome extracted from the Aponto DS (0.2, opt-in). See [docs/SPEC.md §5.12/§16.5](docs/SPEC.md).
 - `@pressmaximum/dashboard-kit/table` — `<PMDKDataTable>`: shared TanStack v8 data table (sorting, search/filter wiring, selection + bulk bar, column manager with drag order, pagination, five states, server-mode callbacks, view persistence). ~8.5 KB gzip; TanStack + dnd-kit are **optional peers you provide** (see below).
 - `@pressmaximum/dashboard-kit/module-card` — `<PMDKModuleCard>`: module/integration card (K-018). ~1.3 KB gzip, no third-party deps.
+- `@pressmaximum/dashboard-kit/settings-shell` — `<SettingsShell>` / `<SettingsNav>` / `createSettingsTree`: the grouped-rail Settings layout with a parent → child tree, hash-deep-link resolvers and the flush-bleed container mode (K-043). ~2.2 KB gzip, no third-party deps; chrome from `primitives/style.css`. See [docs/SPEC.md §5.14](docs/SPEC.md).
 
 Importing nothing from a sub-entry means webpack never traverses it. See [docs/SPEC.md §7](docs/SPEC.md).
 
@@ -98,8 +99,9 @@ npm install @tanstack/react-table @dnd-kit/core @dnd-kit/sortable @dnd-kit/utili
 ```
 
 They are declared `optional` in `peerDependenciesMeta`, so consumers that never
-import `./table` install nothing extra and get no npm warning. `./module-card`
-and every other entry have no third-party deps at all. `react/jsx-runtime` is
+import `./table` install nothing extra and get no npm warning.
+`./module-card`, `./settings-shell` and every other entry have no
+third-party deps at all. `react/jsx-runtime` is
 external too — wp-scripts maps it to the `react-jsx-runtime` handle
 automatically, so no consumer action is needed for that one.
 

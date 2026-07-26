@@ -334,6 +334,11 @@ src/
 │   ├── EditorViewLayout/              // 3-col SubNav + Main + Rail
 │   ├── PageWrapper/                   // flex chain that gives DataViews proper containerWidth
 │   └── SubNav/                        // vertical nav rail (Settings panels, Changelog sources)
+├── settings-shell/                    // K-043 — /settings-shell sub-entry (React, own chunk)
+│   ├── index.mjs                      // barrel re-exports for the sub-entry
+│   ├── SettingsShell.jsx              // grid chassis + named content region + geometry knobs
+│   ├── SettingsNav.jsx                // grouped/collapsible rail (.pmdk-settings-nav*)
+│   └── createSettingsTree.js          // pure resolvers: resolve / path / defaultChild / section
 ├── settings/                          // P3
 │   ├── SchemaForm.jsx                 // single-panel renderer (consumer resolves active panel)
 │   ├── SchemaField.jsx                // dispatches field.type → registry component
@@ -452,8 +457,12 @@ type MountConfig = {
   notFoundComponent?: ComponentType;   // when route doesn't match
   fallback?: ReactNode;                // rendered inside <main> when no route matches AND
                                        // notFoundComponent is unset (loading splash etc.)
-  containerWidth?: 'narrow' | 'wide';  // 'narrow' (default) = 1100px max reading column.
-                                       // 'wide' = full viewport, DataViews-friendly.
+  containerWidth?: 'narrow' | 'wide' | 'flush';
+                                       // 'narrow' (default) = 1100px max reading column.
+                                       // 'wide'  = full viewport, DataViews-friendly.
+                                       // 'flush' = full bleed, NO gutter — for a surface that
+                                       //   owns its own padding and must touch the content-area
+                                       //   edge (<SettingsShell>, K-043).
                                        // Sets `data-container-width` on `.pmdk-dashboard`;
                                        // unrecognised values fall back to 'narrow'.
 };
@@ -1165,6 +1174,20 @@ Consumers wanting to override DataViews's own strings should configure their own
 | `heading` | `Help` |
 | (item labels) | consumer-provided per item |
 
+**`<SettingsShell>` `labels` props** (K-043 — both ARIA-only)
+
+| Key | English fallback |
+|---|---|
+| `navAriaLabel` (aria) | `Settings sections` |
+| `regionLabel` (aria) | `Settings` |
+| (tree labels / descriptions, section body) | consumer-provided |
+
+The same two names also exist as top-level props, which take precedence —
+pass `regionLabel={ section.label }` so the content region announces the
+active section rather than the generic default. `<SettingsNav>` and
+`createSettingsTree` own **no** strings at all: the child group is named by
+its own parent's label.
+
 **Total**: ~50 strings across the full kit. Lightweight consumers using only `mountDashboard` + `<Hero>` + `<SchemaForm>` + `<SaveBar>` need to translate ~12 strings.
 
 Documentation ships a copy-paste template:
@@ -1612,8 +1635,128 @@ Re-audit of §5.10b (current state) per the discipline rule:
 - `ReleaseBlock` 2 strings (Current badge + date format) ✓
 - `HelpPanel` 1 string (trigger aria) ✓
 - `EntityPreviewFrame` 2 strings (empty + loading) — could move to slot pattern? Decision in P6.
+- `TabStrip` 0 strings, including the K-042 dropdown tabs (menu named by its trigger) ✓
+- `SettingsShell` 2 strings (both aria: nav landmark + content region) ✓; `SettingsNav` 0 ✓
 
 Total realistic v0.1.0 if discipline applied: ~30-35 strings (not 50). Re-confirm during implementation; SPEC §5.10b list updates accordingly.
+
+---
+
+## 5.14 Settings shell (`@pressmaximum/dashboard-kit/settings-shell`)
+
+The founder-look Settings screen, promoted on PressListing's request after
+its founder resolved SPEC-P2.5 §10 to "follow the kit" (K-043). Source: the
+Aponto-local `.ap-settings-*` composition (`routes/SettingsRoute.jsx`,
+`settings/ia.js`, `styles/admin-extra.css`), which is the second product to
+want the same layout. Own React sub-entry so `./primitives` stays
+React-free; zero third-party deps; chrome from `primitives/style.css`
+(`settings-shell.css`).
+
+**The split.** Kit ships the CHASSIS — grid, rail interaction + a11y,
+named content region, flush-bleed mode, collapse. Product keeps the tree
+(ids, labels, icons, grouping), the routing, the schema, the dirty buffer,
+the save handler and every visible string.
+
+### `<SettingsShell>`
+
+| Prop | Type / default | Contract |
+|---|---|---|
+| `tree` | `Node[]` (required) | Parent nodes in display order — forwarded to `<SettingsNav>` |
+| `activeParent` / `activeChild` | `string` | The resolved section. `activeChild: ''` means the active node is a leaf |
+| `onSelect` | `( parentId, childId ) => void` | Fired by every rail activation. The product owns navigation (and any dirty-state guard around it) |
+| `header` | `node` | Rendered at the top of the content region — typically `<ListPageHeader>` |
+| `children` | `node` | The section body. `<SchemaForm>` + `<SaveBar>` compose in unchanged |
+| `navAriaLabel` / `regionLabel` | `string` | Accessible names for the rail landmark and the content region. Take precedence over `labels`; pass the resolved section label as `regionLabel` so the region announces where the user is |
+| `labels` | `{ navAriaLabel, regionLabel }` | i18n fallbacks, English defaults shipped (§5.10b). Both landmarks are named out of the box — an unnamed `role="region"` is worse than none |
+| `chromeOffset` | `string` = `96px` | Host chrome subtracted from `100dvh` for the shell's min-height (WP admin bar 32 + a 64px dashboard header). Publishes `--pmdk-settings-chrome` |
+| `railWidth` | `string` = `240px` | Rail track. Publishes `--pmdk-settings-rail-width` |
+| `contentMaxWidth` | `string` = `876px` | Content column cap. Publishes `--pmdk-settings-content-max` |
+| `idPrefix` | `string` = `pmdk-settings` | Namespace for the generated `aria-controls` group ids (set it when two shells share a page) |
+| `className` | `string` | Extra classes on the shell root |
+
+**Container-query note (K-033 lesson).** `.pmdk-settings-shell` establishes
+the query container and the GRID is its child, because an element cannot
+answer its own container query. The ≤820px collapse therefore measures the
+shell's own width — not a viewport a wp-admin sidebar has already eaten
+into — and any container-queried primitive composed inside (e.g. the save
+bar's ≤620px stack) gets a container for free.
+
+### `<SettingsNav>`
+
+Exported standalone for a consumer with its own layout. New class family
+`.pmdk-settings-nav*`; `<SubNav>` and its locked `.pmdk-subnav*` classes are
+untouched, including its "fewer than two items ⇒ null" rule — wrong for a
+settings rail that may legitimately ship one section.
+
+Interaction contract, promoted verbatim from the Aponto source:
+
+- **A parent click SELECTS ITS FIRST CHILD.** The tree never grows a second
+  interaction ("expand" vs "select") for the same click; exactly one branch
+  is open — the active one — so disclosure is a consequence of selection.
+- **Arrows move FOCUS, not selection.** Arrow Up/Down/Left/Right + Home/End
+  rove the visible rail buttons and wrap; activation stays on Enter / Space
+  / click. This is navigation, not a tablist: activating on arrow would fire
+  a consumer's dirty-form confirm on every keypress.
+- `aria-expanded` on a parent, `aria-controls` ONLY while the group exists,
+  `role="group"` + the parent's own label on the child container,
+  `aria-current="page"` on the active child (or on an active leaf node).
+- The disclosure caret uses the individual **`rotate`** property, never
+  `transform: rotate()` — rtlcss negates rotations inside `transform` (it
+  left the Aponto original's open caret pointing up in its RTL build) but
+  leaves `rotate` alone (K-031). RTL re-points CLOSED branches only; the
+  open state points down, which is direction-neutral.
+- Every node emits the icon CELL even when it has no glyph (it is a grid
+  track — a skipped cell drops the label into the 18px icon column). A tree
+  with no glyphs at all gets `is-iconless` on the rail, which removes the
+  track rather than carrying a dead gutter.
+
+### `createSettingsTree( tree, options? )`
+
+The pure routing brain, promoted from Aponto's `settings/ia.js` helpers and
+generic-ized: no tree literal, no legacy aliases, no domain fields. Options:
+`route` (hash root segment, default `settings`) and `separator` (label
+joiner, default ` · `).
+
+| Member | Returns | Notes |
+|---|---|---|
+| `tree` / `route` / `defaultParent` | — | Normalized inputs |
+| `node( id )` | `Node │ null` | Parent lookup |
+| `children( id )` | `Node[]` | `[]` for a leaf or unknown id |
+| `defaultChild( id )` | `string` | First child, `''` for a leaf — where a parent click lands |
+| `path( parent, child? )` | `string` | Canonical hash path without the `#` |
+| `resolve( segments )` | `{ parent, child }` | Accepts segments with or without the route root |
+| `resolveHash( hash )` | `{ parent, child }` | Same, straight off `location.hash` |
+| `section( parent, child? )` | `{ parent, child, source, label }` | `source` is the child when there is one, else the parent — the consumer's own fields (`panels`, `component`, …) ride on it, so the kit never names them |
+| `subline( node )` | `string` | A parent advertises its children, a leaf its `description` |
+
+Every resolver is **total**: an unknown parent, an unknown child, a stale
+third segment or a garbage list all land on a real section. That totality is
+what lets a bookmark, a header dropdown row and a Back button share one
+function — and it is what makes a consumer's own alias table unnecessary.
+
+### Flush-bleed
+
+`mountDashboard({ containerWidth: 'flush' })` is the third mode (§5.1):
+no cap, no margin, no gutter, so the rail divider runs to the content-area
+edge and the shell's two columns own their padding. Additive — an
+unrecognised value still resolves to `narrow`.
+
+### Scope cuts (deliberate, with reasons)
+
+- **No `rows: 'horizontal'` SchemaForm variant.** The K-043 row sketched
+  label-left/control-right field rows, but the Aponto production app never
+  renders them — they exist only in the v4 mockup. Shipping a layout variant
+  no consumer has designed against would freeze a guess into the schema API.
+  Deferred until a consumer designs it.
+- **No `SchemaBuilder` PHP change.** In v1 the tree is consumer-declared JS
+  config. Deriving it from existing panel metadata is the obvious next step
+  and is noted here so it is not lost, but it would couple the layout to the
+  PHP schema before either side has settled.
+- **No save dialect.** `<SaveBar>` and `<SchemaForm>` compose in with zero
+  edits; the sticky DS chrome already ships in `primitives/save-bar.css`.
+
+The `SettingsShell/SettingsPage` story is the working reference (tree,
+routing, schema panels, dirty buffer, save bar).
 
 ---
 
@@ -2483,6 +2626,12 @@ Only the classes enumerated in the table above carry the semver lock. Any other 
 
 Modifier states (`.is-active`, `.is-complete`, etc.) that decorate a locked class are themselves locked when explicitly listed (e.g. `.pmdk-dashboard__tab.is-active`); otherwise they follow the same non-locked rule.
 
+**K-043 subparts (non-locked).** The settings shell ships a NEW class
+family, `.pmdk-settings-shell*` + `.pmdk-settings-nav*` — enumerated in
+§16.5 — chosen precisely so the locked `.pmdk-subnav*` surface stays as it
+is; `<SubNav>` is unchanged, including its "fewer than two items ⇒ null"
+rule. The family follows the lock-scope rule: targetable, not locked.
+
 **K-042 subparts (non-locked).** The split nav + dropdown tabs ship on new,
 deliberately UNLOCKED subparts, so the locked `.pmdk-dashboard__tabs` /
 `__tab` surface is unchanged: `.pmdk-dashboard__tab-group` (one alignment
@@ -2557,6 +2706,7 @@ the mockup `DESIGN-SYSTEM.md`):
 | In-flow inspector (slice 3) | `.pmdk-inflow-workspace` (+ `is-inspecting` / `is-resizing` / `is-closing`), `.pmdk-inflow-main`, `.pmdk-inflow-resizer`, `.pmdk-inflow-inspector` (+ `-head`) | Workspace plane: open pushes main narrower, no backdrop. Width via `--pmdk-inflow-inspector-width` (defaults to the token `--pmdk-inspector-width`); behavior via `createInspectorResizer`. Aponto `data-panel-kind` domain variants were NOT extracted |
 | Drawer + panel content (slice 3) | `.pmdk-drawer` (+ `open`, `[data-panel-kind=detail]` mode), `.pmdk-drawer-head` / `-body` / `-foot` / `-hero` (+ `-hero-copy`) / `-title-group` / `-title-copy` / `-title-leading` / `-primary-actions` / `-confirm` / `-confirm-foot` / `-confirm-actions`, `.pmdk-panel-section` / `-hero` / `-footer` / `-drawer-foot`, `.pmdk-mini-stats` | Overlay-plane drawer + shared panel content conventions; `.pmdk-mini-stats` is the compact metric strip |
 | Module card (slice 4 + K-018) | `.pmdk-module-grid` (+ `is-revealing`), `.pmdk-module-card` (+ `is-enabled` / `is-disabled` / `is-planned`), `.pmdk-module-card-head` / `-foot`, `.pmdk-module-icon`, `.pmdk-module-copy` / `-meta` / `-description` / `-badges` / `-card-action` / `-connection-line` (K-018 anatomy), `.pmdk-module-license` (+ `is-premium` / `is-free` — the TIER badge, selected by `tier.variant`; source name kept), `.pmdk-module-phase`, `.pmdk-module-connection` (+ `is-connected`), `.pmdk-module-toggle` (+ `-label`), `.pmdk-toggle-track` | DESIGN-SYSTEM anatomy: icon, tier badge, title, description, status, toggle. Component: `<PMDKModuleCard>` (§5.12) |
+| Settings shell (K-043) | `.pmdk-settings-shell` (query container) / `__grid` / `__content`, `.pmdk-settings-nav` (+ `is-iconless`), `.pmdk-settings-nav__node` (+ `is-leaf` / `is-active`), `__branch` (+ `is-open`), `__icon` / `__label` / `__caret` / `__children` / `__child` (+ `is-active`) | Grouped rail + padded content column, flush to the content-area edge under `containerWidth: 'flush'`. Knobs: `--pmdk-settings-chrome` (96px), `--pmdk-settings-rail-width` (240px), `--pmdk-settings-content-max` (876px). The SHELL is the container and the GRID its child, so the ≤820px collapse has something to match (K-033). Components: `<SettingsShell>` / `<SettingsNav>` (§5.14) |
 | Avatar (slice 4) | `.pmdk-avatar` (+ `is-large`) | One uppercase letter, one shared quiet tint — no per-record colour cycling |
 | Tabs (slice 4) | `.pmdk-section-tabs` | Peer views within a route; underline active, optional count badge span; behavior via `createTablist` |
 | Toast (slice 4) | `.pmdk-toast` (+ `show`) | Transient confirmation anchored to the workspace corner |

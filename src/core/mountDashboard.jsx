@@ -83,7 +83,8 @@ export function mountDashboard( config ) {
 		notFoundComponent,
 		fallback,
 		// `'narrow'` (default) → 1100px reading column.
-		// `'wide'`             → full viewport, DataViews-friendly. SPEC §5.1.
+		// `'wide'`             → full viewport, DataViews-friendly.
+		// `'flush'`            → full bleed, no gutter (K-043). SPEC §5.1.
 		containerWidth = 'narrow',
 	} = config;
 

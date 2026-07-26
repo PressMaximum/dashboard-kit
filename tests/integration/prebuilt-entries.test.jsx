@@ -36,6 +36,7 @@ import { createRoot } from 'react-dom/client';
 
 import { PMDKDataTable } from '../../build/table/index.mjs';
 import { PMDKModuleCard } from '../../build/module-card/index.mjs';
+import { SettingsShell } from '../../build/settings-shell/index.mjs';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -44,6 +45,7 @@ const ENTRIES = [
 	'build/datasets/index.mjs',
 	'build/table/index.mjs',
 	'build/module-card/index.mjs',
+	'build/settings-shell/index.mjs',
 	'build/primitives/index.mjs',
 	'build/editor-helpers/index.mjs',
 ];
@@ -239,6 +241,30 @@ describe( 'prebuilt table renders against externally provided peers', () => {
 	it( 'the module-card entry renders clean too', () => {
 		render( <PMDKModuleCard title="Bookings" state="enabled" /> );
 		expect( host.querySelector( '.pmdk-module-card' ) ).not.toBeNull();
+		expect( consoleCalls() ).toEqual( [] );
+	} );
+
+	it( 'the settings-shell entry renders clean too', () => {
+		render(
+			<SettingsShell
+				tree={ [
+					{
+						id: 'general',
+						label: 'General',
+						children: [ { id: 'business', label: 'Business' } ],
+					},
+				] }
+				activeParent="general"
+				activeChild="business"
+			>
+				<p>panel</p>
+			</SettingsShell>,
+		);
+		expect( host.querySelector( '.pmdk-settings-shell' ) ).not.toBeNull();
+		expect(
+			host.querySelector( '.pmdk-settings-nav__child[aria-current]' )
+				.textContent,
+		).toBe( 'Business' );
 		expect( consoleCalls() ).toEqual( [] );
 	} );
 } );

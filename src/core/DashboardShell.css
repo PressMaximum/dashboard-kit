@@ -202,6 +202,18 @@
 	padding: 24px var( --pmdk-header-gutter, 24px );
 }
 
+/* `flush` (K-043) — full bleed: no cap, no margin, NO GUTTER. For a
+   surface that owns its own padding and needs to touch the content-area
+   edge, e.g. `<SettingsShell>`, whose rail divider runs to the edge and
+   whose two columns pad themselves. Purely additive: an unrecognised
+   `containerWidth` still resolves to `narrow`, so this clause is
+   unreachable unless a consumer asks for it by name. */
+.pmdk-dashboard[ data-container-width='flush' ] .pmdk-dashboard__main {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+}
+
 /* Suppress the focus ring on `.pmdk-dashboard__main` (K-016). The element
    is a `tabindex="-1"` landmark for SPA route-change focus(); the focus
    move alone gives screen-reader landmark announcement, so the browser
