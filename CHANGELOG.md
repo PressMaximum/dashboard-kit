@@ -63,6 +63,15 @@ proven by all 21 core-default and theme-app-core VR shots staying zero-diff.
   column stack. Measured **460×57 boxed tiles → a 15px-tall inline run**. Sized
   from the kit's own `--pmdk-font-size-caption` per the §16.5 neutralisation
   rule. `.pmdk-mini-stats` is untouched and remains the drawer surface.
+- **`statusLabel` now renders beside a live toggle too (K-052).** The slot only
+  existed in the branch where the toggle is ABSENT (`planned` /
+  `toggle={false}`), so a toggleable card could not show a static footer note —
+  a pending "Reload to apply", say — through the prop designed for it, and
+  consumers had to stuff it into `action`. Passing `statusLabel` alongside a
+  live toggle now emits a quiet `.pmdk-module-status-note` ahead of the toggle
+  cluster, on the same typography as the planned/status span. **Absent by
+  default:** omit it and the card emits the DOM it always did, so no shipped
+  consumer moves. `planned` still owns `plannedLabel` and gains no second node.
 
 ### Changed
 
@@ -91,11 +100,18 @@ proven by all 21 core-default and theme-app-core VR shots staying zero-diff.
   track / wrap / row-gap, the counts strip and the three cursors.
 - `PMDKModuleCard.test.jsx` — the On/Off defaults pinned in both states, plus a
   case proving the verbose pair is still reachable through `labels`.
-- New `Primitives/ModuleCard → LongBadgeCluster` story (pathological cluster
-  beside a short one) added to the VR matrix as the K-050 regression lock.
-- Story VR: **62 shots, all green.** 25 primitives-tier baselines re-captured as
-  intentional + 1 new; the remaining 36 are zero-diff — all 21 core-default /
-  theme-app-core shots plus 15 primitives shots the round did not touch.
+- `PMDKModuleCard.test.jsx` — 3 cases for K-052: the note coexisting with a live
+  toggle (including that it sits outside the `<label>`, so it cannot flip the
+  control), the absent-by-default DOM, and `planned` keeping `plannedLabel`.
+- Two new stories added to the VR matrix as regression locks —
+  `Primitives/ModuleCard → LongBadgeCluster` (pathological cluster beside a
+  short one, K-050) and `→ ToggleWithStatusNote` (a card with the note beside
+  the same card without one, K-052).
+- Story VR: **63 shots, all green.** 25 primitives-tier baselines re-captured as
+  intentional + 2 new; the remaining 36 are zero-diff — all 21 core-default /
+  theme-app-core shots plus 15 primitives shots the round did not touch. K-052
+  was verified separately against the post-K-051 baselines: **62/62 unchanged**,
+  which is the absent-by-default contract proven rather than asserted.
 
 ## [0.3.0] — 2026-07-26
 

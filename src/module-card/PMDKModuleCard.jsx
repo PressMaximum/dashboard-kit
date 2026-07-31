@@ -170,6 +170,18 @@ export function PMDKModuleCard( {
 				<span className="pmdk-module-card-action">
 					{ action || null }
 				</span>
+				{ /*
+				   K-052: `statusLabel` also renders BESIDE a live toggle. It
+				   used to live only in the else-branch, so a toggleable card
+				   had no way to show a static footer note ("Reload to apply")
+				   through the slot designed for it — consumers were stuffing
+				   it into `action`. Rendered only when passed, so a card
+				   without one emits the identical DOM it always did. */ }
+				{ showToggle && statusLabel ? (
+					<span className="pmdk-module-toggle-label pmdk-module-status-note">
+						{ statusLabel }
+					</span>
+				) : null }
 				{ showToggle ? (
 					<label className="pmdk-module-toggle">
 						<span className="pmdk-module-toggle-label">

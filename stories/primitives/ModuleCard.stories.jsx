@@ -151,6 +151,51 @@ export const LongBadgeCluster = {
 	),
 };
 
+/*
+ * K-052 — `statusLabel` beside a LIVE toggle.
+ *
+ * Until 0.3.1 the slot only rendered where the toggle was absent (planned /
+ * `toggle={false}`), so a toggleable card could not show a static footer note
+ * and consumers pushed it into `action` instead. Left card: toggle + note.
+ * Right card: the same card with no `statusLabel`, which must emit exactly the
+ * DOM it always did — the absent-by-default half of the contract.
+ */
+export const ToggleWithStatusNote = {
+	render: () => (
+		<Chassis>
+			<div className="pmdk-module-grid">
+				<ToggleableCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches"
+					description="A live, toggleable module carrying a transient footer note."
+					tier={ { label: 'Free', variant: 'free' } }
+					state="enabled"
+					statusLabel="Reload to apply"
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+				<ToggleableCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches"
+					description="The same card with no statusLabel — unchanged footer."
+					tier={ { label: 'Free', variant: 'free' } }
+					state="enabled"
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+			</div>
+		</Chassis>
+	),
+};
+
 export const IntegrationStates = {
 	render: () => (
 		<Chassis>

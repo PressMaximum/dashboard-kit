@@ -2898,6 +2898,17 @@
 .pmdk-dashboard .pmdk-module-card.is-planned .pmdk-module-toggle-label {
 	color: var( --pmdk-color-text-soft );
 }
+/* K-052 — the optional status note that accompanies a LIVE toggle. It takes the
+   footer's free space so it and the toggle share the trailing edge, instead of
+   being stranded next to the action at the other end (`.pmdk-module-toggle`
+   carries the same `margin-left: auto`; the first auto wins and the two travel
+   together). Typography comes from `.pmdk-module-toggle-label`, which the
+   element also carries — the note reads exactly like the planned/status span it
+   generalises. Emitted only when `statusLabel` is passed, so cards without one
+   are untouched. */
+.pmdk-dashboard .pmdk-module-status-note {
+	margin-left: auto;
+}
 
 /*
  * @pressmaximum/dashboard-kit — initial avatar (one letter, one tint) (KIT-P3 slice 4)
