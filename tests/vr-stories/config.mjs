@@ -42,6 +42,12 @@ export const STORY_IDS = [
 	// slice 4 — feedback & shell-adjacent (module-card shots exercise the
 	// K-018 <PMDKModuleCard> component, incl. the ModulesPage consumer story)
 	'primitives-modulecard--catalogue-3-up',
+	// K-050 — the badge-track clamp: a pathological cluster next to a short
+	// one, so both the clamped and the untouched max-content path are locked.
+	'primitives-modulecard--long-badge-cluster',
+	// K-052 — `statusLabel` beside a live toggle, next to the same card
+	// without one (the absent-by-default half of the contract).
+	'primitives-modulecard--toggle-with-status-note',
 	'primitives-modulecard--integration-states',
 	'primitives-modulecard--theme-app-dark',
 	'modulecard-modulespage--press-listing-like-modules',

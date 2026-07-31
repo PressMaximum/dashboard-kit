@@ -1446,10 +1446,10 @@ kit ships behavior + chrome + slots, product keeps data + copy.
 | `action` | `node` | Footer action slot (Configure / deep link / View roadmap) |
 | `plannedLabel` | `node` | Static footer label for `planned` — which renders NO toggle |
 | `toggle` | `bool` = `true` | `false` renders NO toggle: footer keeps the `action` slot plus `statusLabel`, the same shape `planned` produces (K-023). Use for an integration whose on/off state is not the kit's to own — configuration lives behind the action. Independent of `state`, so an `enabled` integration keeps `is-enabled` chrome and its place in the product's on/available counts |
-| `statusLabel` | `node` | Static footer label when `toggle` is `false` (the `planned` state uses `plannedLabel` instead) |
+| `statusLabel` | `node` | Static footer label when `toggle` is `false` (the `planned` state uses `plannedLabel` instead). **Also renders beside the toggle since 0.3.1** (K-052): on a live toggleable card it emits a quiet `.pmdk-module-status-note` ahead of the toggle cluster — for transient notes like "Reload to apply", which previously had to be stuffed into `action`. Omitted ⇒ no extra node, so cards without one are unchanged |
 | `onToggle` | `(next: bool) => void` | The toggle is the canonical activation control; controlled by `state` |
 | `toggleDisabled` | `bool` = `false` | Gated module: toggle stays disabled (pair with an upgrade `action`) |
-| `labels` | `{ toggleOn, toggleOff, toggleAria(title, enabled) }` | i18n overrides (English defaults per §5.13 Tier-2 rules) |
+| `labels` | `{ toggleOn, toggleOff, toggleAria(title, enabled) }` | i18n overrides (English defaults per §5.13 Tier-2 rules). Defaults are `'On'` / `'Off'` — the short pair the chrome always assumed (`.pmdk-module-toggle-label` reserves `min-width:20px`) and the mockup renders. They were `'Enabled'` / `'Disabled'` before 0.3.1 (K-047); pass `labels` to restore the verbose wording |
 | `className` | `string` | Extra classes on the `<article>` |
 
 A11y: the kit renders no card-level click handler (never make the whole card
@@ -1459,12 +1459,23 @@ clickable); every toggle carries an accessible name.
 category tabs and counts strip are deliberately NOT part of the component:
 
 ```jsx
-<div className="pmdk-mini-stats">…counts…</div>            // counts strip
+<div className="pmdk-module-overview" aria-label="Within current results: …">
+  <span><b>{ on }</b> on</span>
+  <i aria-hidden="true">·</i>
+  <span><b>{ available }</b> available</span>
+  <i aria-hidden="true">·</i>
+  <span><b>{ roadmap }</b> roadmap</span>
+</div>
 <div className="pmdk-section-tabs" ref={ tabsEl }>…</div>  // + createTablist
 <div className="pmdk-module-grid">
   { modules.map( ( m ) => <PMDKModuleCard key={ m.id } … /> ) }
 </div>
 ```
+
+The counts strip is `.pmdk-module-overview` — a compact inline run (counts in
+`<b>`, `·` separators in `<i>`). **Not `.pmdk-mini-stats`**, which is the
+DRAWER metric-tile chrome (§16.5): a bordered grid of boxed tiles, far too much
+weight above a card grid. This recipe pointed at it until 0.3.1 (K-048).
 
 The `ModuleCard/ModulesPage` story is the working reference (registry data,
 category filtering via `createTablist`, lock/planned/integration states).
@@ -2686,6 +2697,17 @@ extracted from the Aponto plugin-dashboard mockup and neutralised onto the
 `.pmdk-dashboard`; the DS look comes from the app theme (§16.1a), the sheet
 itself renders on WP-native defaults too. Requires the §16.1 browser floor.
 
+**Border-box reset (0.3.1, K-046).** The sheet opens with a scoped reset —
+`.pmdk-dashboard *, .pmdk-dashboard *::before, .pmdk-dashboard *::after {
+box-sizing: border-box }`. It is part of the contract, not a convenience: every
+size in this tier was authored against the mockup's global
+`*{box-sizing:border-box}`, which the extraction did not carry over, so until
+0.3.1 each padded/bordered box rendered inflated (the toggle track authored
+38×22 painted 44×28). The reset lives HERE rather than in core `style.css` on
+purpose — core-only consumers never load this file, so their box model and their
+VR baselines cannot move. The chassis element itself is excluded (it is core's
+to style, and carries no padding or border either way).
+
 Class families (source of truth: `src/primitives/*.css`; behavior contract:
 the mockup `DESIGN-SYSTEM.md`):
 
@@ -2705,7 +2727,7 @@ the mockup `DESIGN-SYSTEM.md`):
 | Five states | `.pmdk-state-panel`, `.pmdk-state-icon` (+ `is-error`), `.pmdk-state-loading`, `.pmdk-state-skeleton-head` / `-grid`, `.pmdk-skeleton`, `.pmdk-empty`, `.pmdk-inline-empty` | Ready / Loading / Empty / Error / Permission |
 | In-flow inspector (slice 3) | `.pmdk-inflow-workspace` (+ `is-inspecting` / `is-resizing` / `is-closing`), `.pmdk-inflow-main`, `.pmdk-inflow-resizer`, `.pmdk-inflow-inspector` (+ `-head`) | Workspace plane: open pushes main narrower, no backdrop. Width via `--pmdk-inflow-inspector-width` (defaults to the token `--pmdk-inspector-width`); behavior via `createInspectorResizer`. Aponto `data-panel-kind` domain variants were NOT extracted |
 | Drawer + panel content (slice 3) | `.pmdk-drawer` (+ `open`, `[data-panel-kind=detail]` mode), `.pmdk-drawer-head` / `-body` / `-foot` / `-hero` (+ `-hero-copy`) / `-title-group` / `-title-copy` / `-title-leading` / `-primary-actions` / `-confirm` / `-confirm-foot` / `-confirm-actions`, `.pmdk-panel-section` / `-hero` / `-footer` / `-drawer-foot`, `.pmdk-mini-stats` | Overlay-plane drawer + shared panel content conventions; `.pmdk-mini-stats` is the compact metric strip |
-| Module card (slice 4 + K-018) | `.pmdk-module-grid` (+ `is-revealing`), `.pmdk-module-card` (+ `is-enabled` / `is-disabled` / `is-planned`), `.pmdk-module-card-head` / `-foot`, `.pmdk-module-icon`, `.pmdk-module-copy` / `-meta` / `-description` / `-badges` / `-card-action` / `-connection-line` (K-018 anatomy), `.pmdk-module-license` (+ `is-premium` / `is-free` — the TIER badge, selected by `tier.variant`; source name kept), `.pmdk-module-phase`, `.pmdk-module-connection` (+ `is-connected`), `.pmdk-module-toggle` (+ `-label`), `.pmdk-toggle-track` | DESIGN-SYSTEM anatomy: icon, tier badge, title, description, status, toggle. Component: `<PMDKModuleCard>` (§5.12) |
+| Module card (slice 4 + K-018) | `.pmdk-module-grid` (+ `is-revealing`), `.pmdk-module-card` (+ `is-enabled` / `is-disabled` / `is-planned`), `.pmdk-module-card-head` / `-foot`, `.pmdk-module-icon`, `.pmdk-module-copy` / `-meta` / `-description` / `-badges` / `-card-action` / `-connection-line` (K-018 anatomy), `.pmdk-module-license` (+ `is-premium` / `is-free` — the TIER badge, selected by `tier.variant`; source name kept), `.pmdk-module-phase`, `.pmdk-module-connection` (+ `is-connected`), `.pmdk-module-toggle` (+ `-label`), `.pmdk-module-status-note` (the optional note beside a live toggle — K-052), `.pmdk-toggle-track`, `.pmdk-module-overview` (+ its `span` / `b` / `i` children) | DESIGN-SYSTEM anatomy: icon, tier badge, title, description, status, toggle. Component: `<PMDKModuleCard>` (§5.12). `.pmdk-module-overview` is the page-level counts strip — a compact inline run, NOT `.pmdk-mini-stats` (that is the drawer's boxed metric tiles, row above). The `-card-head` badges track is `fit-content(40%)` + a wrapping `-badges` cluster so badges can never starve the title (K-050) |
 | Settings shell (K-043) | `.pmdk-settings-shell` (query container) / `__grid` / `__content`, `.pmdk-settings-nav` (+ `is-iconless`), `.pmdk-settings-nav__node` (+ `is-leaf` / `is-active`), `__branch` (+ `is-open`), `__icon` / `__label` / `__caret` / `__children` / `__child` (+ `is-active`) | Grouped rail + padded content column, flush to the content-area edge under `containerWidth: 'flush'`. Knobs: `--pmdk-settings-chrome` (96px), `--pmdk-settings-rail-width` (240px), `--pmdk-settings-content-max` (876px). The SHELL is the container and the GRID its child, so the ≤820px collapse has something to match (K-033). Components: `<SettingsShell>` / `<SettingsNav>` (§5.14) |
 | Avatar (slice 4) | `.pmdk-avatar` (+ `is-large`) | One uppercase letter, one shared quiet tint — no per-record colour cycling |
 | Tabs (slice 4) | `.pmdk-section-tabs` | Peer views within a route; underline active, optional count badge span; behavior via `createTablist` |

@@ -91,6 +91,111 @@ export const Catalogue3Up = {
 	),
 };
 
+/*
+ * K-050 — the badge track can never starve the title.
+ *
+ * Every badge is `white-space:nowrap`, so under the old `auto` track a wide
+ * cluster grew without limit and squeezed the copy column (measured 206px ->
+ * 80px, titles ellipsing with room to spare). `fit-content(40%)` clamps the
+ * track and `flex-wrap` lets the clamped cluster wrap onto a second row.
+ *
+ * Left card: the pathological cluster. Right card: a normal short cluster,
+ * which must still resolve to max-content — i.e. render exactly as it did
+ * before the fix. The two together are the regression lock.
+ */
+export const LongBadgeCluster = {
+	render: () => (
+		<Chassis>
+			<div className="pmdk-module-grid">
+				<PMDKModuleCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches and alerts"
+					description="A title that has room to breathe, next to a badge cluster that used to take it away."
+					tier={ { label: 'Premium', variant: 'premium' } }
+					badges={
+						<>
+							<span className="pmdk-module-phase">
+								Coming in P4
+							</span>
+							<span className="pmdk-module-phase">
+								Beta programme
+							</span>
+						</>
+					}
+					state="enabled"
+					onToggle={ () => {} }
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+				<PMDKModuleCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches and alerts"
+					description="The same card with a short cluster — the max-content path, unchanged by the clamp."
+					tier={ { label: 'Free', variant: 'free' } }
+					badges={ <span className="pmdk-module-phase">P4</span> }
+					state="enabled"
+					onToggle={ () => {} }
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+			</div>
+		</Chassis>
+	),
+};
+
+/*
+ * K-052 — `statusLabel` beside a LIVE toggle.
+ *
+ * Until 0.3.1 the slot only rendered where the toggle was absent (planned /
+ * `toggle={false}`), so a toggleable card could not show a static footer note
+ * and consumers pushed it into `action` instead. Left card: toggle + note.
+ * Right card: the same card with no `statusLabel`, which must emit exactly the
+ * DOM it always did — the absent-by-default half of the contract.
+ */
+export const ToggleWithStatusNote = {
+	render: () => (
+		<Chassis>
+			<div className="pmdk-module-grid">
+				<ToggleableCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches"
+					description="A live, toggleable module carrying a transient footer note."
+					tier={ { label: 'Free', variant: 'free' } }
+					state="enabled"
+					statusLabel="Reload to apply"
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+				<ToggleableCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches"
+					description="The same card with no statusLabel — unchanged footer."
+					tier={ { label: 'Free', variant: 'free' } }
+					state="enabled"
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+			</div>
+		</Chassis>
+	),
+};
+
 export const IntegrationStates = {
 	render: () => (
 		<Chassis>

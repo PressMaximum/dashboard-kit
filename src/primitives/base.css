@@ -13,6 +13,32 @@
  * Customify) is untouched, so a kit bump is zero look-change for them.
  */
 
+/* --- Border-box reset (K-046) ----------------------------------------------
+ * EVERY rule in this tier was extracted from the mockup's `.pd-*` layer, whose
+ * very first line is a GLOBAL `*{box-sizing:border-box}` (plugin-dashboard.css
+ * line 1). The extraction took the rules but not the reset, so every authored
+ * size in the primitives tier was being read as a CONTENT box and then inflated
+ * by its own padding + border: the toggle track authored 38x22 rendered 44x28,
+ * `.pmdk-module-card` 302->340, `.pmdk-module-phase` 28->42. The authored
+ * numbers only ever meant border-box.
+ *
+ * SCOPE — deliberately the primitives tier, not a package-wide reset (REVISED-C):
+ * this sheet is the OPT-IN `primitives/style.css` export, a webpack entry of its
+ * own. Core consumers (Blocksify, Customify) import `style.css` from the `index`
+ * entry, which never reaches this file, so their box model — and their VR
+ * baselines — cannot move. Consumers who opt into the primitives get the reset
+ * the primitives were authored against, which is the only way those numbers are
+ * correct.
+ *
+ * Descendants only: the `.pmdk-dashboard` chassis itself is styled by CORE
+ * `style.css` (DashboardShell.css), so it stays out of a primitives-tier reset.
+ * It carries no padding or border, so the two box models agree on it anyway. */
+.pmdk-dashboard *,
+.pmdk-dashboard *::before,
+.pmdk-dashboard *::after {
+	box-sizing: border-box;
+}
+
 /* --- Icon slot -------------------------------------------------------------
  * The kit renders chrome glyphs (sort caret, pagination arrows, drag handle,
  * search, filter, close…) through a consumer-supplied `renderIcon(name)` prop.

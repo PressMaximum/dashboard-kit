@@ -10,6 +10,109 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+First-consumer visual-correction round — PressListing P2.5 QA, 2026-08-01.
+Six defects, all traced to the same origin: the primitives tier was mechanically
+extracted from the Aponto plugin-dashboard mockup's `.pd-*` layer, and the
+extraction renamed selectors but could not carry the mockup's two bare ELEMENT
+rules — `*{box-sizing:border-box}` and `button{cursor:pointer}` — because
+neither had a `.pd-` selector to rename. Everything below follows from that.
+
+**Scope note:** every change is inside the opt-in `primitives/style.css` export
+and the `module-card` entry. `build/style.css` (core) and `build/themes/app.css`
+are byte-identical to 0.3.0, so Blocksify / Customify see **no pixel change** —
+proven by all 21 core-default and theme-app-core VR shots staying zero-diff.
+
+### Fixed
+
+- **Primitives boxes render at their authored size — scoped `box-sizing`
+  reset (K-046).** Every size in the tier was authored against the mockup's
+  global border-box reset, which the extraction dropped, so each padded or
+  bordered box painted inflated by its own chrome. `base.css` now opens with
+  `.pmdk-dashboard *, ::before, ::after { box-sizing: border-box }`. Measured:
+  toggle track **44×28 → 38×22** (the authored 38×22, +64% area removed),
+  module card height **270 → 250**, phase badge **42×23 → 29.1×21**.
+  The reset is deliberately confined to this tier — core-only consumers never
+  load the sheet, so their box model cannot move.
+- **Module-card icon lands at the mockup's 31px (K-049).** The glyph inherited
+  the card's body font-size and rendered **13×13** in a 34px cell.
+  `.pmdk-module-icon` now sets `font-size: 31px`, which the K-035 1em glyph rule
+  resolves for every wrapper a consumer passes: glyph **13×13 → 31×31**, box
+  unchanged at **34×34**. This closes the follow-up K-035 filed and deferred.
+- **Badges can no longer starve the card title (K-050).** The head's badge track
+  was `auto`, and `white-space:nowrap` badges made that unbounded — a wide
+  cluster crushed the copy column to **0px**. The track is now
+  `fit-content(40%)` and `.pmdk-module-badges` wraps: copy column
+  **0px → 138.4px**, badge cluster **300.9×23 → 128.3×73**. Short-badge cards
+  are unmoved BY THE CLAMP — isolation-measured at **163px with and without
+  it** (they shift 150.1→163px from the K-046 reset alone).
+- **Interactive chrome shows a pointer cursor (K-051).** `.pmdk-button`,
+  `.pmdk-icon-button` and `.pmdk-section-tabs button` were the only three
+  interactive surfaces in the tier missing `cursor: pointer` (39 existing
+  declarations audited; menus, row actions, rail nodes and table controls were
+  already correct). `default → pointer`; `:disabled` still wins with
+  `not-allowed`. No VR impact — cursor is not a screenshot-visible property.
+
+### Added
+
+- **`.pmdk-module-overview` — the real Modules-page counts strip (K-048).**
+  SPEC §5.12's recipe and the `ModulesPage` story pointed consumers at
+  `.pmdk-mini-stats`, which is the DRAWER's boxed metric-tile chrome: following
+  the recipe produced a **460×57** slab above a card grid that needs none. The
+  mockup's actual strip is now ported — a compact inline run with counts in
+  `<b>` and `·` separators in `<i>`, tabular numerals, plus the narrow-container
+  column stack. Measured **460×57 boxed tiles → a 15px-tall inline run**. Sized
+  from the kit's own `--pmdk-font-size-caption` per the §16.5 neutralisation
+  rule. `.pmdk-mini-stats` is untouched and remains the drawer surface.
+- **`statusLabel` now renders beside a live toggle too (K-052).** The slot only
+  existed in the branch where the toggle is ABSENT (`planned` /
+  `toggle={false}`), so a toggleable card could not show a static footer note —
+  a pending "Reload to apply", say — through the prop designed for it, and
+  consumers had to stuff it into `action`. Passing `statusLabel` alongside a
+  live toggle now emits a quiet `.pmdk-module-status-note` ahead of the toggle
+  cluster, on the same typography as the planned/status span. **Absent by
+  default:** omit it and the card emits the DOM it always did, so no shipped
+  consumer moves. `planned` still owns `plannedLabel` and gains no second node.
+
+### Changed
+
+- **`<PMDKModuleCard>` default toggle labels are `On` / `Off`, was
+  `Enabled` / `Disabled` (K-047).** A default-TEXT change, and the only
+  consumer-visible behaviour change in this release. The chrome always assumed
+  the short pair — `.pmdk-module-toggle-label` reserves `min-width: 20px` — and
+  the source mockup renders On/Off; the long words blew the cluster out to
+  **46.4px → 20px**. Consumers who want the verbose wording restore it with
+  `labels={ { toggleOn: 'Enabled', toggleOff: 'Disabled' } }`; anyone already
+  passing `labels` for i18n is unaffected.
+
+### Docs
+
+- SPEC **§5.12** — the Modules-page recipe snippet now shows
+  `.pmdk-module-overview` markup with a note on why it is not `.pmdk-mini-stats`;
+  the `labels` prop row documents the new defaults and the restore path.
+- SPEC **§16.5** — the border-box reset is written down as part of the primitives
+  contract (including why it lives in this tier and not in core); the module-card
+  class row gains `.pmdk-module-overview` and the badge-track rule.
+
+### Tests
+
+- New `tests/unit/primitivesVisualRound.test.js` — 18 cascade cases covering the
+  reset (including that it stops at the chassis), the icon font-size, the badge
+  track / wrap / row-gap, the counts strip and the three cursors.
+- `PMDKModuleCard.test.jsx` — the On/Off defaults pinned in both states, plus a
+  case proving the verbose pair is still reachable through `labels`.
+- `PMDKModuleCard.test.jsx` — 3 cases for K-052: the note coexisting with a live
+  toggle (including that it sits outside the `<label>`, so it cannot flip the
+  control), the absent-by-default DOM, and `planned` keeping `plannedLabel`.
+- Two new stories added to the VR matrix as regression locks —
+  `Primitives/ModuleCard → LongBadgeCluster` (pathological cluster beside a
+  short one, K-050) and `→ ToggleWithStatusNote` (a card with the note beside
+  the same card without one, K-052).
+- Story VR: **63 shots, all green.** 25 primitives-tier baselines re-captured as
+  intentional + 2 new; the remaining 36 are zero-diff — all 21 core-default /
+  theme-app-core shots plus 15 primitives shots the round did not touch. K-052
+  was verified separately against the post-K-051 baselines: **62/62 unchanged**,
+  which is the absent-by-default contract proven rather than asserted.
+
 ## [0.3.0] — 2026-07-26
 
 ### Added

@@ -14,8 +14,11 @@
 .pmdk-dashboard .pmdk-section-tabs {
   display:flex;gap:20px;overflow:auto;margin-bottom:12px;border-bottom:1px solid var(--pmdk-color-border)
 }
+/* `cursor:pointer` restores the mockup's global `button{cursor:pointer}`, which
+   the `.pd-*` extraction dropped (K-051) — a bare element rule had no `.pd-`
+   selector to be renamed into. Tabs looked inert on hover. */
 .pmdk-dashboard .pmdk-section-tabs button {
-  position:relative;min-height:44px;display:flex;align-items:center;gap:7px;padding:0 2px;border:0;background:transparent;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);white-space:nowrap
+  position:relative;min-height:44px;display:flex;align-items:center;gap:7px;padding:0 2px;border:0;background:transparent;color:var(--pmdk-color-text-muted);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);white-space:nowrap;cursor:pointer
 }
 .pmdk-dashboard .pmdk-section-tabs button:hover {
   color:var(--pmdk-color-text)

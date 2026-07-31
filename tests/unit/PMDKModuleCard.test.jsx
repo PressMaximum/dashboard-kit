@@ -131,7 +131,7 @@ describe( 'PMDKModuleCard', () => {
 		);
 		expect(
 			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
-		).toBe( 'Enabled' );
+		).toBe( 'On' );
 	} );
 
 	it( 'planned renders NO toggle — only the product-injected static label', () => {
@@ -201,7 +201,39 @@ describe( 'PMDKModuleCard', () => {
 		).toBe( 'Free' );
 		expect(
 			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
-		).toBe( 'Disabled' );
+		).toBe( 'Off' );
+	} );
+
+	/* K-047 — the default toggle labels are the SHORT pair. The chrome always
+	   assumed it (`.pmdk-module-toggle-label` reserves `min-width:20px`) and the
+	   source mockup renders On/Off; `Enabled`/`Disabled` blew the cluster out to
+	   56px. Pinned in both states so the pair can't drift back. */
+	it.each( [
+		[ 'enabled', 'On' ],
+		[ 'disabled', 'Off' ],
+	] )( 'default toggle label for %s is %s', ( state, label ) => {
+		render(
+			<PMDKModuleCard { ...BASE } state={ state } onToggle={ () => {} } />,
+		);
+		expect(
+			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
+		).toBe( label );
+	} );
+
+	/* K-047 — the verbose pair stays reachable, so a consumer that wants the
+	   old wording is a prop away from it (the documented migration). */
+	it( 'consumers can restore the verbose labels via `labels`', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				state="enabled"
+				onToggle={ () => {} }
+				labels={ { toggleOn: 'Enabled', toggleOff: 'Disabled' } }
+			/>,
+		);
+		expect(
+			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
+		).toBe( 'Enabled' );
 	} );
 
 	it( 'labels override + headingLevel render alternatives', () => {
@@ -258,6 +290,64 @@ describe( 'PMDKModuleCard', () => {
 		expect(
 			host.querySelector( '.pmdk-module-card-action' ).textContent,
 		).toBe( 'Configure' );
+	} );
+
+	/* K-052 — `statusLabel` also renders BESIDE a live toggle. Before 0.3.1 it
+	   only existed in the toggle-less branch, so a toggleable card had no way
+	   to show a static footer note through the slot meant for it. */
+	it( 'statusLabel renders alongside a live toggle', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				state="enabled"
+				statusLabel="Reload to apply"
+				onToggle={ () => {} }
+			/>,
+		);
+		// The toggle is still there, fully functional.
+		expect( host.querySelector( '.pmdk-module-toggle input' ) ).not.toBeNull();
+		// …and the note renders beside it, on the shared typography.
+		const note = host.querySelector( '.pmdk-module-status-note' );
+		expect( note ).not.toBeNull();
+		expect( note.textContent ).toBe( 'Reload to apply' );
+		expect( note.className ).toContain( 'pmdk-module-toggle-label' );
+		// The note precedes the toggle cluster and is NOT inside the label,
+		// so clicking it can never flip the control.
+		expect( note.closest( '.pmdk-module-toggle' ) ).toBeNull();
+		expect(
+			note.compareDocumentPosition(
+				host.querySelector( '.pmdk-module-toggle' ),
+			) & Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+	} );
+
+	/* The absent-by-default half: no `statusLabel` ⇒ byte-identical DOM. */
+	it( 'a toggleable card without statusLabel emits no note', () => {
+		render(
+			<PMDKModuleCard { ...BASE } state="enabled" onToggle={ () => {} } />,
+		);
+		expect( host.querySelector( '.pmdk-module-status-note' ) ).toBeNull();
+		// Exactly one label in the footer — the toggle's own.
+		expect(
+			host.querySelectorAll( '.pmdk-module-toggle-label' ),
+		).toHaveLength( 1 );
+	} );
+
+	/* `planned` still owns the else-branch: plannedLabel wins, and the note is
+	   not additionally emitted (a planned card has no toggle to sit beside). */
+	it( 'planned still shows plannedLabel, not a second status note', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				state="planned"
+				plannedLabel="Planned"
+				statusLabel="Reload to apply"
+			/>,
+		);
+		expect( host.querySelector( '.pmdk-module-status-note' ) ).toBeNull();
+		expect(
+			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
+		).toBe( 'Planned' );
 	} );
 
 	it( 'toggle defaults to true — existing consumers are unchanged', () => {

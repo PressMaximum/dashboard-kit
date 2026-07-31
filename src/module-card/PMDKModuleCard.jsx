@@ -27,8 +27,16 @@
  */
 
 const DEFAULT_LABELS = {
-	toggleOn: 'Enabled',
-	toggleOff: 'Disabled',
+	/*
+	 * K-047: `On` / `Off`, not `Enabled` / `Disabled`. The chrome always
+	 * encoded this — `.pmdk-module-toggle-label` reserves `min-width: 20px`,
+	 * which is a two-to-three character gutter, and the mockup this card was
+	 * extracted from renders On/Off. The long words blew that cluster out to
+	 * 56px, stealing width from the footer action beside them. Consumers who
+	 * want the verbose form pass `labels={ { toggleOn, toggleOff } }`.
+	 */
+	toggleOn: 'On',
+	toggleOff: 'Off',
 	/*
 	 * `name` is the resolved accessible name (K-024): `titleText` when given,
 	 * else `title` if it is already a string. A node title with no `titleText`
@@ -162,6 +170,18 @@ export function PMDKModuleCard( {
 				<span className="pmdk-module-card-action">
 					{ action || null }
 				</span>
+				{ /*
+				   K-052: `statusLabel` also renders BESIDE a live toggle. It
+				   used to live only in the else-branch, so a toggleable card
+				   had no way to show a static footer note ("Reload to apply")
+				   through the slot designed for it — consumers were stuffing
+				   it into `action`. Rendered only when passed, so a card
+				   without one emits the identical DOM it always did. */ }
+				{ showToggle && statusLabel ? (
+					<span className="pmdk-module-toggle-label pmdk-module-status-note">
+						{ statusLabel }
+					</span>
+				) : null }
 				{ showToggle ? (
 					<label className="pmdk-module-toggle">
 						<span className="pmdk-module-toggle-label">
