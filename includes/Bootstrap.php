@@ -37,7 +37,7 @@ final class Bootstrap {
 	 * reported 0.2.0 to every PHP-side consumer while the JS half reported
 	 * the truth — resynced in the K-042/K-043 round).
 	 */
-	public const VERSION = '0.3.0';
+	public const VERSION = '0.3.1';
 
 	/**
 	 * Bootstrap is purely a namespace anchor — never instantiate.

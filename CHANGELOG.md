@@ -10,6 +10,8 @@ public API per the deprecation cycle in §12.2.
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-08-01
+
 First-consumer visual-correction round — PressListing P2.5 QA, 2026-08-01.
 Six defects, all traced to the same origin: the primitives tier was mechanically
 extracted from the Aponto plugin-dashboard mockup's `.pd-*` layer, and the
