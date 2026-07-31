@@ -27,8 +27,16 @@
  */
 
 const DEFAULT_LABELS = {
-	toggleOn: 'Enabled',
-	toggleOff: 'Disabled',
+	/*
+	 * K-047: `On` / `Off`, not `Enabled` / `Disabled`. The chrome always
+	 * encoded this — `.pmdk-module-toggle-label` reserves `min-width: 20px`,
+	 * which is a two-to-three character gutter, and the mockup this card was
+	 * extracted from renders On/Off. The long words blew that cluster out to
+	 * 56px, stealing width from the footer action beside them. Consumers who
+	 * want the verbose form pass `labels={ { toggleOn, toggleOff } }`.
+	 */
+	toggleOn: 'On',
+	toggleOff: 'Off',
 	/*
 	 * `name` is the resolved accessible name (K-024): `titleText` when given,
 	 * else `title` if it is already a string. A node title with no `titleText`

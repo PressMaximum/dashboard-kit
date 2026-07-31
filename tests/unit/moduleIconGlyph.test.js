@@ -68,7 +68,10 @@ const glyphSize = ( id ) => {
 describe( 'K-035 module-card icon glyph sizing', () => {
 	it( "the kit's own wrapper is unchanged — still 1em", () => {
 		// The zero-look-change contract: consumers passing `defaultRenderIcon`
-		// output must not move. 1em resolves to the 14px measured in-browser.
+		// output must not move. 1em now resolves to 31px in-browser — K-049 set
+		// `font-size:31px` on the icon BOX, which is exactly the wrapper-
+		// independence this rule exists to provide (every wrapper moved
+		// together; before K-049 the em resolved to the card's ~13px body size).
 		expect( glyphSize( 'kit' ) ).toEqual( [ '1em', '1em' ] );
 	} );
 

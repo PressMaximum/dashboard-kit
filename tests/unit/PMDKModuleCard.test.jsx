@@ -131,7 +131,7 @@ describe( 'PMDKModuleCard', () => {
 		);
 		expect(
 			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
-		).toBe( 'Enabled' );
+		).toBe( 'On' );
 	} );
 
 	it( 'planned renders NO toggle — only the product-injected static label', () => {
@@ -201,7 +201,39 @@ describe( 'PMDKModuleCard', () => {
 		).toBe( 'Free' );
 		expect(
 			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
-		).toBe( 'Disabled' );
+		).toBe( 'Off' );
+	} );
+
+	/* K-047 — the default toggle labels are the SHORT pair. The chrome always
+	   assumed it (`.pmdk-module-toggle-label` reserves `min-width:20px`) and the
+	   source mockup renders On/Off; `Enabled`/`Disabled` blew the cluster out to
+	   56px. Pinned in both states so the pair can't drift back. */
+	it.each( [
+		[ 'enabled', 'On' ],
+		[ 'disabled', 'Off' ],
+	] )( 'default toggle label for %s is %s', ( state, label ) => {
+		render(
+			<PMDKModuleCard { ...BASE } state={ state } onToggle={ () => {} } />,
+		);
+		expect(
+			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
+		).toBe( label );
+	} );
+
+	/* K-047 — the verbose pair stays reachable, so a consumer that wants the
+	   old wording is a prop away from it (the documented migration). */
+	it( 'consumers can restore the verbose labels via `labels`', () => {
+		render(
+			<PMDKModuleCard
+				{ ...BASE }
+				state="enabled"
+				onToggle={ () => {} }
+				labels={ { toggleOn: 'Enabled', toggleOff: 'Disabled' } }
+			/>,
+		);
+		expect(
+			host.querySelector( '.pmdk-module-toggle-label' ).textContent,
+		).toBe( 'Enabled' );
 	} );
 
 	it( 'labels override + headingLevel render alternatives', () => {

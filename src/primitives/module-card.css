@@ -45,11 +45,25 @@
 .pmdk-dashboard .pmdk-module-card.is-planned {
   background:color-mix(in srgb,var(--pmdk-color-surface-subtle) 46%,var(--pmdk-color-surface))
 }
+/* K-050 — the badges track is `fit-content(40%)`, not `auto`. With `auto` the
+   track takes the badge cluster's max-content width, and because every badge is
+   `white-space:nowrap` that width has no ceiling: one wide product badge
+   ("Coming in P4") measured the copy column down from 206px to 80px, ellipsing
+   titles that had room to spare. `fit-content(40%)` is `auto` clamped — it still
+   resolves to max-content whenever max-content fits under 40% of the head, so
+   every short-badge card (i.e. every shipped consumer today) is pixel-identical,
+   and only the overlong cluster gets capped. Paired with `flex-wrap` on
+   `.pmdk-module-badges` below, so a clamped cluster wraps instead of overflowing. */
 .pmdk-dashboard .pmdk-module-card-head {
-  display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:start
+  display:grid;grid-template-columns:34px minmax(0,1fr) fit-content(40%);gap:10px;align-items:start
 }
+/* `font-size:31px` sizes the GLYPH (K-035 resolves every child svg to 1em), so
+   the icon lands on the mockup's 31x31 inside its 34px box. Setting it here
+   rather than on the svg keeps the wrapper-independence K-035 bought: the glyph
+   is correct whatever element the consumer passes in. Before this, the box was
+   34px but the glyph inherited the card's ~13px body size (K-049). */
 .pmdk-dashboard .pmdk-module-icon {
-  width:34px;height:34px;margin-top:1px;display:grid;place-items:center;color:var(--pmdk-color-text-muted)
+  width:34px;height:34px;margin-top:1px;display:grid;place-items:center;color:var(--pmdk-color-text-muted);font-size:31px
 }
 /* Size the GLYPH, not just the box (K-035). The box is a 34px grid cell; the
    glyph got its size only from `.pmdk-react-icon > svg { width: 1em }`, i.e.
@@ -186,17 +200,71 @@
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
 }
+/* K-050: `flex-wrap` is the other half of the `fit-content(40%)` clamp above.
+   The badges are all `white-space:nowrap`, so once the track is capped an
+   unwrapped cluster would simply overflow the card. Wrapping also lowers the
+   track's automatic minimum to the widest SINGLE badge, which is what lets the
+   clamp actually bind. `row-gap` matches the inline gap; single-row clusters
+   (every shipped consumer) render exactly as before. */
 .pmdk-dashboard .pmdk-module-badges {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
+	flex-wrap: wrap;
 	gap: 5px;
+	row-gap: 5px;
 }
 /* Hand-authored (no source rule) — component scaffolding for <PMDKModuleCard>:
    copy column, heading generalisation (`headingLevel` h2/h3/h4 share the
    extracted h2 treatment; medium weight per the flattened v2 tier + K-010
    weight discipline), integration-state line, footer action slot, planned
    static label tint. */
+/* --- Counts strip (K-048) — MECHANICAL extraction of `.pd-module-overview`.
+   The Modules-page recipe used to point consumers at `.pmdk-mini-stats`, which
+   is the DRAWER metric-tile chrome (drawer.css): a bordered 3-column grid of
+   boxed tiles, ~460px of hard chrome above a card grid that needs none. The
+   mockup's own strip is this: one compact inline run, counts in `<b>`, `·`
+   separators in `<i>`. `.pmdk-mini-stats` is untouched and stays the drawer
+   surface. Font size comes from the kit's own `--pmdk-font-size-caption` (12px)
+   per the §16.5 neutralisation rule — the mockup's 13px is Aponto's value for
+   the same token, not a hard-coded size. Markup shape:
+
+     <div class="pmdk-module-overview" aria-label="…">
+       <span><b>3</b> on</span><i aria-hidden="true">·</i>
+       <span><b>5</b> available</span>…
+     </div> */
+.pmdk-dashboard .pmdk-module-overview {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var( --pmdk-color-text-soft );
+	font-size: var( --pmdk-font-size-caption );
+	font-variant-numeric: tabular-nums;
+}
+.pmdk-dashboard .pmdk-module-overview span {
+	color: inherit;
+	font-size: inherit;
+}
+.pmdk-dashboard .pmdk-module-overview b {
+	color: var( --pmdk-color-text-muted );
+	font-weight: var( --pmdk-font-weight-semibold );
+}
+.pmdk-dashboard .pmdk-module-overview i {
+	color: var( --pmdk-color-border-strong );
+	font-style: normal;
+}
+/* Source parity: the strip stacks rather than scrolls in a narrow container.
+   The mockup ALSO hides it outright at its own shell gutter breakpoint; that
+   rule belongs to the mockup's shell chrome, which the kit does not own, so it
+   is deliberately not ported. */
+@container ( max-width: 620px ) {
+	.pmdk-dashboard .pmdk-module-overview {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 2px;
+	}
+}
+
 .pmdk-dashboard .pmdk-module-copy {
 	min-width: 0;
 }

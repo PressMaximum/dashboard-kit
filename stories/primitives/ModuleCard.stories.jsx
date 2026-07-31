@@ -91,6 +91,66 @@ export const Catalogue3Up = {
 	),
 };
 
+/*
+ * K-050 — the badge track can never starve the title.
+ *
+ * Every badge is `white-space:nowrap`, so under the old `auto` track a wide
+ * cluster grew without limit and squeezed the copy column (measured 206px ->
+ * 80px, titles ellipsing with room to spare). `fit-content(40%)` clamps the
+ * track and `flex-wrap` lets the clamped cluster wrap onto a second row.
+ *
+ * Left card: the pathological cluster. Right card: a normal short cluster,
+ * which must still resolve to max-content — i.e. render exactly as it did
+ * before the fix. The two together are the regression lock.
+ */
+export const LongBadgeCluster = {
+	render: () => (
+		<Chassis>
+			<div className="pmdk-module-grid">
+				<PMDKModuleCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches and alerts"
+					description="A title that has room to breathe, next to a badge cluster that used to take it away."
+					tier={ { label: 'Premium', variant: 'premium' } }
+					badges={
+						<>
+							<span className="pmdk-module-phase">
+								Coming in P4
+							</span>
+							<span className="pmdk-module-phase">
+								Beta programme
+							</span>
+						</>
+					}
+					state="enabled"
+					onToggle={ () => {} }
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+				<PMDKModuleCard
+					icon={ defaultRenderIcon( 'sliders' ) }
+					meta="Operations · Module"
+					title="Saved searches and alerts"
+					description="The same card with a short cluster — the max-content path, unchanged by the clamp."
+					tier={ { label: 'Free', variant: 'free' } }
+					badges={ <span className="pmdk-module-phase">P4</span> }
+					state="enabled"
+					onToggle={ () => {} }
+					action={
+						<button className="pmdk-button text" type="button">
+							Configure
+						</button>
+					}
+				/>
+			</div>
+		</Chassis>
+	),
+};
+
 export const IntegrationStates = {
 	render: () => (
 		<Chassis>

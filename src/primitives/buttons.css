@@ -8,14 +8,20 @@
  * Ships in the opt-in `primitives/style.css` export (core style.css untouched).
  */
 
+/* `cursor:pointer` on both button families restores the mockup's global
+   `button{cursor:pointer}` (plugin-dashboard.css), which the `.pd-*` extraction
+   dropped (K-051): a bare ELEMENT rule carried no `.pd-` selector to rename, so
+   it fell out of the mechanical port and every kit button read as inert text.
+   `.pmdk-button:disabled` re-asserts `not-allowed` further down, so gated
+   buttons are unaffected. */
 .pmdk-dashboard .pmdk-icon-button {
-  width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted)
+  width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:var(--pmdk-radius-control);background:transparent;color:var(--pmdk-color-text-muted);cursor:pointer
 }
 .pmdk-dashboard .pmdk-icon-button:hover {
   background:var(--pmdk-color-row-hover);color:var(--pmdk-color-text)
 }
 .pmdk-dashboard .pmdk-button {
-  min-width:var(--pmdk-size-control-md);height:var(--pmdk-size-control-md);display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium)
+  min-width:var(--pmdk-size-control-md);height:var(--pmdk-size-control-md);display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--pmdk-color-border);border-radius:var(--pmdk-radius-control);background:var(--pmdk-color-surface);color:var(--pmdk-color-text);font-size:var(--pmdk-font-size-meta);font-weight:var(--pmdk-font-weight-medium);cursor:pointer
 }
 .pmdk-dashboard .pmdk-button:hover {
   border-color:var(--pmdk-color-border-strong);background:var(--pmdk-color-surface-subtle)

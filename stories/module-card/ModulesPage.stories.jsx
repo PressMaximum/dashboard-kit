@@ -124,25 +124,28 @@ function ModulesPage() {
 	const enabledCount = MODULES.filter(
 		( module ) => enabled[ module.id ],
 	).length;
+	const plannedCount = MODULES.filter( ( module ) => module.planned ).length;
 
 	return (
 		<div>
-			{ /* product-side counts strip */ }
-			<div className="pmdk-mini-stats" style={ { maxWidth: 460 } }>
-				<div>
-					<strong>{ MODULES.length }</strong>
-					<span>Available</span>
-				</div>
-				<div>
-					<strong>{ enabledCount }</strong>
-					<span>Enabled</span>
-				</div>
-				<div>
-					<strong>
-						{ MODULES.filter( ( m ) => m.planned ).length }
-					</strong>
-					<span>Planned</span>
-				</div>
+			{ /* product-side counts strip — `.pmdk-module-overview`, the compact
+			     inline run (K-048). NOT `.pmdk-mini-stats`: that is the drawer's
+			     boxed metric-tile chrome and reads as a heavy slab here. */ }
+			<div
+				className="pmdk-module-overview"
+				aria-label={ `Within current results: ${ enabledCount } on, ${ MODULES.length } available, ${ plannedCount } on the roadmap` }
+			>
+				<span>
+					<b>{ enabledCount }</b> on
+				</span>
+				<i aria-hidden="true">·</i>
+				<span>
+					<b>{ MODULES.length }</b> available
+				</span>
+				<i aria-hidden="true">·</i>
+				<span>
+					<b>{ plannedCount }</b> roadmap
+				</span>
 			</div>
 			{ /* product-side category tabs on the kit tab chrome */ }
 			<div className="pmdk-section-tabs" ref={ tabsRef }>
